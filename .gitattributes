@@ -1,0 +1,8 @@
+# Normalise text to LF in the repository so Windows, macOS and Linux teammates get clean diffs
+* text=auto eol=lf
+
+# Photographs are binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.webp binary

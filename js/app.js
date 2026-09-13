@@ -1,0 +1,3045 @@
+const ICONS={
+  home:'<path d="M4 11.4 12 4.2l8 7.2"/><path d="M6.2 10v9a1 1 0 0 0 1 1H10v-5.4h4V20h2.8a1 1 0 0 0 1-1v-9"/>',
+  church:'<path d="M12 2.4v3.4M10.4 4.1h3.2"/><path d="M12 6.4 8 9.6V20h8V9.6L12 6.4Z"/><path d="M4 20v-7.2L8 10M20 20v-7.2L16 10M4 20h16"/><path d="M12 20v-4.2"/>',
+  journey:'<circle cx="12" cy="12" r="8.6"/><path d="m14.9 9.1-2 5.1-5.1 2 2-5.1 5.1-2Z"/>',
+  community:'<circle cx="8.6" cy="8.4" r="3.1"/><circle cx="16.6" cy="9.6" r="2.4"/><path d="M2.8 19.6c0-3.2 2.6-5.8 5.8-5.8s5.8 2.6 5.8 5.8"/><path d="M15.4 14c2.4.3 4.2 2.3 4.2 4.8"/>',
+  me:'<circle cx="12" cy="8" r="3.8"/><path d="M4.6 20c0-4.1 3.3-6.6 7.4-6.6s7.4 2.5 7.4 6.6"/>',
+  search:'<circle cx="11" cy="11" r="6.2"/><path d="m19.8 19.8-4.4-4.4"/>',
+  bell:'<path d="M6.2 10.2a5.8 5.8 0 0 1 11.6 0c0 3.9 1.6 5.4 1.6 5.4H4.6s1.6-1.5 1.6-5.4Z"/><path d="M10 18.6a2 2 0 0 0 4 0"/>',
+  chevR:'<path d="m9.4 5.8 6.2 6.2-6.2 6.2"/>',
+  chevL:'<path d="m14.6 5.8-6.2 6.2 6.2 6.2"/>',
+  chevD:'<path d="m6 9.4 6 6 6-6"/>',
+  x:'<path d="M6.2 6.2 17.8 17.8M17.8 6.2 6.2 17.8"/>',
+  plus:'<path d="M12 5.2v13.6M5.2 12h13.6"/>',
+  pin:'<path d="M12 21s-6.8-7.3-6.8-11.6a6.8 6.8 0 0 1 13.6 0C18.8 13.7 12 21 12 21Z"/><circle cx="12" cy="9.2" r="2.3"/>',
+  cal:'<rect x="3.8" y="5.6" width="16.4" height="14.6" rx="2.4"/><path d="M3.8 10.2h16.4M8.4 3.4v4M15.6 3.4v4"/>',
+  clock:'<circle cx="12" cy="12" r="8.6"/><path d="M12 7.2V12l3.2 1.9"/>',
+  share:'<circle cx="6.2" cy="12" r="2.4"/><circle cx="17.8" cy="6.2" r="2.4"/><circle cx="17.8" cy="17.8" r="2.4"/><path d="m8.4 10.8 7.2-3.4M8.4 13.2l7.2 3.4"/>',
+  msg:'<path d="M4.2 5.4h15.6v11.2H9.6L4.2 20.4V5.4Z"/><path d="M8.4 9.4h7.2M8.4 12.6h4.8"/>',
+  send:'<path d="M4.4 11.8 19.6 4.4l-6.6 15.2-2.6-6-6-1.8Z"/>',
+  check:'<path d="m5.4 12.6 4.4 4.4 8.8-9.6"/>',
+  shield:'<path d="M12 3.2 19 6v6c0 4.4-3 7.4-7 8.8-4-1.4-7-4.4-7-8.8V6l7-2.8Z"/><path d="m9.2 11.8 2 2 3.6-3.8"/>',
+  play:'<path d="M8.6 5.4 18.4 12l-9.8 6.6V5.4Z"/>',
+  settings:'<circle cx="12" cy="12" r="3.1"/><path d="M12 3.6v2.2M12 18.2v2.2M4.1 4.1l1.6 1.6M18.3 18.3l1.6 1.6M3.6 12h2.2M18.2 12h2.2M4.1 19.9l1.6-1.6M18.3 5.7l1.6-1.6"/>',
+  globe:'<circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2"/><path d="M12 3.4c2.6 3 2.6 14.2 0 17.2M12 3.4c-2.6 3-2.6 14.2 0 17.2"/>',
+  moon:'<path d="M20 14.6A8.6 8.6 0 1 1 9.4 4a7 7 0 0 0 10.6 10.6Z"/>',
+  sun:'<circle cx="12" cy="12" r="4.2"/><path d="M12 3.4v2M12 18.6v2M3.4 12h2M18.6 12h2M5.7 5.7l1.4 1.4M16.9 16.9l1.4 1.4M5.7 18.3l1.4-1.4M16.9 7.1l1.4-1.4"/>',
+  lock:'<rect x="5" y="10.6" width="14" height="9.4" rx="2.2"/><path d="M8.2 10.6V7.4a3.8 3.8 0 0 1 7.6 0v3.2"/>',
+  edit:'<path d="M4.2 19.8h4.2L19 9.2 14.8 5 4.2 15.6v4.2Z"/><path d="m13.4 6.4 4.2 4.2"/>',
+  gift:'<rect x="4" y="9.4" width="16" height="10.6" rx="1.8"/><path d="M3.4 9.4h17.2M12 9.4V20"/><path d="M12 9.4c-1.4-3.6-5.6-4-5.6-1.6S9.6 9.4 12 9.4Zm0 0c1.4-3.6 5.6-4 5.6-1.6S14.4 9.4 12 9.4Z"/>',
+  star:'<path d="m12 3.4 2.6 5.6 6 .6-4.5 4 1.3 6-5.4-3.1L6.6 19.6l1.3-6-4.5-4 6-.6L12 3.4Z"/>',
+  arrowL:'<path d="M19.4 12H4.6M10.6 5.8 4.4 12l6.2 6.2"/>',
+  mail:'<rect x="3.4" y="5.4" width="17.2" height="13.2" rx="2.2"/><path d="m4 6.6 8 6.4 8-6.4"/>',
+  phone:'<path d="M6 3.6h2.6l1.4 4-2 1.4c.9 2.4 2.6 4.1 5 5l1.4-2 4 1.4V16c0 1.3-1.1 2.4-2.4 2.4C9.4 18.4 5.6 14.6 5.6 6 5.6 4.7 4.7 3.6 6 3.6Z"/>',
+  apple:'<path d="M15.8 8.6c-1.2-1.4-3-1.2-3.6-1.2s-2.2-.2-3.5 1.2C7 10.2 7.4 14.2 9.7 17.2c.8 1.1 1.6 1.7 2.4 1.7s1.3-.5 2.4-.5 1.4.5 2.3.5c.9 0 1.7-.8 2.4-1.9.4-.7.8-1.4 1-2-2.6-1-3-4.6-.7-6.3-.9-.9-2-1-2.7-1Z"/><path d="M14.2 4.6c.5-.7 1.3-1.1 2.1-1.1.1.9-.2 1.8-.8 2.5-.6.7-1.4 1.1-2.2 1-.1-.9.3-1.7.9-2.4Z"/>',
+  sparkle:'<path d="m12 3.2 1.5 4.3 4.3 1.5-4.3 1.5L12 14.8l-1.5-4.3L6.2 9l4.3-1.5L12 3.2Z"/><path d="m18.4 14.4.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/>',
+  book:'<path d="M12 6.4C10.2 5 7.6 4.4 4.6 4.4v13.2c3 0 5.6.6 7.4 2M12 6.4c1.8-1.4 4.4-2 7.4-2v13.2c-3 0-5.6.6-7.4 2M12 6.4v13.2"/>',
+  music:'<circle cx="7" cy="17.6" r="2.6"/><circle cx="17.4" cy="15.8" r="2.6"/><path d="M9.6 17.6V6.6L20 4.4v11.4"/>',
+  bag:'<path d="M6 8.4h12l1 11.4H5L6 8.4Z"/><path d="M9.2 8.4V6.6a2.8 2.8 0 0 1 5.6 0v1.8"/>',
+  news:'<rect x="3.6" y="5" width="16.8" height="14" rx="1.8"/><path d="M7.4 9h9.2M7.4 12.2h9.2M7.4 15.4h5.6"/>',
+  upload:'<path d="M12 16.4V5.6M8.2 9.4 12 5.6l3.8 3.8"/><path d="M4.6 19.4h14.8"/>',
+  users:'<circle cx="9.4" cy="8.2" r="3.2"/><path d="M3.4 19.4c0-3.3 2.7-5.6 6-5.6s6 2.3 6 5.6"/><path d="M16 5.4a3 3 0 0 1 0 5.8M17.4 13.8c2 .5 3.2 2.2 3.2 4.2"/>',
+  radio:'<circle cx="12" cy="12" r="2.4"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 16.2a6 6 0 0 0 0-8.4M4.8 4.8a10 10 0 0 0 0 14.4M19.2 19.2a10 10 0 0 0 0-14.4"/>',
+  grid:'<rect x="4" y="4" width="7" height="7" rx="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.6"/><rect x="13" y="13" width="7" height="7" rx="1.6"/>',
+  list:'<path d="M8.4 6.4h11.2M8.4 12h11.2M8.4 17.6h11.2M4.4 6.4h.02M4.4 12h.02M4.4 17.6h.02"/>',
+  trend:'<path d="m3.8 15.6 5-5 3.4 3.4 6.4-6.8"/><path d="M14.8 7.2h4.2v4.2"/>',
+  file:'<path d="M13.4 3.8H6.6v16.4h10.8V7.8l-4-4Z"/><path d="M13.4 3.8v4h4M9.2 12.6h5.6M9.2 15.8h5.6"/>',
+  hands:'<path d="M9.6 12.4V6.2a1.6 1.6 0 0 1 3.2 0v5.4"/><path d="M12.8 11.6V7.6a1.6 1.6 0 0 1 3.2 0v6.8c0 3.2-2 5.6-5.2 5.6s-5.2-2.2-5.2-5.4V9.4a1.5 1.5 0 0 1 3 0v3"/>',
+  filter:'<path d="M4.2 5.4h15.6l-6 7.2v6.2l-3.6 1.8v-8L4.2 5.4Z"/>',
+  eye:'<path d="M2.6 12S6 6.4 12 6.4 21.4 12 21.4 12 18 17.6 12 17.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="2.8"/>',
+  logout:'<path d="M9.6 20H5.4V4h4.2"/><path d="M15.6 15.6 19.6 12l-4-3.6M19 12H9.6"/>',
+  mic:'<rect x="9.2" y="3.2" width="5.6" height="10.4" rx="2.8"/><path d="M5.6 11.6a6.4 6.4 0 0 0 12.8 0M12 18v3"/>'
+};
+function ico(name,size,cls){return '<svg class="'+(cls||'')+'" width="'+(size||22)+'" height="'+(size||22)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[name]||'')+'</svg>';}
+
+const REACTIONS=[{k:'amen',e:'\u{1F64F}',l:'Amen'},{k:'bless',e:'✝️',l:'Bless'},{k:'peace',e:'\u{1F54A}️',l:'Peace'},{k:'love',e:'❤️',l:'Love'},{k:'fire',e:'\u{1F525}',l:'Spirit'}];
+const LANGS=['English','Tamil','Malayalam','Telugu','Hindi','Kannada','Marathi','Bengali'];
+const DENOMS=['Non-denominational','Pentecostal','Baptist','Church of South India','Roman Catholic','Methodist','Assemblies of God','Brethren','Lutheran','Orthodox'];
+const VERSES=[
+  {r:'Psalm 46:10',t:'Be still, and know that I am God.'},
+  {r:'Isaiah 40:31',t:'But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary.'},
+  {r:'Psalm 119:105',t:'Thy word is a lamp unto my feet, and a light unto my path.'},
+  {r:'Matthew 11:28',t:'Come unto me, all ye that labour and are heavy laden, and I will give you rest.'},
+  {r:'Joshua 1:9',t:'Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest.'},
+  {r:'Philippians 4:6',t:'Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God.'},
+  {r:'Psalm 23:1',t:'The LORD is my shepherd; I shall not want.'},
+  {r:'John 14:27',t:'Peace I leave with you, my peace I give unto you: not as the world giveth, give I unto you.'},
+  {r:'Proverbs 3:5',t:'Trust in the LORD with all thine heart; and lean not unto thine own understanding.'},
+  {r:'Lamentations 3:22',t:'It is of the LORD’s mercies that we are not consumed, because his compassions fail not.'},
+  {r:'2 Corinthians 12:9',t:'My grace is sufficient for thee: for my strength is made perfect in weakness.'},
+  {r:'Romans 8:28',t:'And we know that all things work together for good to them that love God.'}
+];
+const GRADS=[
+  ['#00A3E1','#7A5CC4'],['#7FD4F5','#3B4C9E'],['#4FCB98','#2A6C8F'],['#E8919A','#8348A8'],
+  ['#C08FD0','#3E4BA6'],['#38BDF1','#B4562F'],['#7FD8E8','#3C5AA6'],['#FF9E7A','#8C3B6E']
+];
+function grad(seed){const g=GRADS[Math.abs(hash(seed))%GRADS.length];return 'linear-gradient(135deg,'+g[0]+','+g[1]+')';}
+function hash(s){s=String(s);let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0;}return h;}
+function coverArt(seed){
+  const h1=Math.abs(hash(seed))%360, h2=(h1+62)%360, h3=(h1+188)%360;
+  return '<div class="cover-art" style="background:'
+    +'radial-gradient(60% 80% at 18% 22%,hsla('+h1+',72%,62%,.55),transparent 62%),'
+    +'radial-gradient(52% 70% at 82% 30%,hsla('+h2+',68%,58%,.45),transparent 64%),'
+    +'radial-gradient(64% 90% at 60% 96%,hsla('+h3+',62%,50%,.42),transparent 66%),'
+    +'linear-gradient(150deg,#151C42,#0C1230)"></div>'
+    +'<div class="cover-art aurora" style="inset:-30% -10% auto -10%;height:280px"></div>'
+    +'<svg class="glasspane" viewBox="0 0 400 150" preserveAspectRatio="none" aria-hidden="true">'
+    +'<g opacity=".3"><path d="M0 150 L60 40 L118 150Z" fill="hsla('+h1+',80%,70%,.5)"/>'
+    +'<path d="M108 150 L168 18 L228 150Z" fill="hsla('+h2+',80%,72%,.35)"/>'
+    +'<path d="M218 150 L282 52 L344 150Z" fill="hsla('+h3+',80%,70%,.4)"/>'
+    +'<path d="M330 150 L390 70 L400 150Z" fill="hsla('+h1+',70%,66%,.3)"/>'
+    +'<path d="M0 150h400" stroke="rgba(255,255,255,.16)" stroke-width="1"/></g></svg>';
+}
+/* ---------- scene artwork ----------
+   Composed illustrations in the stained-glass language of the design system, so a post can
+   carry a picture before a church has uploaded a real photograph. Deterministic per seed,
+   and deliberately dark-toned so they read the same way in both themes, as a photo would. */
+function sceneBase(id,a,b){
+  return '<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0" stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient></defs>'
+    +'<rect width="400" height="225" fill="url(#'+id+')"/>';
+}
+function hsl(h,s,l,a){return 'hsla('+((h%360)+360)%360+','+s+'%,'+l+'%,'+a+')';}
+const SCENES={
+  /* arched windows with stained panes and light pooling on the floor */
+  arches:function(H,id){
+    let s=sceneBase(id,'#0B1130','#070B1F');
+    const xs=[36,170,304];
+    s+='<defs>'+xs.map(function(x,i){
+      return '<clipPath id="'+id+'c'+i+'"><path d="M'+x+' 186V88a30 30 0 0 1 60 0v98Z"/></clipPath>';}).join('')+'</defs>';
+    xs.forEach(function(x,i){
+      const h=H+i*54;
+      s+='<polygon points="'+(x+4)+',92 '+(x-26)+',200 '+(x+86)+',200 '+(x+56)+',92" fill="'+hsl(46,80,70,.07)+'"/>';
+      s+='<g clip-path="url(#'+id+'c'+i+')">'
+        +'<rect x="'+x+'" y="56" width="60" height="130" fill="'+hsl(h,54,52,.42)+'"/>'
+        +'<rect x="'+x+'" y="96" width="60" height="34" fill="'+hsl(h+40,58,58,.32)+'"/>'
+        +'<rect x="'+x+'" y="150" width="60" height="36" fill="'+hsl(h+190,48,46,.3)+'"/>'
+        +'<circle cx="'+(x+30)+'" cy="86" r="15" fill="'+hsl(46,88,72,.34)+'"/>'
+        +'<path d="M'+(x+30)+' 56v130M'+x+' 130h60M'+x+' 96h60" stroke="rgba(255,255,255,.22)" stroke-width="1.4"/></g>';
+      s+='<path d="M'+x+' 186V88a30 30 0 0 1 60 0v98" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1.6"/>';
+      s+='<ellipse cx="'+(x+30)+'" cy="199" rx="46" ry="9" fill="'+hsl(46,84,70,.16)+'"/>';
+    });
+    s+='<path d="M0 186h400" stroke="rgba(255,255,255,.12)" stroke-width="1.4"/>';
+    s+='<rect y="186" width="400" height="39" fill="rgba(4,7,20,.55)"/>';
+    return s;
+  },
+  /* volumetric light through a high rose window */
+  rays:function(H,id){
+    let s=sceneBase(id,'#0C1234','#06091C');
+    s+='<g opacity=".5">'+[0,1,2,3,4].map(function(i){
+      return '<polygon points="300,10 320,4 '+(150-i*46)+',225 '+(96-i*46)+',225" fill="'+hsl(46,84,72,.09)+'"/>';}).join('')+'</g>';
+    s+='<circle cx="308" cy="52" r="42" fill="'+hsl(H,70,54,.42)+'"/>';
+    s+='<circle cx="308" cy="52" r="42" fill="none" stroke="rgba(255,255,255,.24)" stroke-width="1.6"/>';
+    s+='<circle cx="308" cy="52" r="19" fill="'+hsl(46,88,74,.5)+'"/>';
+    for(let i=0;i<8;i++){const a=i*Math.PI/4;
+      s+='<path d="M308 52L'+(308+Math.cos(a)*42).toFixed(1)+' '+(52+Math.sin(a)*42).toFixed(1)+'" stroke="rgba(255,255,255,.22)" stroke-width="1.3"/>';}
+    s+='<path d="M0 196h400" stroke="rgba(255,255,255,.1)" stroke-width="1.4"/>';
+    s+='<rect y="196" width="400" height="29" fill="rgba(4,7,20,.5)"/>';
+    return s;
+  },
+  /* still water at first light — baptism in the backwaters */
+  water:function(H,id){
+    let s=sceneBase(id,'#101a42','#0a1330');
+    s+='<circle cx="296" cy="96" r="24" fill="'+hsl(38,88,70,.46)+'"/>';
+    s+='<path d="M0 112c34-14 58 6 92-2s52-16 88-8 62 14 106 2 78-16 114-4V112Z" fill="'+hsl(205,46,24,.9)+'"/>';
+    s+='<rect y="120" width="400" height="105" fill="'+hsl(212,52,17,.95)+'"/>';
+    s+=[0,1,2,3,4,5].map(function(i){
+      return '<path d="M'+(-20+i*74)+' '+(136+i*14)+'h'+(66+i*10)+'" stroke="'+hsl(46,80,72,(0.2-i*0.026).toFixed(3))+'" stroke-width="'+(2.4-i*0.2).toFixed(1)+'" stroke-linecap="round"/>';}).join('');
+    s+=[0,1,2].map(function(i){
+      return '<ellipse cx="'+(292-i*16)+'" cy="'+(140+i*22)+'" rx="'+(38+i*24)+'" ry="'+(5+i*3)+'" fill="none" stroke="'+hsl(46,84,74,(0.22-i*0.06).toFixed(2))+'" stroke-width="1.2"/>';}).join('');
+    s+='<path d="M0 112c18-10 26-2 40-10s22 2 34-6 26 4 40-8v-4H0Z" fill="rgba(4,7,20,.7)"/>';
+    return s;
+  },
+  /* the road out to the village congregations */
+  road:function(H,id){
+    let s=sceneBase(id,'#1a1636','#0b0f28');
+    s+='<circle cx="118" cy="86" r="20" fill="'+hsl(30,84,66,.4)+'"/>';
+    s+='<path d="M0 134c56-22 96 10 148-4s94-24 140-6 78 10 112-2v103H0Z" fill="'+hsl(232,40,19,.95)+'"/>';
+    s+='<path d="M0 158c62-16 104 12 156 0s96-18 144-4 66 8 100-2v73H0Z" fill="'+hsl(240,44,13,.95)+'"/>';
+    s+='<polygon points="186,150 214,150 306,225 88,225" fill="'+hsl(34,26,40,.5)+'"/>';
+    s+=[0,1,2,3].map(function(i){const y=164+i*18+i*i*2.2,w=3+i*2.6;
+      return '<rect x="'+(200-w/2)+'" y="'+y+'" width="'+w+'" height="'+(5+i*2.4)+'" rx="1" fill="'+hsl(46,84,74,.4)+'"/>';}).join('');
+    s+='<path d="M56 150v-26M344 152v-30" stroke="rgba(255,255,255,.18)" stroke-width="1.6"/>';
+    return s;
+  },
+  /* a city that never stops */
+  city:function(H,id){
+    let s=sceneBase(id,'#0a1030','#060a1e');
+    s+='<circle cx="332" cy="44" r="15" fill="'+hsl(46,60,82,.5)+'"/>';
+    let bars='',wins='';
+    const hs=[64,96,48,120,80,140,58,104,74,132,52,88];
+    hs.forEach(function(hh,i){
+      const x=i*34+2,w=28,y=225-hh;
+      bars+='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+hh+'" fill="'+hsl(H+i*7,44,(13+(i%3)*4),.96)+'"/>';
+      for(let r=0;r<Math.floor(hh/22);r++)for(let c=0;c<3;c++){
+        if((i*7+r*3+c)%4===0)continue;
+        wins+='<rect x="'+(x+5+c*8)+'" y="'+(y+10+r*22)+'" width="4" height="7" fill="'+hsl(44,86,70,((i+r+c)%3===0?.5:.26))+'"/>';
+      }
+    });
+    s+=bars+wins;
+    s+='<rect y="214" width="400" height="11" fill="rgba(4,7,20,.6)"/>';
+    return s;
+  },
+  /* a congregation that meets under tarpaulin */
+  canopy:function(H,id){
+    let s=sceneBase(id,'#0d1436','#070c22');
+    s+=[[42,28],[120,16],[210,34],[292,20],[350,40],[78,52],[256,12],[330,58]].map(function(p){
+      return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="1.4" fill="rgba(255,255,255,.5)"/>';}).join('');
+    s+='<polygon points="20,150 118,86 216,150" fill="'+hsl(H,46,42,.85)+'"/>';
+    s+='<polygon points="176,152 268,96 360,152" fill="'+hsl(H+30,44,34,.85)+'"/>';
+    s+='<path d="M20 150 118 86 216 150M176 152 268 96 360 152" fill="none" stroke="rgba(255,255,255,.24)" stroke-width="1.4"/>';
+    s+='<path d="M118 86v-14M268 96v-12M20 150l-16 30M216 150l14 30M360 152l14 28M176 152l-14 28" stroke="rgba(255,255,255,.2)" stroke-width="1.2"/>';
+    s+='<ellipse cx="118" cy="162" rx="70" ry="10" fill="'+hsl(46,84,70,.14)+'"/>';
+    s+='<ellipse cx="268" cy="168" rx="66" ry="9" fill="'+hsl(46,84,70,.12)+'"/>';
+    s+='<rect y="180" width="400" height="45" fill="rgba(4,7,20,.5)"/>';
+    s+='<path d="M0 180h400" stroke="rgba(255,255,255,.12)" stroke-width="1.3"/>';
+    return s;
+  },
+  /* stage light for a night of worship */
+  stage:function(H,id){
+    let s=sceneBase(id,'#120c30','#06081c');
+    s+=[0,1,2,3,4].map(function(i){const x=60+i*70;
+      return '<polygon points="'+x+',34 '+(x+12)+',34 '+(x+62)+',210 '+(x-50)+',210" fill="'+hsl(H+i*30,60,62,.14)+'"/>';}).join('');
+    s+='<rect y="24" width="400" height="7" fill="rgba(255,255,255,.14)"/>';
+    s+=[0,1,2,3,4].map(function(i){const x=60+i*70;
+      return '<circle cx="'+(x+6)+'" cy="34" r="6" fill="'+hsl(H+i*30,70,68,.9)+'"/>';}).join('');
+    s+='<ellipse cx="200" cy="208" rx="190" ry="26" fill="'+hsl(46,84,70,.12)+'"/>';
+    s+='<rect y="196" width="400" height="29" fill="rgba(4,7,20,.62)"/>';
+    s+='<path d="M0 196h400" stroke="rgba(255,255,255,.16)" stroke-width="1.4"/>';
+    return s;
+  },
+  /* a lamp unto my feet */
+  lamp:function(H,id){
+    let s=sceneBase(id,'#0a0e26','#05081a');
+    s+='<circle cx="200" cy="92" r="76" fill="'+hsl(44,86,70,.12)+'"/>';
+    s+='<circle cx="200" cy="92" r="42" fill="'+hsl(44,88,72,.2)+'"/>';
+    s+='<path d="M200 0v56" stroke="rgba(255,255,255,.3)" stroke-width="1.3"/>';
+    s+='<path d="M180 56h40l12 26a24 24 0 0 1-64 0Z" fill="'+hsl(H,52,40,.95)+'" stroke="rgba(255,255,255,.28)" stroke-width="1.3"/>';
+    s+='<circle cx="200" cy="86" r="8" fill="'+hsl(46,92,78,.95)+'"/>';
+    s+='<path d="M108 186c34-18 62-18 92-6 30-12 58-12 92 6-34 10-62 10-92 2-30 8-58 8-92-2Z" fill="'+hsl(H+20,30,74,.9)+'" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>';
+    s+='<path d="M200 180v6" stroke="rgba(20,26,58,.6)" stroke-width="1.4"/>';
+    s+=[0,1,2,3].map(function(i){
+      return '<path d="M'+(126+i*6)+' '+(176-i*5)+'h54M'+(220)+' '+(176-i*5)+'h54" stroke="rgba(20,26,58,.35)" stroke-width="1.1"/>';}).join('');
+    return s;
+  },
+  /* garlands for a wedding, a baptism, an anniversary */
+  festival:function(H,id){
+    let s=sceneBase(id,'#1a1038','#080b22');
+    s+=[26,68].map(function(y,r){
+      return '<path d="M-10 '+y+'Q100 '+(y+44)+' 200 '+y+'T410 '+y+'" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1.3"/>';}).join('');
+    s+=[0,1,2,3,4,5,6,7].map(function(i){
+      const x=14+i*54,y=26+Math.sin(i/7*Math.PI)*40;
+      return '<g><path d="M'+x+' '+y.toFixed(1)+'v14" stroke="rgba(255,255,255,.28)" stroke-width="1.1"/>'
+        +'<circle cx="'+x+'" cy="'+(y+24).toFixed(1)+'" r="10" fill="'+hsl(H+i*28,62,60,.75)+'"/>'
+        +'<circle cx="'+x+'" cy="'+(y+24).toFixed(1)+'" r="10" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1"/>'
+        +'<circle cx="'+x+'" cy="'+(y+24).toFixed(1)+'" r="4" fill="'+hsl(46,92,80,.9)+'"/></g>';}).join('');
+    s+=[0,1,2,3,4,5].map(function(i){
+      const x=30+i*66,y=100+Math.sin(i*1.7)*40;
+      return '<path d="M'+x+' '+(y+70).toFixed(1)+'v22" stroke="rgba(255,255,255,.2)" stroke-width="1.1"/>'
+        +'<circle cx="'+x+'" cy="'+(y+96).toFixed(1)+'" r="7" fill="'+hsl(H+i*36+20,60,58,.6)+'"/>';}).join('');
+    s+='<rect y="204" width="400" height="21" fill="rgba(4,7,20,.5)"/>';
+    return s;
+  },
+  /* hills at first light */
+  hills:function(H,id){
+    let s=sceneBase(id,'#231a44','#0b1029');
+    s+='<circle cx="298" cy="78" r="26" fill="'+hsl(34,86,68,.5)+'"/>';
+    s+=[0,1,2].map(function(i){
+      return '<rect y="'+(56+i*16)+'" width="400" height="7" fill="'+hsl(34-i*6,80,64,(0.14-i*0.04).toFixed(2))+'"/>';}).join('');
+    s+='<path d="M0 140c58-40 104 10 158-14s96-34 142-6 62 22 100 6v99H0Z" fill="'+hsl(230,42,22,.95)+'"/>';
+    s+='<path d="M0 168c54-26 96 16 150 4s100-26 146-8 68 14 104 2v59H0Z" fill="'+hsl(238,46,14,.95)+'"/>';
+    s+=[54,112,246,318].map(function(x,i){
+      return '<path d="M'+x+' '+(190+i*3)+'v-13" stroke="rgba(255,255,255,.2)" stroke-width="1.2"/>'
+        +'<circle cx="'+x+'" cy="'+(176+i*3)+'" r="4.5" fill="rgba(255,255,255,.14)"/>';}).join('');
+    return s;
+  },
+  /* a long table and hanging bulbs */
+  table:function(H,id){
+    let s=sceneBase(id,'#20142e','#0a0a1e');
+    s+='<rect x="30" y="40" width="76" height="66" rx="4" fill="'+hsl(215,46,32,.5)+'" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>';
+    s+='<rect x="292" y="40" width="76" height="66" rx="4" fill="'+hsl(215,46,32,.5)+'" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>';
+    s+=[128,200,272].map(function(x,i){
+      return '<path d="M'+x+' 0v'+(42+i%2*16)+'" stroke="rgba(255,255,255,.24)" stroke-width="1.1"/>'
+        +'<circle cx="'+x+'" cy="'+(50+i%2*16)+'" r="8" fill="'+hsl(44,90,74,.9)+'"/>'
+        +'<circle cx="'+x+'" cy="'+(50+i%2*16)+'" r="24" fill="'+hsl(44,88,70,.14)+'"/>';}).join('');
+    s+='<polygon points="96,150 304,150 356,196 44,196" fill="'+hsl(26,44,32,.95)+'" stroke="rgba(255,255,255,.2)" stroke-width="1.2"/>';
+    s+=[0,1,2,3,4].map(function(i){
+      return '<ellipse cx="'+(118+i*42)+'" cy="'+(162+i%2*8)+'" rx="13" ry="5" fill="'+hsl(46,70,76,.3)+'"/>';}).join('');
+    s+='<rect y="196" width="400" height="29" fill="rgba(4,7,20,.6)"/>';
+    return s;
+  }
+};
+const SCENE_KINDS=Object.keys(SCENES);
+/* Hues are drawn from the system palette — deep blue, violet, ice, rose, amber — so a
+   scene never wanders outside the Sanctuary colour family the way a free hash would. */
+const SCENE_HUES=[224,244,262,206,286,340,36];
+function sceneArt(kind,seed){
+  const H=SCENE_HUES[Math.abs(hash(seed||kind))%SCENE_HUES.length];
+  const id='s'+Math.abs(hash(String(kind)+String(seed))).toString(36);
+  const fn=SCENES[kind]||SCENES[SCENE_KINDS[Math.abs(hash(seed||''))%SCENE_KINDS.length]];
+  return '<svg class="scene" viewBox="0 0 400 225" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'+fn(H,id)+'</svg>';
+}
+/* which illustration belongs to which seeded post */
+const POST_SCENE={p1:'arches',p3:'stage',p4:'rays',p5:'hills',p7:'arches',p8:'water',p10:'hills',p11:'road',p12:'canopy',
+  p13:'city',p14:'table',p16:'lamp',p18:'festival',p20:'festival',
+  e1:'arches',e2:'rays',e3:'stage',e4:'hills',e5:'festival',e6:'table',e7:'lamp',e8:'arches',
+  st1:'arches',st2:'road',st3:'rays',st4:'festival',st5:'table',st6:'lamp'};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
+function uid(p){return (p||'')+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);}
+function money(n){return '₹'+Number(n||0).toLocaleString('en-IN');}
+function initials(n){return String(n||'?').trim().split(/\s+/).slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();}
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function dt(iso){const d=new Date(iso);return isNaN(d)?new Date():d;}
+function fmtDate(iso){const d=dt(iso);return DAYS[d.getDay()].slice(0,3)+', '+d.getDate()+' '+MONTHS[d.getMonth()];}
+function fmtTime(iso){const d=dt(iso);let h=d.getHours(),m=d.getMinutes();const ap=h>=12?'pm':'am';h=h%12||12;return h+(m?':'+String(m).padStart(2,'0'):'')+ap;}
+function ago(iso){const s=(Date.now()-dt(iso).getTime())/1000;
+  if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';
+  if(s<604800)return Math.floor(s/86400)+'d ago';return fmtDate(iso);}
+function isToday(iso){const d=dt(iso),n=new Date();return d.toDateString()===n.toDateString();}
+function greeting(){const h=new Date().getHours();return h<12?'Good morning':h<17?'Good afternoon':h<21?'Good evening':'Peace to you';}
+function todayLabel(){const d=new Date();return DAYS[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()];}
+function verseOfDay(){const d=new Date();return VERSES[(d.getFullYear()*372+d.getMonth()*31+d.getDate())%VERSES.length];}
+
+/* ---------- local persistence ---------- */
+const LS='bark2.';
+const MEM={};
+function store(){
+  try{localStorage.setItem(LS+'t','1');localStorage.removeItem(LS+'t');return localStorage;}catch(e){}
+  try{sessionStorage.setItem(LS+'t','1');sessionStorage.removeItem(LS+'t');return sessionStorage;}catch(e){}
+  return {getItem:function(k){return k in MEM?MEM[k]:null;},setItem:function(k,v){MEM[k]=v;},removeItem:function(k){delete MEM[k];}};
+}
+const STORE=store();
+function lsGet(k,fb){try{const v=STORE.getItem(LS+k);return v==null?fb:JSON.parse(v);}catch(e){return fb;}}
+function lsSet(k,v){try{STORE.setItem(LS+k,JSON.stringify(v));}catch(e){}}
+function lsDel(k){try{STORE.removeItem(LS+k);}catch(e){}}
+function accountKey(id){return String(id||'').toLowerCase().replace(/[^a-z0-9@.+_-]/g,'').slice(0,80)||'guest';}
+
+const state={
+  theme:lsGet('theme','light'),
+  route:'splash',
+  params:{},
+  session:lsGet('session',null),
+  local:Object.assign({follows:[],saved:[],rsvps:[],prayed:[],reacted:{},journal:[],planDay:0,streak:0,lastRead:null,giving:[],milestones:[],care:[],seenMoments:[],notifSeen:null,communities:[],reminders:{},family:[]},
+    lsGet('local',{})),
+  prefs:lsGet('prefs',{broadcast:true,digest:false,quiet:true,events:true,prayer:true,lang:'English',visibility:'church',showGiving:false}),
+  data:{churches:[],posts:[],events:[],plans:[],prayers:[],campaigns:[],people:[],comments:[],communities:[],threads:[],connections:[]},
+  ui:{tab:'All',dir:'list',dirFilters:{q:'',denom:'',lang:'',live:false},journeyTab:'Timeline',churchTab:'Posts',consoleTab:'Dashboard',
+      chat:[],chatMode:'Ask',chatBusy:false,otp:null,authRole:'believer',authId:'',onboard:{},step:0,sheet:null,toast:null,ready:false,dbState:'loading',giveAmt:1000,
+      calMonth:null,calDay:null,c2cTab:'Inbox'},
+};
+function saveLocal(){lsSet('local',state.local);}
+function savePrefs(){lsSet('prefs',state.prefs);}
+function saveSession(){state.session?lsSet('session',state.session):lsDel('session');}
+
+/* ---------- seed data ----------
+   Embedded so the ark is alive on first open, online or offline. Dates are relative
+   (ageHours / dayOffset) and hydrated at load, so the demo never goes stale. */
+const SEED={"prayerRequests":[{"answered":false,"authorName":"Anitha Raj","churchId":"ch2","churchName":"Bethel Assembly","prayingCount":86,"text":"My father's scan results come on Thursday. I have been carrying this alone for two weeks and I am tired. Please pray for good news, and for me to sleep.","visibility":"public","id":"pr1","ageHours":13.83},{"answered":false,"authorName":"Grace Mathew","churchId":"ch2","churchName":"Bethel Assembly","prayingCount":512,"text":"For Br. Immanuel in the ICU at St. John's, and for his wife who has not left the corridor since last night.","visibility":"public","id":"pr10","ageHours":5},{"answered":false,"authorName":"Anonymous","churchId":"ch1","churchName":"Grace Cathedral","prayingCount":124,"text":"I have not spoken to my brother in four years. He is coming to the wedding this month and I do not know how to begin.","visibility":"anonymous","id":"pr2","ageHours":20.5},{"answered":false,"authorName":"Joseph Kumar","churchId":"ch4","churchName":"New Life Fellowship","prayingCount":211,"text":"Third interview on Friday after eight months without work. Pray that I walk in without desperation on my face.","visibility":"public","id":"pr3","ageHours":4.67},{"answered":false,"authorName":"Mercy Thomas","churchId":"ch3","churchName":"St. Thomas Marthoma","prayingCount":58,"text":"For our son who left for Dubai last week. He is 22 and it is his first time away from Kerala.","visibility":"church","id":"pr4","ageHours":39.25},{"answered":false,"authorName":"Anonymous","churchId":null,"churchName":null,"prayingCount":347,"text":"I have been pretending to be fine at church for months. I still come, I still sing, and I feel nothing. Pray that something comes back.","visibility":"anonymous","id":"pr5","ageHours":60.08},{"answered":false,"authorName":"Priya Selvam","churchId":"ch6","churchName":"Emmanuel Baptist","prayingCount":94,"text":"Our daughter's board exams begin Monday. She has worked hard. Pray for a clear mind and a calm hall.","visibility":"public","id":"pr6","ageHours":29.75},{"answered":true,"authorName":"David Mathew","churchId":"ch5","churchName":"Living Hope Church","prayingCount":428,"text":"Six months sober tomorrow. Pray for the seventh, and for the friends who kept answering my calls at 2am.","visibility":"public","id":"pr7","ageHours":89},{"answered":false,"authorName":"Ruth Anand","churchId":"ch1","churchName":"Grace Cathedral","prayingCount":67,"text":"For the elderly members who stopped coming when the bus route changed. Pray that we find drivers, and that they know they were missed.","visibility":"church","id":"pr8","ageHours":2.92},{"answered":false,"authorName":"Samuel P.","churchId":"ch4","churchName":"New Life Fellowship","prayingCount":183,"text":"Pastor Ramesh walks 9km each Sunday to reach the Warangal congregation. Pray for his knees and for the roof fund.","visibility":"public","id":"pr9","ageHours":48.33}],"posts":[{"churchId":"ch1","churchName":"Grace Cathedral","comments":31,"content":"From Lamentations 3 — mercies that are new every morning are offered to people standing in the ruins, not to people who have already recovered. Audio, transcript and Tamil translation are attached.","duration":"42 min","reactions":{"amen":184,"bless":63,"fire":22,"love":97,"peace":41},"speaker":"Rev. Daniel Selvam","title":"The God Who Stays","type":"sermon","id":"p1","ageHours":27.75},{"churchId":"ch4","churchName":"New Life Fellowship","comments":29,"content":"Telugu message with English and Hindi translations generated from the transcript. On staying planted when the ground keeps moving.","duration":"39 min","reactions":{"amen":207,"bless":51,"fire":66,"love":72,"peace":44},"speaker":"Pr. Prasad Rao","title":"Rooted","type":"sermon","id":"p10","ageHours":28.5},{"audience":"Members only","churchId":"ch4","churchName":"New Life Fellowship","comments":33,"content":"Relief supplies for the flood-hit villages near Warangal leave Saturday 5am. We need eight volunteers with two-wheelers and anyone who can pack rice from Friday evening.","priority":"Important","reactions":{"amen":156,"bless":42,"fire":37,"love":88,"peace":19},"type":"broadcast","id":"p11","ageHours":16.75},{"churchId":"ch4","churchName":"New Life Fellowship","comments":52,"content":"Our eleventh village congregation meets under a tarpaulin in Warangal district. Pray for the roof before the next rains, and for Pastor Ramesh who walks 9km each Sunday to lead it.","reactions":{"amen":389,"bless":97,"fire":18,"love":121,"peace":63},"type":"prayer","id":"p12","ageHours":6.33},{"churchId":"ch5","churchName":"Living Hope Church","comments":38,"content":"On Matthew 11:28 and the difference between rest and collapse. If you only get one quiet hour this week, this is what to do with it.","duration":"31 min","reactions":{"amen":174,"bless":29,"fire":21,"love":63,"peace":118},"speaker":"Ps. Neil D'Souza","title":"Sabbath in a city that never rests","type":"sermon","id":"p13","ageHours":45.67},{"churchId":"ch5","churchName":"Living Hope Church","comments":11,"content":"Tonight at 7pm. Dinner, two short talks, and time to actually talk to each other. Childcare provided. Sixty seats, first come.","eventId":"e6","reactions":{"amen":63,"bless":17,"fire":6,"love":81,"peace":22},"title":"Marriage enrichment evening","type":"event","id":"p14","ageHours":4},{"churchId":"ch5","churchName":"Living Hope Church","comments":9,"content":"Four new small groups open this month — Andheri, Vashi, Thane and one online for people on night shifts. Ask in the group chat and we will connect you to a leader near you.","reactions":{"amen":47,"bless":9,"fire":8,"love":33,"peace":14},"type":"text","id":"p15","ageHours":86.92},{"churchId":"ch6","churchName":"Emmanuel Baptist","comments":17,"content":"Psalm 119 in Tamil, verse by verse. A lamp for the next step rather than a floodlight over the whole road.","duration":"47 min","reactions":{"amen":152,"bless":68,"fire":14,"love":41,"peace":39},"speaker":"Pr. Jeyaraj Manickam","title":"Vaarthaiyin Velicham — The Light of the Word","type":"sermon","id":"p16","ageHours":26.33},{"audience":"Everyone","churchId":"ch6","churchName":"Emmanuel Baptist","comments":6,"content":"Saturday fasting prayer at 6:00am as always. Thirty-two years without a break — come for the whole time or for ten minutes, both are welcome.","priority":"Normal","reactions":{"amen":118,"bless":33,"fire":12,"love":19,"peace":28},"type":"broadcast","id":"p17","ageHours":77.5},{"churchId":"ch6","churchName":"Emmanuel Baptist","comments":41,"content":"Sudha and Vimal were married here on Saturday, both raised in this Sunday school. Their parents met in this church too.","occasion":"Wedding","reactions":{"amen":143,"bless":76,"fire":18,"love":211,"peace":22},"type":"occasion","id":"p18","ageHours":43.83},{"churchId":"ch1","churchName":"Grace Cathedral","comments":22,"content":"We are arranging transport for elderly members who stopped coming after the bus route changed. If you drive past Mylapore on a Sunday morning, one seat is all it takes.","reactions":{"amen":88,"bless":21,"fire":5,"love":74,"peace":16},"type":"text","id":"p19","ageHours":4.83},{"audience":"Everyone","churchId":"ch1","churchName":"Grace Cathedral","comments":8,"content":"From this Sunday, the Tamil service moves to 7:00am and the English service to 9:30am. The 6:30pm midweek communion stays as it is.","priority":"Normal","reactions":{"amen":72,"bless":18,"fire":2,"love":14,"peace":9},"type":"broadcast","id":"p2","ageHours":42.33},{"churchId":"ch2","churchName":"Bethel Assembly","comments":36,"content":"Bethel turns 34 this month. It started with nine people in a garage on Hosur Road, and the same two families still set out the chairs every Sunday.","occasion":"Anniversary","reactions":{"amen":196,"bless":58,"fire":47,"love":134,"peace":33},"type":"occasion","id":"p20","ageHours":122},{"churchId":"ch1","churchName":"Grace Cathedral","comments":19,"content":"Three hours of worship in Tamil and English with the combined choirs. Doors at 6:30pm, no ticket needed, bring someone with you.","eventId":"e3","reactions":{"amen":96,"bless":24,"fire":74,"love":58,"peace":31},"title":"Night of Worship — Friday","type":"event","id":"p3","ageHours":50.67},{"churchId":"ch2","churchName":"Bethel Assembly","comments":24,"content":"Part two of our series in Hebrews. If your job, your rent and your city all changed this year, this one is for you.","duration":"36 min","reactions":{"amen":143,"bless":37,"fire":38,"love":61,"peace":52},"speaker":"Pr. Sam Abraham","title":"Anchored: faith in an unstable season","type":"sermon","id":"p4","ageHours":24.92},{"churchId":"ch2","churchName":"Bethel Assembly","comments":16,"content":"Youth camp registration closes Friday. 120 places, ₹1,800 including travel and food. Talk to Anitha if cost is the only thing stopping you — nobody is left behind for money.","reactions":{"amen":58,"bless":12,"fire":29,"love":44,"peace":7},"type":"text","id":"p5","ageHours":63.83},{"audience":"Everyone","churchId":"ch2","churchName":"Bethel Assembly","comments":67,"content":"Urgent prayer: Br. Immanuel was in a road accident last night and is in the ICU at St. John's. His family is with him. Please pray now, and keep Friday morning free if blood donors are needed.","priority":"Urgent","reactions":{"amen":412,"bless":88,"fire":9,"love":103,"peace":54},"type":"broadcast","id":"p6","ageHours":5.25},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":13,"content":"Sunday's homily in Malayalam, with an English transcript for those who asked. On grace as a road you walk, not a door you pass through once.","duration":"29 min","reactions":{"amen":121,"bless":74,"fire":11,"love":49,"peace":66},"speaker":"Fr. Thomas Varghese","title":"Kripayude Vazhi — The Way of Grace","type":"sermon","id":"p7","ageHours":47.5},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":48,"content":"Fourteen believers were baptised in the backwaters this morning, the youngest fifteen and the oldest seventy-one. The whole parish walked down together after Qurbana.","occasion":"Baptism","reactions":{"amen":268,"bless":142,"fire":31,"love":195,"peace":77},"type":"occasion","id":"p8","ageHours":74.17},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":4,"content":"Choir practice moves to Thursday 7pm this week — the church hall is being repainted before the Harvest Festival.","reactions":{"amen":34,"bless":6,"fire":1,"love":9,"peace":11},"type":"text","id":"p9","ageHours":90},{"authorCity":"Bengaluru","authorId":"pe1","authorName":"Anitha Raj","authorType":"person","comments":3,"content":"Six months ago I could not pray out loud in a room of more than three people. Tonight I led the prayer at small group and my hands did not shake. Nobody there knew what it cost. He did.","reactions":{"amen":214,"bless":38,"fire":41,"love":96,"peace":27},"type":"testimony","verseRef":"2 Corinthians 12:9","id":"up1","ageHours":3.67},{"authorCity":"Kochi","authorId":"pe9","authorName":"Vinod Kurian","authorType":"person","comments":3,"content":"Twenty-eight years in the choir and I still get nervous before Harvest Festival. Does that ever go away, or is the nervousness part of taking it seriously?","reactions":{"amen":88,"bless":19,"fire":9,"love":63,"peace":44},"type":"question","id":"up10","ageHours":15.92},{"authorCity":"Bengaluru","authorId":"pe1","authorName":"Anitha Raj","authorType":"person","comments":2,"content":"Youth camp registration closes Friday and two kids in my street cannot afford it. If anyone wants to quietly cover a place, message me — no names will ever be mentioned.","reactions":{"amen":96,"bless":34,"fire":27,"love":118,"peace":12},"type":"text","id":"up11","ageHours":2.17},{"authorCity":"Mumbai","authorId":"pe4","authorName":"David Mathew","authorType":"person","comments":3,"content":"To whoever is reading the feed at 2am because sleeping means thinking: the Psalms were written for exactly this hour. Start at 42. You are not the first person to ask God where he went.","reactions":{"amen":377,"bless":68,"fire":31,"love":142,"peace":214},"type":"text","verseRef":"Psalm 46:10","id":"up12","ageHours":9.33},{"authorCity":"Mumbai","authorId":"pe4","authorName":"David Mathew","authorType":"person","comments":4,"content":"Six months sober tomorrow. I am posting this because a year ago I read someone else's post like this and it was the first time I believed it was possible. If that is you today — it is possible.","reactions":{"amen":892,"bless":141,"fire":96,"love":402,"peace":88},"type":"testimony","verseRef":"Lamentations 3:22","id":"up2","ageHours":14.83},{"authorCity":"Chennai","authorId":"pe6","authorName":"Ruth Anand","authorType":"person","comments":2,"content":"Practical question for Chennai people: we have four elderly members who stopped coming when the bus route changed. I can take two in my car. Does anyone drive past Mylapore around 6:45 on Sunday mornings?","reactions":{"amen":63,"bless":14,"fire":4,"love":71,"peace":8},"type":"question","id":"up3","ageHours":4.33},{"authorCity":"Hyderabad","authorId":"pe2","authorName":"Joseph Kumar","authorType":"person","comments":3,"content":"Third interview on Friday, eight months without work. I have stopped asking for the job and started asking to walk in without desperation on my face. Pray with me.","reactions":{"amen":448,"bless":62,"fire":12,"love":88,"peace":74},"type":"prayer","verseRef":"Philippians 4:6","id":"up4","ageHours":5.75},{"authorCity":"Kochi","authorId":"pe3","authorName":"Mercy Thomas","authorType":"person","comments":2,"content":"He called this morning. He found a Malayalam congregation ten minutes from his flat in Dubai and went alone last Friday. Twenty-two years old, first time away from Kerala, and he went alone.","reactions":{"amen":327,"bless":84,"fire":22,"love":288,"peace":61},"type":"praise","id":"up5","ageHours":2.92},{"authorCity":"Coimbatore","authorId":"pe5","authorName":"Priya Selvam","authorType":"person","comments":2,"content":"Day 251 of the Bible in a year. I have started this plan four times since 2019 and never got past March. Today I am in Jeremiah and I am still here.","reactions":{"amen":189,"bless":41,"fire":58,"love":122,"peace":33},"type":"praise","verseRef":"Psalm 119:105","id":"up6","ageHours":16.5},{"authorCity":"Bengaluru","authorId":"pe8","authorName":"Grace Mathew","authorType":"person","comments":4,"content":"Update on Br. Immanuel: he was moved out of the ICU this afternoon and opened his eyes when his wife spoke. Keep going, everyone. Thirty-one hours of prayer and counting.","reactions":{"amen":1204,"bless":218,"fire":47,"love":388,"peace":176},"type":"prayer","id":"up7","ageHours":1.5},{"authorCity":"Hyderabad","authorId":"pe7","authorName":"Samuel Prakash","authorType":"person","comments":3,"content":"Walked the 9km to Warangal with Pastor Ramesh yesterday. Under a tarpaulin, 180 people, no fans, no floor. I have never heard singing like that in a building with a roof.","reactions":{"amen":512,"bless":96,"fire":133,"love":204,"peace":58},"type":"testimony","id":"up8","ageHours":18.25},{"authorCity":"Chennai","authorId":"pe10","authorName":"Sarah Thomas","authorType":"person","comments":2,"content":"A five-year-old in my Sunday school class explained the parable of the lost sheep to me this morning and got it more right than my last three attempts at teaching it.","reactions":{"amen":143,"bless":22,"fire":14,"love":196,"peace":18},"type":"praise","id":"up9","ageHours":0.75}],"givingCampaigns":[{"category":"Building","churchId":"ch4","churchName":"New Life Fellowship","description":"Our eleventh village congregation meets under a tarpaulin. This campaign builds a permanent roof, a floor and basic sound for 180 people before the next monsoon. Every rupee is reported with photographs and receipts, and 80G receipts are issued automatically.","goal":1200000,"raised":742500,"title":"A roof before the rains — Warangal","id":"gc1"}],"churches":[{"about":"Planted in 1908 and rebuilt twice, Grace Cathedral has stayed on the same corner of Anna Salai for four generations. Two Sunday services, a Tamil choir that has sung together for thirty years, and a midweek communion that anyone in the city is welcome to join.","address":"12 Anna Salai, Teynampet, Chennai 600018","city":"Chennai","denomination":"Church of South India","followers":4820,"languages":["Tamil","English"],"ministries":["Choir","Youth","Prayer Cell","Sunday School","Outreach","Ushers"],"name":"Grace Cathedral","pastorName":"Rev. Daniel Selvam","serviceTimes":["Sun 7:00am Tamil","Sun 9:30am English","Wed 6:30pm Midweek"],"tagline":"A family finding grace in the heart of the city","verified":true,"id":"ch1"},{"about":"A young congregation shaped by the city that surrounds it — students, engineers, nurses and drivers in the same room. Small groups meet across eleven neighbourhoods through the week.","address":"48 Hosur Road, Koramangala, Bengaluru 560095","city":"Bengaluru","denomination":"Assemblies of God","followers":3140,"languages":["English","Kannada","Tamil"],"ministries":["Worship Team","Youth","Small Groups","Media","Kids Church"],"name":"Bethel Assembly","pastorName":"Pr. Sam Abraham","serviceTimes":["Sun 9:30am English","Sun 11:30am Kannada","Fri 7:00pm Youth"],"tagline":"Ordinary people, extraordinary God","verified":true,"id":"ch2"},{"about":"One of the oldest congregations on the Malabar coast, with a liturgy carried in Malayalam for a hundred and fifty years. Baptisms are still held in the backwaters behind the church.","address":"Church Road, Fort Kochi, Ernakulam 682001","city":"Kochi","denomination":"Orthodox","followers":2610,"languages":["Malayalam","English"],"ministries":["Choir","Altar Servers","Women's Fellowship","Youth League"],"name":"St. Thomas Marthoma","pastorName":"Fr. Thomas Varghese","serviceTimes":["Sun 7:30am Malayalam Holy Qurbana","Sun 10:00am English","Sat 5:00pm Evening Prayer"],"tagline":"By the backwaters, since 1876","verified":true,"id":"ch3"},{"about":"A sending church with eleven village congregations planted in the last six years. Tuesday intercession runs for two hours and is streamed for those who cannot travel in.","address":"7-2-1 Kukatpally, Hyderabad 500072","city":"Hyderabad","denomination":"Pentecostal","followers":5390,"languages":["Telugu","Hindi","English"],"ministries":["Church Planting","Intercession","Relief Team","Women's Ministry","Youth"],"name":"New Life Fellowship","pastorName":"Pr. Prasad Rao","serviceTimes":["Sun 8:00am Telugu","Sun 10:30am English","Tue 7:00pm Intercession"],"tagline":"Reaching the villages beyond the ring road","verified":true,"id":"ch4"},{"about":"A congregation of commuters. Everything is built around people who work six days a week — short services, midweek prayer online, and small groups that meet close to where people live.","address":"Linking Road, Bandra West, Mumbai 400050","city":"Mumbai","denomination":"Non-denominational","followers":2870,"languages":["English","Hindi","Marathi"],"ministries":["Small Groups","Counselling","Worship","Marriage Ministry","Kids"],"name":"Living Hope Church","pastorName":"Ps. Neil D'Souza","serviceTimes":["Sun 10:00am English","Sun 12:30pm Hindi","Thu 8:00pm Prayer"],"tagline":"Rest for a city that never stops","verified":true,"id":"ch5"},{"about":"Expository preaching in two languages, a Saturday fasting prayer that has met without a break since 1994, and a small library open to the neighbourhood on weekday evenings.","address":"5 Race Course Road, Coimbatore 641018","city":"Coimbatore","denomination":"Baptist","followers":1980,"languages":["Tamil","English"],"ministries":["Bible Study","Fasting Prayer","Library","Choir","Men's Fellowship"],"name":"Emmanuel Baptist","pastorName":"Pr. Jeyaraj Manickam","serviceTimes":["Sun 8:00am Tamil","Sun 10:30am English","Sat 6:00am Fasting Prayer"],"tagline":"The word, plainly taught, in Tamil and English","verified":true,"id":"ch6"}],"comments":[{"amens":34,"authorId":"pe8","authorName":"Grace Mathew","postId":"up1","text":"I was in that room. It did not sound like someone who was afraid.","id":"cm1","ageHours":3.08},{"amens":77,"authorId":"pe3","authorName":"Mercy Thomas","postId":"up10","text":"Twenty-eight years is not nervousness. It is reverence that never got comfortable.","id":"cm10","ageHours":15.33},{"amens":118,"authorId":"pe8","authorName":"Grace Mathew","postId":"p6","text":"Blood donors: St. John's needs B negative. I am going at 7am if anyone wants to come together.","id":"cm11","ageHours":4.5},{"amens":246,"authorId":"pe9","authorName":"Vinod Kurian","postId":"p8","text":"The seventy-one year old is my uncle. He waited a long time for this morning.","id":"cm12","ageHours":72.67},{"amens":12,"authorId":"pe2","authorName":"Joseph Kumar","postId":"up1","text":"Six months of small, unglamorous obedience. This is what it produces.","id":"cm2","ageHours":2.8},{"amens":7,"authorId":"pe5","authorName":"Priya Selvam","postId":"up1","text":"Saving this for the next time I have to speak in front of the school assembly.","id":"cm3","ageHours":1.97},{"amens":88,"authorId":"pe1","authorName":"Anitha Raj","postId":"up2","text":"Six months. Tomorrow we celebrate, and then we start on the seventh.","id":"cm4","ageHours":14.33},{"amens":156,"authorId":"pe7","authorName":"Samuel Prakash","postId":"up2","text":"My brother is four days in. I am reading this to him tonight.","id":"cm5","ageHours":13.75},{"amens":41,"authorId":"pe10","authorName":"Sarah Thomas","postId":"up2","text":"The friends who answered at 2am deserve a post of their own.","id":"cm6","ageHours":5.17},{"amens":22,"authorId":"pe10","authorName":"Sarah Thomas","postId":"up3","text":"I pass Mylapore at 6:30. I can take two. Sending you my number.","id":"cm7","ageHours":3.92},{"amens":63,"authorId":"pe4","authorName":"David Mathew","postId":"up4","text":"Praying at 9am Friday. Tell us what happens either way.","id":"cm8","ageHours":4.97},{"amens":204,"authorId":"pe2","authorName":"Joseph Kumar","postId":"up7","text":"Out of the ICU. I have refreshed this post eleven times today.","id":"cm9","ageHours":1.2}],"events":[{"capacity":400,"churchId":"ch1","churchName":"Grace Cathedral","description":"Our Wednesday communion, open to anyone in the city. Tamil and English liturgy side by side, forty minutes, streamed for those who cannot travel in.","isLive":true,"location":"Main sanctuary, Anna Salai","locationType":"onsite","rsvpCount":148,"title":"Midweek Communion Service","id":"e1","dayOffset":0,"time":"18:30"},{"capacity":0,"churchId":"ch4","churchName":"New Life Fellowship","description":"Two hours of intercession for our village congregations, the relief work near Warangal, and requests sent in through the prayer chain.","isLive":true,"location":"Online stream","locationType":"online","rsvpCount":92,"title":"Telugu Intercession Hour","id":"e2","dayOffset":0,"time":"19:00"},{"capacity":600,"churchId":"ch1","churchName":"Grace Cathedral","description":"Three hours of worship with the combined Tamil and English choirs, and a short word from Rev. Daniel Selvam. Doors at 6:30pm.","isLive":false,"location":"Main sanctuary, Anna Salai","locationType":"onsite","rsvpCount":214,"title":"Night of Worship","id":"e3","dayOffset":1,"time":"19:00"},{"capacity":120,"churchId":"ch2","churchName":"Bethel Assembly","description":"Three days in the Nandi Hills for ages 14 to 24. Travel, food and accommodation included. Registration closes Friday.","isLive":false,"location":"Nandi Hills Retreat Centre","locationType":"onsite","rsvpCount":78,"title":"Youth Camp — Ridge Retreat","id":"e4","dayOffset":9,"time":"07:00"},{"capacity":500,"churchId":"ch3","churchName":"St. Thomas Marthoma","description":"The parish Harvest Festival with the full choir, followed by the auction of harvest gifts in aid of the parish school.","isLive":false,"location":"Church Road, Fort Kochi","locationType":"onsite","rsvpCount":320,"title":"Harvest Festival Service","id":"e5","dayOffset":3,"time":"08:00"},{"capacity":60,"churchId":"ch5","churchName":"Living Hope Church","description":"Dinner, two short talks and unhurried time to talk to each other. Childcare provided on site.","isLive":false,"location":"Linking Road, Bandra West","locationType":"onsite","rsvpCount":41,"title":"Marriage Enrichment Evening","id":"e6","dayOffset":0,"time":"19:00"},{"capacity":0,"churchId":"ch6","churchName":"Emmanuel Baptist","description":"Thirty-two unbroken years of Saturday morning prayer. Come for the whole three hours or for ten minutes.","isLive":false,"location":"Race Course Road, Coimbatore","locationType":"onsite","rsvpCount":130,"title":"Saturday Fasting Prayer","id":"e7","dayOffset":2,"time":"06:00"},{"capacity":700,"churchId":"ch2","churchName":"Bethel Assembly","description":"English at 9:30am and Kannada at 11:30am, with kids church running alongside both.","isLive":false,"location":"Hosur Road, Koramangala","locationType":"onsite","rsvpCount":410,"title":"Sunday Celebration Service","id":"e8","dayOffset":3,"time":"09:30"}],"people":[{"bio":"Worship team at Bethel. Learning to trust slowly, out loud.","city":"Bengaluru","followers":412,"following":88,"homeChurchId":"ch2","joinedAt":"2026-03-02T10:00:00+05:30","name":"Anitha Raj","id":"pe1"},{"bio":"Sunday school, second standard. Twenty-two small theologians and a lot of glitter.","city":"Chennai","followers":205,"following":119,"homeChurchId":"ch1","joinedAt":"2026-06-01T10:00:00+05:30","name":"Sarah Thomas","id":"pe10"},{"bio":"Engineer. Hosts a Tuesday small group in Kukatpally. Eight months job hunting and still here.","city":"Hyderabad","followers":230,"following":140,"homeChurchId":"ch4","joinedAt":"2026-04-11T10:00:00+05:30","name":"Joseph Kumar","id":"pe2"},{"bio":"Nurse. Sunday school teacher for eleven years. Mother of one, now in Dubai.","city":"Kochi","followers":318,"following":96,"homeChurchId":"ch3","joinedAt":"2026-02-25T10:00:00+05:30","name":"Mercy Thomas","id":"pe3"},{"bio":"Six months sober tomorrow. Counting days out loud so someone else can too.","city":"Mumbai","followers":1240,"following":210,"homeChurchId":"ch5","joinedAt":"2026-01-30T10:00:00+05:30","name":"David Mathew","id":"pe4"},{"bio":"Teacher. Reading the Bible in a year for the first time — day 251 and I have never made it this far.","city":"Coimbatore","followers":176,"following":132,"homeChurchId":"ch6","joinedAt":"2026-01-08T10:00:00+05:30","name":"Priya Selvam","id":"pe5"},{"bio":"Drives the Sunday morning route for our elderly members. Ask me for a seat.","city":"Chennai","followers":289,"following":74,"homeChurchId":"ch1","joinedAt":"2026-03-19T10:00:00+05:30","name":"Ruth Anand","id":"pe6"},{"bio":"Walks with Pastor Ramesh to the Warangal congregation most Sundays.","city":"Hyderabad","followers":521,"following":188,"homeChurchId":"ch4","joinedAt":"2026-02-14T10:00:00+05:30","name":"Samuel Prakash","id":"pe7"},{"bio":"Youth leader. Camp is my favourite three days of the year.","city":"Bengaluru","followers":634,"following":301,"homeChurchId":"ch2","joinedAt":"2026-04-02T10:00:00+05:30","name":"Grace Mathew","id":"pe8"},{"bio":"Choir tenor since 1998. Still nervous before every Harvest Festival.","city":"Kochi","followers":143,"following":61,"homeChurchId":"ch3","joinedAt":"2026-05-06T10:00:00+05:30","name":"Vinod Kurian","id":"pe9"}],"readingPlans":[{"category":"Whole Bible","days":365,"description":"Genesis to Revelation in twelve months, roughly fifteen minutes a day, with a Psalm alongside each reading so the week never becomes only history.","title":"The Bible in a Year","todayRef":"Genesis 12 · Psalm 9","id":"rp1"},{"category":"Psalms","days":30,"description":"Five psalms a day for a month. Built for a season when words are hard to find — lament, praise and honesty in the same breath.","title":"Psalms in 30 Days","todayRef":"Psalm 23","id":"rp2"},{"category":"Gospels","days":40,"description":"Matthew, Mark, Luke and John end to end. A good first plan if you are new, or returning after a long time away.","title":"The Gospels in 40 Days","todayRef":"Luke 5:1-16","id":"rp3"}]};
+const SEED_EXTRA={
+  communities:[
+    {id:'cm-youth',name:'Youth',tagline:'Ages 14 to 24 across every church on the ark',about:'Camps, exams, first jobs, faith that is yours and not only your parents’. Moderated by youth leaders from four churches.',members:2840,hue:280,icon:'sparkle',mods:['Grace Mathew','Anitha Raj']},
+    {id:'cm-worship',name:'Worship leaders',tagline:'Choirs, bands, sound desks and the people behind them',about:'Set lists, chord charts, nerves before the big service, and how to lead a room of tired people into rest.',members:1190,hue:40,icon:'music',mods:['Vinod Kurian']},
+    {id:'cm-parents',name:'Parents',tagline:'Raising children in faith, one ordinary week at a time',about:'Sunday school, board exams, children leaving home. Practical, honest and kind.',members:3410,hue:340,icon:'users',mods:['Mercy Thomas','Sarah Thomas']},
+    {id:'cm-bible',name:'Bible study',tagline:'Reading plans, hard passages and good questions',about:'For anyone working through Scripture — first time or fortieth. No question is too small.',members:4620,hue:200,icon:'book',mods:['Priya Selvam']},
+    {id:'cm-missions',name:'Missions & outreach',tagline:'Village congregations, relief teams and the people who go',about:'Church planting, relief work and the practical needs behind them. Requests for help are welcome here.',members:1560,hue:160,icon:'globe',mods:['Samuel Prakash']},
+    {id:'cm-testimony',name:'Prayer & testimony',tagline:'What we are asking for, and what has been answered',about:'A place to be honest. Anonymous posting is allowed; unkind replies are removed.',members:6180,hue:20,icon:'hands',mods:['David Mathew','Joseph Kumar']}
+  ],
+  stories:[
+    {id:'st1',type:'story',churchId:'ch1',churchName:'Grace Cathedral',content:'Choir warm-up done. Doors open at 6:30 for the midweek communion — come as you are.',verseRef:'Psalm 46:10',ageHours:1.2},
+    {id:'st2',type:'story',churchId:'ch4',churchName:'New Life Fellowship',content:'Relief trucks are loaded. Eight volunteers, two hundred kilos of rice, one long road to Warangal.',verseRef:'Isaiah 40:31',ageHours:2.5},
+    {id:'st3',type:'story',churchId:'ch2',churchName:'Bethel Assembly',content:'Update from St. John’s: Br. Immanuel is out of the ICU. Keep praying. Keep going.',verseRef:'Lamentations 3:22',ageHours:3.1},
+    {id:'st4',type:'story',churchId:'ch3',churchName:'St. Thomas Marthoma',content:'The hall is repainted, the choir is rehearsed, the harvest gifts are arriving. Sunday is going to be full.',verseRef:'Psalm 23:1',ageHours:5.4},
+    {id:'st5',type:'story',churchId:'ch5',churchName:'Living Hope Church',content:'Sixty seats for tonight’s marriage evening. Forty-one taken. Childcare is sorted.',verseRef:'John 14:27',ageHours:6.8},
+    {id:'st6',type:'story',churchId:'ch6',churchName:'Emmanuel Baptist',content:'Thirty-two years of Saturday fasting prayer. Tomorrow at six, same room, same welcome.',verseRef:'Philippians 4:6',ageHours:9.5}
+  ],
+  churchThreads:[
+    {id:'ct1',churchIds:['ch1','ch2'],names:{ch1:'Grace Cathedral',ch2:'Bethel Assembly'},topic:'Joint youth convention · March',
+      messages:[
+        {from:'ch2',text:'Pastor Daniel, we are planning a joint youth convention in March — three days, Nandi Hills. Would Grace Cathedral co-host? Your Tamil choir would be a gift to it.',ageHours:30},
+        {from:'ch1',text:'Sam, yes in principle. Our youth committee meets Thursday. Can you send the draft budget and the dates you are holding?',ageHours:26},
+        {from:'ch2',text:'Sending the budget tonight. Dates held: 13–15 March. We can split the venue cost 50/50 and each church brings its own worship team for one evening.',ageHours:3.4}
+      ]},
+    {id:'ct2',churchIds:['ch1','ch4'],names:{ch1:'Grace Cathedral',ch4:'New Life Fellowship'},topic:'Relief supplies · Warangal',
+      messages:[
+        {from:'ch4',text:'Grace Cathedral — our relief trucks leave for Warangal on Saturday. If your congregation can spare rice or tarpaulins, we can pick up from Anna Salai on Friday evening.',ageHours:20},
+        {from:'ch1',text:'We will have forty kilos of rice and six tarpaulins ready at the vestry by 5pm Friday. Ask for Ruth Anand at the gate.',ageHours:18.5}
+      ]},
+    {id:'ct3',churchIds:['ch2','ch4'],names:{ch2:'Bethel Assembly',ch4:'New Life Fellowship'},topic:'Guest speaker exchange',
+      messages:[{from:'ch4',text:'Would Pr. Sam be open to preaching at our English service in October? We can host travel and stay.',ageHours:50}]}
+  ],
+  churchConnections:[
+    {id:'cc1',from:'ch2',to:'ch1',status:'accepted',ageHours:900},
+    {id:'cc2',from:'ch4',to:'ch1',status:'accepted',ageHours:600},
+    {id:'cc3',from:'ch3',to:'ch1',status:'pending',ageHours:14},
+    {id:'cc4',from:'ch5',to:'ch1',status:'pending',ageHours:40},
+    {id:'cc5',from:'ch2',to:'ch4',status:'accepted',ageHours:1200},
+    {id:'cc6',from:'ch6',to:'ch1',status:'accepted',ageHours:2000}
+  ]
+};
+/* Believer posts live inside communities (the feed itself is church-only) */
+const COMMUNITY_OF={up1:'cm-worship',up2:'cm-testimony',up3:'cm-missions',up4:'cm-testimony',up5:'cm-parents',up6:'cm-bible',up7:'cm-testimony',up8:'cm-missions',up9:'cm-parents',up10:'cm-worship',up11:'cm-youth',up12:'cm-bible'};
+/* Photographs, embedded as data URIs because the viewer blocks external image hosts.
+   Sourced from Unsplash, whose licence permits free use and redistribution. */
+const PHOTOS={b1:'assets/photos/b1.jpg',b2:'assets/photos/b2.jpg',b3:'assets/photos/b3.jpg',c1:'assets/photos/c1.jpg',c3:'assets/photos/c3.jpg',k1:'assets/photos/k1.jpg',k2:'assets/photos/k2.jpg',k3:'assets/photos/k3.jpg',m1:'assets/photos/m1.jpg',t1:'assets/photos/t1.jpg',t2:'assets/photos/t2.jpg',v1:'assets/photos/v1.jpg',v2:'assets/photos/v2.jpg',v3:'assets/photos/v3.jpg',w10:'assets/photos/w10.jpg',w12:'assets/photos/w12.jpg',w2:'assets/photos/w2.jpg',w3:'assets/photos/w3.jpg',w5:'assets/photos/w5.jpg',w6:'assets/photos/w6.jpg',w7:'assets/photos/w7.jpg',w8:'assets/photos/w8.jpg',w9:'assets/photos/w9.jpg'};
+const PHOTO_OF={
+  ch1:'w3',ch2:'w5',ch3:'k1',ch4:'v1',ch5:'c1',ch6:'b3',
+  p1:'b2',p3:'w2',p4:'w10',p5:'w8',p7:'k2',p8:'k3',p10:'v3',p11:'v2',p12:'v1',p13:'c3',p14:'t1',p16:'b1',p18:'m1',p20:'w9',
+  e1:'w7',e2:'w12',e3:'w2',e4:'w6',e5:'k1',e6:'t1',e7:'w12',e8:'w5',
+  st1:'w9',st2:'v2',st3:'w12',st4:'k1',st5:'t2',st6:'b3',
+  gc1:'v1'
+};
+function photoFor(id){const k=PHOTO_OF[id];return (k&&PHOTOS[k])||null;}
+function hydrate(o){
+  o=Object.assign({},o);
+  if(!o.photo&&PHOTO_OF[o.id])o.photo=photoFor(o.id);
+  const now=Date.now();
+  if(o.ageHours!=null&&o.ageHours!=='')o.createdAt=new Date(now-Number(o.ageHours)*3600e3).toISOString();
+  if(o.dayOffset!=null){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+Number(o.dayOffset));
+    const t=String(o.time||'18:00').split(':');d.setHours(Number(t[0])||0,Number(t[1])||0,0,0);o.datetime=d.toISOString();}
+  if(Array.isArray(o.messages))o.messages=o.messages.map(function(m){m=Object.assign({},m);if(m.ageHours!=null)m.at=new Date(now-Number(m.ageHours)*3600e3).toISOString();return m;});
+  if(o.authorType==='person'&&!o.communityId&&COMMUNITY_OF[o.id])o.communityId=COMMUNITY_OF[o.id];
+  if(!o.scene&&POST_SCENE[o.id])o.scene=POST_SCENE[o.id];
+  return o;
+}
+/* A post shows a real uploaded photograph when it has one, otherwise its scene illustration. */
+function hasMedia(p){return !!(p.photo||p.scene);}
+function mediaInner(p){
+  return p.photo
+    ?'<img src="'+esc(p.photo)+'" alt="'+esc(p.photoAlt||('Photo from '+(p.churchName||p.authorName||'a church')))+'" loading="lazy">'
+    :sceneArt(p.scene,p.id);
+}
+function postMedia(p){
+  if(!hasMedia(p))return '';
+  return '<button class="post-media" data-act="open-image" data-id="'+esc(p.id)+'" aria-label="Open picture">'
+    +mediaInner(p)
+    +(p.photo?'':'<span class="badge media-tag">'+ico('sparkle',11)+'Artwork</span>')+'</button>';
+}
+
+/* ---------- db layer ---------- */
+let DB=null;
+const COLS=['churches','posts','events','readingPlans','prayerRequests','givingCampaigns','people','comments','communities','churchThreads','churchConnections'];
+/* Communities, church threads and connections are device-local: they carry the seeded
+   conversation history, so a shared store must never replace it with a partial copy. */
+const LOCAL_ONLY={communities:1,churchThreads:1,churchConnections:1};
+const MAP={churches:'churches',posts:'posts',events:'events',readingPlans:'plans',prayerRequests:'prayers',givingCampaigns:'campaigns',people:'people',comments:'comments',
+  communities:'communities',churchThreads:'threads',churchConnections:'connections'};
+function seedFor(c){
+  if(c==='posts')return (SEED.posts||[]).concat(SEED_EXTRA.stories);
+  return SEED[c]||SEED_EXTRA[c]||[];
+}
+/* Local persistence of writes made while no live store is attached (opened as a file, or offline) */
+function localAdds(){return lsGet('added',{});}
+function localPatches(){return lsGet('patched',{});}
+function applyLocal(c){
+  const list=state.data[MAP[c]];
+  (localAdds()[c]||[]).forEach(function(d){if(!list.some(function(x){return x.id===d.id;}))list.push(hydrate(d));});
+  const p=localPatches()[c]||{};
+  list.forEach(function(d){if(p[d.id])Object.assign(d,p[d.id]);});
+}
+function loadSeed(){
+  COLS.forEach(function(c){state.data[MAP[c]]=seedFor(c).map(hydrate);applyLocal(c);});
+}
+async function initDB(){
+  loadSeed();state.ui.ready=true;render();
+  try{DB=window.claude&&window.claude.use?await window.claude.use('db'):null;}catch(e){DB=null;}
+  if(!DB){state.ui.dbState='offline';render();return;}
+  state.ui.dbState='live';
+  COLS.forEach(function(c){
+    if(LOCAL_ONLY[c])return;
+    try{
+      DB.collection(c).limit(200).onSnapshot(function(snap){
+        if(!snap.docs.length)return;
+        state.data[MAP[c]]=snap.docs.map(function(d){const o=d.data()||{};o.id=d.id;return hydrate(o);});
+        if(c==='posts')SEED_EXTRA.stories.forEach(function(s){if(!state.data.posts.some(function(x){return x.id===s.id;}))state.data.posts.push(hydrate(s));});
+        render();
+      },function(){});
+    }catch(e){}
+  });
+}
+function localDoc(col,id){return (state.data[MAP[col]]||[]).find(function(x){return x.id===id;});}
+function rememberPatch(col,id,patch){const p=localPatches();p[col]=p[col]||{};p[col][id]=Object.assign(p[col][id]||{},patch);lsSet('patched',p);}
+async function dbBump(col,id,field,delta,extra){
+  if(!DB||LOCAL_ONLY[col]){
+    const d=localDoc(col,id);if(!d)return;const patch={};
+    if(field.indexOf('.')>-1){const p=field.split('.');d[p[0]]=d[p[0]]||{};d[p[0]][p[1]]=Math.max(0,(Number(d[p[0]][p[1]])||0)+delta);patch[p[0]]=d[p[0]];}
+    else{d[field]=Math.max(0,(Number(d[field])||0)+delta);patch[field]=d[field];}
+    Object.assign(d,extra||{});Object.assign(patch,extra||{});rememberPatch(col,id,patch);return;
+  }
+  try{
+    const ref=DB.doc(col+'/'+id), snap=await ref.get();
+    if(!snap.exists)return;
+    const d=snap.data()||{}, patch={};
+    if(field.indexOf('.')>-1){const p=field.split('.');const cur=((d[p[0]]||{})[p[1]])||0;patch[p[0]]=Object.assign({},d[p[0]]||{});patch[p[0]][p[1]]=Math.max(0,cur+delta);}
+    else patch[field]=Math.max(0,(Number(d[field])||0)+delta);
+    Object.assign(patch,extra||{});
+    await ref.update(patch);
+  }catch(e){}
+}
+async function dbAdd(col,doc){
+  if(DB&&!LOCAL_ONLY[col]){try{const ref=await DB.collection(col).add(doc);return ref.id;}catch(e){}}
+  const id=uid(col.slice(0,2)+'_'),local=Object.assign({id:id},doc);
+  state.data[MAP[col]].push(hydrate(local));
+  const a=localAdds();a[col]=(a[col]||[]).concat([local]);lsSet('added',a);
+  return id;
+}
+async function dbUpdate(col,id,patch){
+  const d=localDoc(col,id);if(d)Object.assign(d,patch);
+  if(!DB||LOCAL_ONLY[col]){rememberPatch(col,id,patch);return;}
+  try{await DB.doc(col+'/'+id).update(patch);}catch(e){}
+}
+
+/* ---------- account sync ---------- */
+async function saveProfile(){
+  const s=state.session;
+  if(!DB||!s||!s.key)return;
+  const doc={name:s.name,city:s.city||'',lang:s.lang||'English',denom:s.denom||'',bio:s.bio||'',role:s.role,
+    handle:s.handle||'',avatarSeed:s.avatarSeed||s.id,homeChurchId:s.homeChurchId||null,churchId:s.churchId||null,verified:!!s.verified,
+    follows:state.local.follows||[],communities:state.local.communities||[],
+    planId:s.planId||null,planDay:state.local.planDay||0,streak:state.local.streak||0,lastRead:state.local.lastRead||null,
+    followers:s.followers||0,updatedAt:new Date().toISOString()};
+  try{await DB.doc('profiles/'+s.key).set(doc);}catch(e){}
+}
+async function loadProfile(key){
+  if(!DB)return null;
+  try{const snap=await DB.doc('profiles/'+key).get();return snap.exists?snap.data():null;}catch(e){return null;}
+}
+function applyProfile(key,p){
+  state.session={id:p.avatarSeed||('u_'+key),key:key,role:p.role||'believer',name:p.name,city:p.city,lang:p.lang,denom:p.denom,
+    bio:p.bio||'',handle:p.handle||'',avatarSeed:p.avatarSeed||('u_'+key),email:state.ui.authId,planId:p.planId,
+    homeChurchId:p.homeChurchId||null,churchId:p.churchId||null,verified:!!p.verified,followers:p.followers||0};
+  state.local.follows=(p.follows||[]).slice();
+  state.local.communities=(p.communities||[]).slice();
+  state.local.planDay=p.planDay||0;state.local.streak=p.streak||0;state.local.lastRead=p.lastRead||null;
+  saveSession();saveLocal();
+}
+
+/* ---------- selectors ---------- */
+function churchById(id){return state.data.churches.find(function(c){return c.id===id;})||null;}
+function personById(id){return state.data.people.find(function(p){return p.id===id;})||null;}
+function myChurchIds(){return state.local.follows||[];}
+function myCommunityIds(){return state.local.communities||[];}
+function communityById(id){return state.data.communities.find(function(c){return c.id===id;})||null;}
+function isMe(id){return !!(state.session&&(state.session.id===id||state.session.key===id));}
+function isChurchSession(){return !!(state.session&&state.session.role==='church');}
+function authorOf(p){
+  if(p.authorType==='person'){
+    const per=personById(p.authorId);
+    return {type:'person',id:p.authorId,name:p.authorName||(per&&per.name)||'A believer',
+      sub:(per&&per.city)||p.authorCity||'',verified:false,seed:p.authorId||p.authorName};
+  }
+  const c=churchById(p.churchId);
+  return {type:'church',id:p.churchId,name:p.churchName||(c&&c.name)||'Church',
+    sub:(c&&c.city)||'',verified:!c||c.verified!==false,seed:p.churchId};
+}
+function isFollowing(a){return a.type==='church'&&myChurchIds().indexOf(a.id)>-1;}
+function commentsFor(id){return state.data.comments.filter(function(c){return c.postId===id;}).sort(function(a,b){return dt(a.createdAt)-dt(b.createdAt);});}
+function commentCount(p){const n=commentsFor(p.id).length;return n||p.comments||0;}
+function reactionTotal(p){const r=p.reactions||{};return Object.keys(r).reduce(function(a,k){return a+(Number(r[k])||0);},0);}
+/* The home feed is church content only. Believers speak inside communities. */
+function churchPosts(){return state.data.posts.filter(function(p){return p.authorType!=='person'&&p.type!=='story';});}
+function feedPosts(){
+  const f=myChurchIds();
+  const list=churchPosts().sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);});
+  const score=function(p){return f.indexOf(p.churchId)>-1?2:0;};
+  return list.sort(function(a,b){return score(b)-score(a)||dt(b.createdAt)-dt(a.createdAt);});
+}
+function communityThreads(id){
+  return state.data.posts.filter(function(p){return p.authorType==='person'&&(!id||p.communityId===id);})
+    .sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);});
+}
+function momentSources(){
+  const cut=Date.now()-24*3600e3, out=[], seen={};
+  const stories=state.data.posts.filter(function(p){return p.type==='story'&&dt(p.createdAt).getTime()>cut;})
+    .sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);});
+  stories.forEach(function(p){
+    const a=authorOf(p),key=a.type+':'+a.id;
+    if(seen[key]){seen[key].posts.push(p);return;}
+    seen[key]={author:a,posts:[p],followed:isFollowing(a)};
+    out.push(seen[key]);
+  });
+  liveEvents().forEach(function(e){
+    const key='church:'+e.churchId;
+    if(seen[key]){seen[key].live=true;return;}
+    const c=churchById(e.churchId);
+    seen[key]={author:{type:'church',id:e.churchId,name:e.churchName||(c&&c.name)||'Church',sub:(c&&c.city)||'',verified:true,seed:e.churchId},
+      posts:[{id:'live-'+e.id,type:'story',content:'Live now · '+e.title,createdAt:e.datetime,churchId:e.churchId,churchName:e.churchName,
+        live:true,eventId:e.id,photo:e.photo||null,scene:e.photo?null:(e.scene||'stage')}],
+      followed:myChurchIds().indexOf(e.churchId)>-1,live:true};
+    out.push(seen[key]);
+  });
+  return out.sort(function(a,b){return (b.live?4:0)+(b.followed?2:0)-((a.live?4:0)+(a.followed?2:0));});
+}
+/* church-to-church */
+function myConnections(cid){
+  return state.data.connections.filter(function(x){return x.status==='accepted'&&(x.from===cid||x.to===cid);})
+    .map(function(x){return x.from===cid?x.to:x.from;});
+}
+function pendingFor(cid){return state.data.connections.filter(function(x){return x.status==='pending'&&x.to===cid;});}
+function pendingFrom(cid){return state.data.connections.filter(function(x){return x.status==='pending'&&x.from===cid;});}
+function connectionBetween(a,b){return state.data.connections.find(function(x){return (x.from===a&&x.to===b)||(x.from===b&&x.to===a);})||null;}
+function threadsFor(cid){
+  return state.data.threads.filter(function(t){return (t.churchIds||[]).indexOf(cid)>-1;})
+    .sort(function(a,b){return dt(lastMsg(b).at)-dt(lastMsg(a).at);});
+}
+function lastMsg(t){const m=t.messages||[];return m[m.length-1]||{text:'',at:t.createdAt||new Date().toISOString(),from:''};}
+function threadBetween(a,b){return state.data.threads.find(function(t){const ids=t.churchIds||[];return ids.indexOf(a)>-1&&ids.indexOf(b)>-1;})||null;}
+function unreadThreads(cid){
+  const seen=state.local.threadSeen||{};
+  return threadsFor(cid).filter(function(t){const m=lastMsg(t);return m.from&&m.from!==cid&&(!seen[t.id]||dt(m.at)>dt(seen[t.id]));}).length;
+}
+/* reminders */
+function reminderEvents(){
+  const ids=state.local.rsvps||[];
+  return upcomingEvents().filter(function(e){return ids.indexOf(e.id)>-1;});
+}
+function reminderPref(id){const r=(state.local.reminders||{})[id];return r||{d1:true,h1:true};}
+function liveEvents(){return state.data.events.filter(function(e){return e.isLive;});}
+function todayEvents(){return state.data.events.filter(function(e){return isToday(e.datetime);});}
+function upcomingEvents(){return state.data.events.slice().filter(function(e){return dt(e.datetime)>=new Date(Date.now()-6*3600e3);}).sort(function(a,b){return dt(a.datetime)-dt(b.datetime);});}
+function urgentBroadcasts(){return state.data.posts.filter(function(p){return p.type==='broadcast'&&p.priority==='Urgent';});}
+function myPlan(){const id=state.session&&state.session.planId;return state.data.plans.find(function(p){return p.id===id;})||state.data.plans[0]||null;}
+function planPct(){const p=myPlan();if(!p)return 0;return Math.min(100,Math.round(((state.local.planDay||0)/(p.days||30))*100));}
+function totalGiven(){return (state.local.giving||[]).reduce(function(s,g){return s+g.amount;},0);}
+/* ---------- shared chrome ---------- */
+function arkGlyph(size){
+  const s=size||34;
+  return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 40 40" fill="none" aria-hidden="true">'
+    +'<defs><linearGradient id="ag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38BDF1"/><stop offset="1" stop-color="#00A3E1"/></linearGradient></defs>'
+    +'<circle cx="20" cy="20" r="18.4" stroke="rgba(0,163,225,.28)" stroke-width="1.2"/>'
+    +'<path d="M20 6v13" stroke="url(#ag)" stroke-width="1.6" stroke-linecap="round"/>'
+    +'<path d="M14.6 10.6h10.8" stroke="url(#ag)" stroke-width="1.6" stroke-linecap="round"/>'
+    +'<path d="M8.4 22h23.2l-3.4 8.2a3 3 0 0 1-2.8 1.8H14.6a3 3 0 0 1-2.8-1.8L8.4 22Z" stroke="url(#ag)" stroke-width="1.6" stroke-linejoin="round"/>'
+    +'<path d="M12.4 26h15.2" stroke="rgba(127,212,245,.6)" stroke-width="1.1" stroke-linecap="round"/></svg>';
+}
+function wordmark(size){
+  return '<span style="font-family:var(--sans);font-weight:800;letter-spacing:-.02em;font-size:'+(size||18)+'px">believers<span class="accent" style="font-weight:800">Ark</span></span>';
+}
+function toast(msg){state.ui.toast=msg;render();clearTimeout(toast._t);toast._t=setTimeout(function(){state.ui.toast=null;render();},2400);}
+function go(route,params){state.route=route;state.params=params||{};state.ui.sheet=null;window.scrollTo({top:0,behavior:'instant'});render();}
+function openSheet(kind,params){state.ui.sheet={kind:kind,params:params||{}};render();}
+function closeSheet(){state.ui.sheet=null;render();}
+
+const NAV_BELIEVER=[{k:'home',i:'home',l:'Home'},{k:'churches',i:'church',l:'Churches'},{k:'journey',i:'journey',l:'Journey'},{k:'community',i:'community',l:'Community'},{k:'me',i:'me',l:'Me'}];
+const NAV_CHURCH=[{k:'console',i:'grid',l:'Console'},{k:'console-compose',i:'edit',l:'Publish'},{k:'console-c2c',i:'msg',l:'Churches'},{k:'console-events',i:'cal',l:'Events'},{k:'me',i:'me',l:'Me'}];
+function navItems(){return (state.session&&state.session.role==='church')?NAV_CHURCH:NAV_BELIEVER;}
+function navRoot(r){
+  if(r==='live'||r==='soon'||r==='event'||r==='post')return state.params.from&&state.params.from!==r?navRoot(state.params.from):(isChurchSession()?'console':'home');
+  if(r.indexOf('church-profile')===0||r==='person-profile')return isChurchSession()?'console-c2c':'churches';
+  if(r==='saved'||r==='notifications')return r==='saved'?'me':(isChurchSession()?'console':'home');
+  if(r==='biblegpt'||r==='campaign'||r.indexOf('community-')===0)return 'community';
+  if(r==='console-thread')return 'console-c2c';
+  if(r.indexOf('console')===0)return r==='console'?'console':r;
+  if(r==='settings'||r==='giving-history'||r==='family')return 'me';
+  if(r==='plan'||r==='prayer-new')return 'journey';
+  return r;
+}
+function renderNav(){
+  const items=navItems(),root=navRoot(state.route);
+  return '<nav class="nav" aria-label="Primary">'
+    +'<div class="nav-brand">'+arkGlyph(30)+wordmark(17)+'</div>'
+    +items.map(function(n){
+      const badge=(n.k==='console-c2c'&&state.session&&state.session.churchId)?(unreadThreads(state.session.churchId)+pendingFor(state.session.churchId).length):0;
+      return '<button class="nav-item'+(root===n.k?' on':'')+'" data-go="'+n.k+'" aria-current="'+(root===n.k?'page':'false')+'" style="position:relative">'+ico(n.i,22)+'<span>'+n.l+'</span>'
+        +(badge?'<span class="pill-count num" style="top:4px;right:10px">'+badge+'</span>':'')+'</button>';
+    }).join('')+'</nav>';
+}
+function topbar(title,sub,opts){
+  opts=opts||{};
+  return '<header class="topbar">'+(opts.aurora===false?'':'<div class="aurora"></div>')
+    +'<div class="topbar-inner">'
+    +'<div class="row between gap-12">'
+    +'<div class="stack gap-4" style="min-width:0">'
+    +(opts.back?'<button class="row gap-6 cap" data-go="'+opts.back+'" style="margin-bottom:6px;color:var(--text-3)">'+ico('arrowL',16)+'Back</button>':'')
+    +(sub?'<span class="eyebrow">'+esc(sub)+'</span>':'')
+    +'<h1 class="h1">'+title+'</h1></div>'
+    +(opts.actions||'')+'</div>'
+    +(opts.extra||'')+'</div></header>';
+}
+function empty(icon,title,body,cta){
+  return '<div class="glass pad empty">'+'<div style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:var(--brand-dim);color:var(--brand)">'+ico(icon,26)+'</div>'
+    +'<div class="stack gap-6"><h3 class="h2">'+esc(title)+'</h3><p class="body">'+esc(body)+'</p></div>'+(cta||'')+'</div>';
+}
+function ring(pct,size,label,sub){
+  const s=size||74,r=(s/2)-5,c=2*Math.PI*r,off=c-(c*Math.min(100,pct)/100);
+  return '<div class="ring-wrap" style="width:'+s+'px;height:'+s+'px">'
+    +'<svg width="'+s+'" height="'+s+'"><circle cx="'+s/2+'" cy="'+s/2+'" r="'+r+'" stroke="var(--surface-3)" stroke-width="4" fill="none"/>'
+    +'<circle cx="'+s/2+'" cy="'+s/2+'" r="'+r+'" stroke="var(--brand)" stroke-width="4" fill="none" stroke-linecap="round" '
+    +'stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" style="filter:drop-shadow(0 0 6px rgba(0,163,225,.6));transition:stroke-dashoffset .8s cubic-bezier(.2,.8,.3,1)"/></svg>'
+    +'<div class="ring-val"><span style="font-size:'+(s>60?18:14)+'px;font-weight:800;letter-spacing:-.02em" class="num">'+label+'</span>'
+    +(sub?'<span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)">'+sub+'</span>':'')+'</div></div>';
+}
+function verifiedTag(){return '<span class="badge badge-accent">'+ico('shield',12)+'Verified</span>';}
+
+/* ---------- splash + welcome ---------- */
+function viewSplash(){
+  return '<div class="splash"><div class="splash-glow"></div>'
+    +[0,1,2,3,4].map(function(i){return '<div class="ray" style="animation-delay:'+(i*.4)+'s;transform:rotate('+((i-2)*14)+'deg)"></div>';}).join('')
+    +'<div class="stack center gap-16" style="position:relative;z-index:2">'
+    +'<div class="fade-up">'+arkGlyph(78)+'</div>'
+    +'<div class="stack center gap-8 fade-up" style="animation-delay:.18s">'
+    +'<div style="font-size:34px">'+wordmark(34)+'</div>'
+    +'<p class="cap" style="letter-spacing:.16em;text-transform:uppercase;font-size:11px">One ark · Every church · Every believer</p></div></div></div>';
+}
+function viewWelcome(){
+  return '<div style="min-height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden">'
+    +'<div class="aurora" style="height:60vh;opacity:.9"></div>'
+    +'<div class="view stack" style="position:relative;z-index:2;padding-top:min(11vh,88px);padding-bottom:40px;flex:1">'
+    +'<div class="stack gap-16 stagger">'
+    +'<div class="row gap-10">'+arkGlyph(40)+wordmark(21)+'</div>'
+    +'<h1 class="display">One ark.<br>Every church.<br><span class="accent">Every believer.</span></h1>'
+    +'<p class="body" style="max-width:34ch">The whole life of the church in one calm place — services, sermons, prayer, giving and the people you walk with.</p>'
+    +'</div>'
+    +'<div class="stack gap-12 mt-32 stagger">'
+    +'<button class="glass press pad row between gap-16" data-go="auth" data-role="believer" style="text-align:left">'
+    +'<span class="stack gap-4"><span class="h2">I\'m a believer</span><span class="cap">Follow churches, journey, pray, give</span></span>'
+    +'<span class="icon-btn active">'+ico('chevR',20)+'</span></button>'
+    +'<button class="glass press pad row between gap-16" data-go="auth" data-role="church" style="text-align:left">'
+    +'<span class="stack gap-4"><span class="h2">I represent a church</span><span class="cap">Publish, broadcast, host events, receive giving</span></span>'
+    +'<span class="icon-btn">'+ico('chevR',20)+'</span></button>'
+    +'</div>'
+    +'<div class="row center mt-24"><button class="btn btn-sm btn-ghost" data-act="guest">Explore as a guest '+ico('chevR',15)+'</button></div>'
+    +'<div class="row center gap-8 mt-24 cap" style="opacity:.75">'+ico('lock',14)+'<span>Prototype build — no real payments or SMS are sent</span></div>'
+    +'</div></div>';
+}
+
+/* ---------- auth ---------- */
+function viewAuth(){
+  const role=state.ui.authRole,church=role==='church';
+  return '<div class="view stack" style="padding-top:min(8vh,60px);padding-bottom:60px;position:relative">'
+    +'<div class="aurora" style="height:52vh"></div>'
+    +'<div style="position:relative;z-index:2">'
+    +'<button class="row gap-6 cap" data-go="welcome" style="color:var(--text-3);margin-bottom:26px">'+ico('arrowL',16)+'Back</button>'
+    +'<div class="stack gap-8 stagger">'
+    +'<span class="eyebrow accent">'+(church?'Church account':'Believer account')+'</span>'
+    +'<h1 class="h1">'+(church?'Register your church':'Welcome home')+'</h1>'
+    +'<p class="body">'+(church?'We verify every church before it goes live, so believers can trust what they see.':'Sign in with your email or phone. We\'ll send a one-time code.')+'</p></div>'
+    +'<div class="glass pad stack gap-16 mt-24 fade-up" style="animation-delay:.1s">'
+    +'<div class="field"><label class="label" for="authId">Email or phone</label>'
+    +'<input class="input" id="authId" type="text" inputmode="email" autocomplete="username" placeholder="you@example.com  ·  +91 98xxx xxxxx" value="'+esc(state.ui.authId)+'"></div>'
+    +'<button class="btn btn-primary btn-block" data-act="send-otp">Send one-time code '+ico('chevR',18)+'</button>'
+    +'<div class="row gap-12 center"><hr class="divider grow"><span class="cap">or continue with</span><hr class="divider grow"></div>'
+    +'<div class="row gap-10"><button class="btn btn-ghost grow" data-act="oauth" data-p="Google"><span style="font-weight:800;font-size:17px">G</span>Google</button>'
+    +'<button class="btn btn-ghost grow" data-act="oauth" data-p="Apple">'+ico('apple',18)+'Apple</button></div>'
+    +'</div>'
+    +(church?'<div class="glass pad stack gap-12 mt-14" style="border-color:rgba(0,163,225,.3)"><span class="eyebrow accent">Prototype shortcut</span>'
+      +'<p class="cap">See the console with a full inbox, connections and history — sign in as a seeded church.</p>'
+      +'<div class="stack gap-8">'+state.data.churches.filter(function(c){return /^ch\d$/.test(c.id);}).slice(0,3).map(function(c){
+        return '<button class="row between gap-12" data-act="demo-church" data-id="'+c.id+'" style="text-align:left;padding:11px 13px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
+          +'<span class="row gap-10"><span class="avatar avatar-sm" style="background:'+grad(c.id)+'">'+initials(c.name)+'</span>'
+          +'<span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">'+esc(c.pastorName||'')+' · '+esc(c.city||'')+'</span></span></span>'+ico('chevR',16)+'</button>';}).join('')+'</div></div>':'')
+    +'<p class="cap mt-16" style="text-align:center;max-width:38ch;margin-inline:auto">By continuing you agree to the community guidelines. Your data is never sold and never used for ads.</p>'
+    +'</div></div>';
+}
+function viewOtp(){
+  const church=state.ui.authRole==='church';
+  return '<div class="view stack" style="padding-top:min(8vh,60px);padding-bottom:60px;position:relative">'
+    +'<div class="aurora" style="height:48vh"></div>'
+    +'<div style="position:relative;z-index:2">'
+    +'<button class="row gap-6 cap" data-go="auth" style="color:var(--text-3);margin-bottom:26px">'+ico('arrowL',16)+'Back</button>'
+    +'<div class="stack gap-8"><span class="eyebrow accent">Verify it\'s you</span>'
+    +'<h1 class="h1">Enter your code</h1>'
+    +'<p class="body">Sent to <span style="color:var(--text-1);font-weight:600">'+esc(state.ui.authId)+'</span></p></div>'
+    +'<div class="glass pad stack gap-16 mt-24">'
+    +'<input class="input otp-input" id="otpInput" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code">'
+    +'<button class="btn btn-primary btn-block" data-act="verify-otp">Verify '+ico('check',18)+'</button>'
+    +'<div class="row center gap-8" style="padding:12px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(0,163,225,.26)">'
+    +ico('sparkle',16,'accent')+'<span class="cap" style="color:var(--brand)">Prototype code: <b class="num" style="letter-spacing:.12em">'+state.ui.otp+'</b></span></div>'
+    +'<button class="cap" data-act="send-otp" style="text-align:center">Didn\'t get it? Resend code</button>'
+    +'</div>'
+    +'<p class="cap mt-16" style="text-align:center">'+(church?'Next: tell us about your church.':'Next: a few things to make this yours.')+'</p>'
+    +'</div></div>';
+}
+
+/* ---------- onboarding: believer ---------- */
+function viewOnboardBeliever(){
+  const s=state.ui.step,o=state.ui.onboard;
+  const steps=['You','Churches','Rhythm'];
+  let body='';
+  if(s===0){
+    body='<div class="glass pad stack gap-18">'
+      +'<div class="field"><label class="label" for="obName">Your name</label><input class="input" id="obName" placeholder="Rakesh" value="'+esc(o.name||'')+'"></div>'
+      +'<div class="field mt-16"><label class="label" for="obCity">City</label><input class="input" id="obCity" placeholder="Bengaluru" value="'+esc(o.city||'')+'"></div>'
+      +'<div class="field mt-16"><label class="label" for="obLang">Preferred language</label><select class="select" id="obLang">'
+      +LANGS.map(function(l){return '<option'+(o.lang===l?' selected':'')+'>'+l+'</option>';}).join('')+'</select></div>'
+      +'<div class="field mt-16"><label class="label" for="obDenom">Denomination <span style="text-transform:none;letter-spacing:0;font-weight:500">(optional)</span></label>'
+      +'<select class="select" id="obDenom"><option value="">Prefer not to say</option>'
+      +DENOMS.map(function(d){return '<option'+(o.denom===d?' selected':'')+'>'+d+'</option>';}).join('')+'</select></div></div>';
+  }else if(s===1){
+    const list=state.data.churches;
+    body=list.length?'<div class="stack gap-10">'+list.map(function(c){
+        const on=(o.follows||[]).indexOf(c.id)>-1;
+        return '<button class="glass press pad-sm row between gap-12" data-act="ob-follow" data-id="'+c.id+'" style="text-align:left;'+(on?'border-color:rgba(0,163,225,.42)':'')+'">'
+          +'<span class="row gap-12" style="min-width:0"><span class="avatar" style="background:'+grad(c.id)+'">'+initials(c.name)+'</span>'
+          +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.name)+'</span>'
+          +'<span class="cap">'+esc(c.city||'')+' · '+esc((c.languages||[]).slice(0,2).join(', '))+'</span></span></span>'
+          +'<span class="icon-btn'+(on?' active':'')+'">'+ico(on?'check':'plus',18)+'</span></button>';
+      }).join('')+'</div>':empty('church','Directory is loading','Verified churches near you will appear here in a moment.');
+  }else{
+    const plans=state.data.plans;
+    body=plans.length?'<div class="stack gap-10">'+plans.map(function(p){
+        const on=o.planId===p.id;
+        return '<button class="glass press pad-sm stack gap-8" data-act="ob-plan" data-id="'+p.id+'" style="text-align:left;'+(on?'border-color:rgba(0,163,225,.42)':'')+'">'
+          +'<span class="row between gap-12"><span class="h3">'+esc(p.title)+'</span>'
+          +'<span class="badge '+(on?'badge-accent':'badge-ice')+'">'+(on?'Chosen':p.days+' days')+'</span></span>'
+          +'<span class="cap">'+esc(p.description)+'</span></button>';
+      }).join('')+'</div>':empty('book','Plans loading','Your reading plans will appear here shortly.');
+  }
+  return '<div class="view stack" style="padding-top:36px;padding-bottom:120px;position:relative">'
+    +'<div class="aurora" style="height:40vh"></div><div style="position:relative;z-index:2">'
+    +'<div class="row gap-6 mt-4">'+steps.map(function(t,i){
+      return '<div class="stack gap-6 grow"><div style="height:3px;border-radius:9px;background:'+(i<=s?'linear-gradient(90deg,var(--brand),var(--brand-2))':'var(--surface-3)')+';'+(i<=s?'box-shadow:0 0 10px rgba(0,163,225,.45)':'')+'"></div>'
+      +'<span class="cap" style="font-size:11px;color:'+(i<=s?'var(--brand)':'var(--text-3)')+'">'+t+'</span></div>';}).join('')+'</div>'
+    +'<div class="stack gap-8 mt-24"><h1 class="h1">'+(s===0?'Let\'s make this yours':s===1?'Follow your churches':'Choose your rhythm')+'</h1>'
+    +'<p class="body">'+(s===0?'Only your name is shown to others. Everything else stays private until you share it.':s===1?'Pick the churches you belong to or want to hear from. You can change this any time.':'A reading plan sets the daily pulse of your journey. Start light — you can switch later.')+'</p></div>'
+    +'<div class="mt-24">'+body+'</div>'
+    +'<div class="row gap-10 mt-24">'+(s>0?'<button class="btn btn-ghost" data-act="ob-back">Back</button>':'')
+    +'<button class="btn btn-primary grow" data-act="ob-next">'+(s===2?'Enter believersArk':'Continue')+ico('chevR',18)+'</button></div>'
+    +(s===1?'<button class="cap mt-16" data-act="ob-next" style="width:100%;text-align:center">Skip for now</button>':'')
+    +'</div></div>';
+}
+
+/* ---------- onboarding: church ---------- */
+function viewOnboardChurch(){
+  const o=state.ui.onboard;
+  return '<div class="view stack" style="padding-top:36px;padding-bottom:120px;position:relative">'
+    +'<div class="aurora" style="height:40vh"></div><div style="position:relative;z-index:2">'
+    +'<div class="stack gap-8"><span class="eyebrow accent">Step 1 of 1 · Verification</span><h1 class="h1">Tell us about your church</h1>'
+    +'<p class="body">This becomes your public profile. A platform reviewer checks your details before the verified badge appears.</p></div>'
+    +'<div class="glass pad stack gap-16 mt-24">'
+    +'<div class="field"><label class="label" for="cName">Church name</label><input class="input" id="cName" placeholder="Grace Cathedral" value="'+esc(o.name||'')+'"></div>'
+    +'<div class="field"><label class="label" for="cDenom">Denomination</label><select class="select" id="cDenom">'+DENOMS.map(function(d){return '<option>'+d+'</option>';}).join('')+'</select></div>'
+    +'<div class="field"><label class="label" for="cCity">City</label><input class="input" id="cCity" placeholder="Chennai" value="'+esc(o.city||'')+'"></div>'
+    +'<div class="field"><label class="label" for="cAddr">Address</label><input class="input" id="cAddr" placeholder="12 Anna Salai, Teynampet"></div>'
+    +'<div class="field"><label class="label" for="cTimes">Service times</label><input class="input" id="cTimes" placeholder="Sun 7:00am Tamil · Sun 9:30am English"></div>'
+    +'<div class="field"><label class="label" for="cLangs">Languages</label><input class="input" id="cLangs" placeholder="Tamil, English"></div>'
+    +'<div class="field"><label class="label" for="cPastor">Pastor / leader</label><input class="input" id="cPastor" placeholder="Pr. Daniel Selvam"></div>'
+    +'<div class="field"><label class="label" for="cTag">One-line tagline</label><input class="input" id="cTag" placeholder="A family finding grace in the heart of the city"></div>'
+    +'<button class="glass press pad-sm row between gap-12" data-act="mock-upload" style="text-align:left;border-style:dashed">'
+    +'<span class="row gap-12">'+ico('upload',20,'accent')+'<span class="stack gap-2"><span class="h3">Registration documents</span><span class="cap">'+(o.docs?'trust-deed.pdf · pastor-id.pdf uploaded':'PDF or image — society/trust registration')+'</span></span></span>'
+    +(o.docs?'<span class="badge badge-mint">'+ico('check',12)+'Added</span>':'<span class="icon-btn">'+ico('plus',18)+'</span>')+'</button>'
+    +'</div>'
+    +'<button class="btn btn-primary btn-block mt-24" data-act="church-submit">Submit for verification '+ico('chevR',18)+'</button>'
+    +'<button class="cap mt-16" data-go="welcome" style="width:100%;text-align:center">Cancel</button>'
+    +'</div></div>';
+}
+function viewPending(){
+  const c=state.session&&state.session.church||{};
+  return '<div class="view stack" style="padding-top:min(9vh,70px);padding-bottom:60px;position:relative">'
+    +'<div class="aurora" style="height:50vh"></div><div style="position:relative;z-index:2" class="stack gap-24">'
+    +'<div class="glass pad stack gap-16" style="text-align:center;align-items:center">'
+    +'<div style="position:relative">'+ring(66,110,'','')+'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--brand)">'+ico('shield',34)+'</div></div>'
+    +'<span class="badge badge-accent">Pending verification</span>'
+    +'<h1 class="h1">'+esc(c.name||'Your church')+' is in review</h1>'
+    +'<p class="body">A platform reviewer is checking your registration documents and pastor contact. Most churches are approved within 48 hours.</p>'
+    +'<div class="stack gap-10" style="width:100%;text-align:left">'
+    +[['Details received','done'],['Documents under review','doing'],['Pastor contact call','next'],['Verified badge issued','next']].map(function(r){
+      const done=r[1]==='done',doing=r[1]==='doing';
+      return '<div class="row gap-12" style="padding:12px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
+        +'<span style="color:'+(done?'var(--mint)':doing?'var(--brand)':'var(--text-3)')+'">'+ico(done?'check':doing?'clock':'chevR',18)+'</span>'
+        +'<span class="'+(done||doing?'h3':'cap')+'">'+r[0]+'</span></div>';}).join('')
+    +'</div></div>'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Prototype shortcut</span>'
+    +'<p class="body">In the live platform a super admin approves this. For this build, approve it yourself to explore the church console.</p>'
+    +'<button class="btn btn-primary btn-block" data-act="approve-church">Approve now (demo) '+ico('check',18)+'</button></div>'
+    +'<button class="cap" data-act="signout" style="text-align:center">Sign out</button>'
+    +'</div></div>';
+}
+/* ---------- home ---------- */
+function verseCard(){
+  const v=verseOfDay();
+  return '<article class="glass pad stack gap-16" style="overflow:hidden">'
+    +'<div class="aurora" style="height:200px;opacity:.5"></div>'
+    +'<div class="row between" style="position:relative"><span class="eyebrow accent">Verse for today</span>'
+    +'<button class="icon-btn" data-act="share-verse" aria-label="Share verse">'+ico('share',17)+'</button></div>'
+    +'<p class="scripture" style="position:relative">“'+esc(v.t)+'”</p>'
+    +'<div class="row between gap-12" style="position:relative"><span class="verse-ref">'+esc(v.r)+'</span>'
+    +'<button class="chip" data-act="open-verse" data-r="'+esc(v.r)+'">Read in context '+ico('chevR',14)+'</button></div></article>';
+}
+function priorityStrip(){
+  const live=liveEvents(),urgent=urgentBroadcasts(),today=todayEvents().filter(function(e){return !e.isLive;});
+  const cards=[];
+  live.forEach(function(e){
+    cards.push('<button class="glass press pad-sm stack gap-10" data-go="event" data-id="'+e.id+'" style="min-width:250px;max-width:250px;text-align:left;border-color:rgba(227,27,72,.34)">'
+      +'<span class="row between"><span class="badge badge-live"><i class="dot-live"></i>Live now</span><span class="cap num">'+(e.rsvpCount||0)+' here</span></span>'
+      +'<span class="h3" style="line-height:1.3">'+esc(e.title)+'</span>'
+      +'<span class="cap">'+esc(e.churchName||'')+'</span>'
+      +'<span class="row gap-6 accent" style="font-size:13px;font-weight:700">'+ico('play',15)+'Join stream</span></button>');
+  });
+  urgent.forEach(function(p){
+    cards.push('<button class="glass press pad-sm stack gap-10" data-go="post" data-id="'+p.id+'" style="min-width:250px;max-width:250px;text-align:left;border-color:rgba(232,145,154,.32)">'
+      +'<span class="badge badge-rose">'+ico('hands',12)+'Urgent prayer</span>'
+      +'<span class="body" style="color:var(--text-1);font-size:14.5px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">'+esc(p.content)+'</span>'
+      +'<span class="cap">'+esc(p.churchName||'')+'</span></button>');
+  });
+  today.forEach(function(e){
+    cards.push('<button class="glass press pad-sm stack gap-10" data-go="event" data-id="'+e.id+'" style="min-width:250px;max-width:250px;text-align:left">'
+      +'<span class="badge badge-accent">'+ico('cal',12)+'Today · '+fmtTime(e.datetime)+'</span>'
+      +'<span class="h3" style="line-height:1.3">'+esc(e.title)+'</span>'
+      +'<span class="cap">'+esc(e.churchName||'')+' · '+esc(e.location||'Online')+'</span></button>');
+  });
+  if(!cards.length)return '';
+  return '<section class="mt-24"><div class="sec-title"><span class="eyebrow accent">Happening now</span>'
+    +'<span class="cap num">'+cards.length+' updates</span></div>'
+    +'<div class="scroll-x" style="gap:12px">'+cards.join('')+'</div></section>';
+}
+function journeyRingCard(){
+  const p=myPlan(),pct=planPct(),day=state.local.planDay||0,streak=state.local.streak||0;
+  const prayers=(state.local.prayed||[]).length;
+  return '<button class="glass press pad row gap-20 between" data-go="journey" style="width:100%;text-align:left">'
+    +'<div class="row gap-16">'+ring(pct,74,pct+'%','plan')
+    +'<div class="stack gap-6"><span class="eyebrow">Your journey</span>'
+    +'<span class="h2">'+(p?esc(p.title):'Pick a plan')+'</span>'
+    +'<span class="cap">'+(p?'Day '+day+' of '+p.days:'Start a reading rhythm')+'</span></div></div>'
+    +'<div class="stack gap-10" style="text-align:right;flex:none">'
+    +'<span class="stack gap-2"><span class="num h3 accent">'+streak+'</span><span class="cap" style="font-size:11px">day streak</span></span>'
+    +'<span class="stack gap-2"><span class="num h3" style="color:var(--rose)">'+prayers+'</span><span class="cap" style="font-size:11px">prayers</span></span></div></button>';
+}
+function authorHeader(a,p,opts){
+  opts=opts||{};
+  const route=a.type==='person'?'person-profile':'church-profile';
+  const follow=a.type==='church'&&!isFollowing(a)&&!isChurchSession()&&a.id;
+  const cm=p.communityId?communityById(p.communityId):null;
+  return '<header class="row between gap-12">'
+    +'<button class="row gap-12" data-go="'+route+'" data-id="'+esc(a.id||'')+'" style="min-width:0;text-align:left">'
+    +'<span class="avatar" style="background:'+grad(a.seed)+'">'+initials(a.name)+'</span>'
+    +'<span class="stack gap-2" style="min-width:0"><span class="row gap-6" style="min-width:0">'
+    +'<span class="h3" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(a.name)+'</span>'
+    +(a.verified?'<span class="accent" style="display:flex;flex:none">'+ico('shield',14)+'</span>':'')
+    +(isMe(a.id)?'<span class="badge badge-ice" style="height:19px;padding:0 7px;font-size:9.5px;flex:none">You</span>':'')+'</span>'
+    +'<span class="cap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(cm?'in '+esc(cm.name)+' · ':a.sub?esc(a.sub)+' · ':'')+ago(p.createdAt)+(p.audience&&p.audience!=='Everyone'?' · to '+esc(p.audience):'')+'</span></span></button>'
+    +'<span class="row gap-8" style="flex:none">'+(opts.tag||'')
+    +(follow&&opts.follow!==false?'<button class="btn btn-xs btn-outline" data-act="follow" data-id="'+esc(a.id)+'">Follow</button>':'')
+    +'</span></header>';
+}
+function postCard(p,opts){
+  opts=opts||{};
+  const a=authorOf(p);
+  const reacted=state.local.reacted[p.id];
+  const isBroadcast=p.type==='broadcast';
+  const saved=(state.local.saved||[]).indexOf(p.id)>-1;
+  const cmts=commentsFor(p.id), total=reactionTotal(p);
+  const typeTag=isBroadcast?('<span class="badge '+(p.priority==='Urgent'?'badge-rose':p.priority==='Important'?'badge-accent':'badge-ice')+'">'+ico('radio',12)+esc(p.priority||'Broadcast')+'</span>')
+    :p.type==='sermon'?'<span class="badge badge-accent">'+ico('mic',12)+'Sermon</span>'
+    :p.type==='event'?'<span class="badge badge-ice">'+ico('cal',12)+'Event</span>'
+    :p.type==='prayer'?'<span class="badge badge-rose">'+ico('hands',12)+'Prayer</span>'
+    :p.type==='testimony'?'<span class="badge badge-mint">'+ico('star',12)+'Testimony</span>'
+    :p.type==='praise'?'<span class="badge badge-accent">'+ico('sparkle',12)+'Praise</span>'
+    :p.type==='question'?'<span class="badge badge-lav">'+ico('msg',12)+'Question</span>'
+    :p.type==='occasion'?'<span class="badge badge-mint">'+ico('star',12)+esc(p.occasion||'Occasion')+'</span>':'';
+  const topReacts=REACTIONS.filter(function(r){return (p.reactions&&p.reactions[r.k])>0;})
+    .sort(function(x,y){return p.reactions[y.k]-p.reactions[x.k];}).slice(0,3);
+  return '<article class="glass pad stack gap-13"'+(isBroadcast&&p.priority==='Urgent'?' style="border-color:rgba(232,145,154,.3)"':'')+'>'
+    +authorHeader(a,p,{follow:opts.follow})
+    +(typeTag?'<div class="row gap-8 wrap" style="margin-top:-3px">'+typeTag+'</div>':'')
+    +(p.title?'<h3 class="h2" style="font-size:21px">'+esc(p.title)+'</h3>':'')
+    +postMedia(p)
+    +(p.type==='sermon'?'<div class="glass pad-sm row gap-12 between" style="border-radius:var(--r-md);background:var(--surface-2)">'
+      +'<span class="row gap-10"><span class="icon-btn active" style="width:38px;height:38px">'+ico('play',17)+'</span>'
+      +'<span class="stack gap-2"><span class="h3" style="font-size:14px">'+esc(p.speaker||'Sunday message')+'</span><span class="cap">'+esc(p.duration||'38 min')+' · auto-transcribed</span></span></span>'
+      +'<button class="chip" data-act="summarise" data-id="'+p.id+'">'+ico('sparkle',14)+'Summary</button></div>':'')
+    +'<p class="body" style="color:var(--text-1)">'+esc(p.content||'').replace(/\n/g,'<br>')+'</p>'
+    +(p.verseRef?'<button class="glass pad-sm stack gap-6" data-act="open-verse" data-r="'+esc(p.verseRef)+'" style="text-align:left;background:var(--brand-dim);border-color:rgba(0,163,225,.24)">'
+      +'<span class="scripture" style="font-size:16px">“'+esc(findVerse(p.verseRef).t)+'”</span><span class="verse-ref">'+esc(p.verseRef)+'</span></button>':'')
+    +(p.type==='event'&&p.eventId?'<button class="chip" data-go="event" data-id="'+esc(p.eventId)+'">'+ico('cal',14)+'View event details</button>':'')
+    +(total||cmts.length?'<div class="row between gap-10 cap" style="padding-top:2px">'
+      +'<span class="row gap-6">'+(topReacts.length?'<span style="font-size:13px;letter-spacing:-2px">'+topReacts.map(function(r){return r.e;}).join('')+'</span>':'')
+      +(total?'<span class="num">'+total+'</span>':'')+'</span>'
+      +(cmts.length?'<button data-go="post" data-id="'+p.id+'" class="cap"><span class="num">'+cmts.length+'</span> comment'+(cmts.length>1?'s':'')+'</button>':'')+'</div>':'')
+    +'<hr class="divider">'
+    +'<div class="row between gap-8">'
+    +'<div class="react-bar">'+REACTIONS.map(function(r){
+        const n=(p.reactions&&p.reactions[r.k])||0;
+        return '<button class="react'+(reacted===r.k?' on':'')+'" data-act="react" data-id="'+p.id+'" data-k="'+r.k+'" aria-label="'+r.l+'"><span class="em">'+r.e+'</span>'+(n?'<span class="num">'+n+'</span>':'')+'</button>';
+      }).join('')+'</div>'
+    +'<div class="row gap-6">'
+    +'<button class="icon-btn" data-go="post" data-id="'+p.id+'" aria-label="Comment" style="width:36px;height:36px">'+ico('msg',16)+'</button>'
+    +'<button class="icon-btn'+(saved?' active':'')+'" data-act="save-post" data-id="'+p.id+'" aria-label="Save" style="width:36px;height:36px">'+ico(saved?'check':'star',16)+'</button>'
+    +'<button class="icon-btn" data-act="share-post" data-id="'+p.id+'" aria-label="Share" style="width:36px;height:36px">'+ico('share',16)+'</button>'
+    +'</div></div>'
+    +(cmts.length&&!opts.full?'<button class="row gap-10" data-go="post" data-id="'+p.id+'" style="text-align:left;padding-top:2px">'
+      +'<span class="avatar avatar-sm" style="width:26px;height:26px;border-radius:9px;font-size:11px;background:'+grad(cmts[cmts.length-1].authorId||cmts[cmts.length-1].authorName)+'">'+initials(cmts[cmts.length-1].authorName)+'</span>'
+      +'<span class="cap" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b style="color:var(--text-2)">'+esc(cmts[cmts.length-1].authorName)+'</b> '+esc(cmts[cmts.length-1].text)+'</span></button>':'')
+    +'</article>';
+}
+function momentsStrip(){
+  const src=momentSources();
+  if(!src.length)return '';
+  const seen=state.local.seenMoments||[];
+  return '<div class="scroll-x" style="gap:12px;padding:2px 0 6px;margin-bottom:6px">'
+    +src.slice(0,14).map(function(m,i){
+      const key=m.author.type+':'+m.author.id;
+      const isSeen=seen.indexOf(key)>-1&&!m.live;
+      const pic=photoFor(m.author.id);
+      return '<button class="moment" data-act="open-moment" data-i="'+i+'" aria-label="'+esc(m.author.name)+(m.live?' is live':' story')+'">'
+        +'<span class="moment-ring'+(m.live?' live':isSeen?' seen':'')+'">'
+        +'<span class="moment-inner" style="background:'+(pic?'#282828 url('+pic+') center/cover':grad(m.author.seed))+'">'+(pic?'':initials(m.author.name))+'</span></span>'
+        +'<span class="moment-name"'+(m.live?' style="color:var(--live);font-weight:700"':'')+'>'+esc(m.live?'LIVE':m.author.name.split(' ')[0])+'</span></button>';
+    }).join('')+'</div>';
+}
+function unreadNotifs(){return notifItems().filter(function(n){return !state.local.notifSeen||dt(n.t)>dt(state.local.notifSeen);}).length;}
+function viewHome(){
+  const name=(state.session&&state.session.name)||'friend';
+  const filters=['All','Following','Sermons','Events','Prayer','Occasions'];
+  let posts=feedPosts();
+  const t=state.ui.tab,cf=myChurchIds();
+  if(t==='Following')posts=posts.filter(function(p){return cf.indexOf(p.churchId)>-1;});
+  else if(t==='Sermons')posts=posts.filter(function(p){return p.type==='sermon';});
+  else if(t==='Events')posts=posts.filter(function(p){return p.type==='event';});
+  else if(t==='Prayer')posts=posts.filter(function(p){return p.type==='prayer'||(p.type==='broadcast'&&p.priority==='Urgent');});
+  else if(t==='Occasions')posts=posts.filter(function(p){return p.type==='occasion';});
+  const digest=state.prefs.digest,unread=unreadNotifs();
+  const cards=[];
+  posts.slice(0,25).forEach(function(p,i){
+    cards.push(postCard(p));
+    if(i===2)cards.push(communityRail());
+    if(i===5)cards.push(journeyRingCard());
+  });
+  return topbar(greeting()+', <span class="accent">'+esc(String(name).split(' ')[0])+'</span>',todayLabel(),{
+    actions:'<div class="row gap-8">'
+      +'<button class="icon-btn" data-go="notifications" aria-label="Notifications" style="position:relative">'+ico('bell',18)
+      +(unread?'<span class="pill-count num">'+(unread>9?'9+':unread)+'</span>':'')+'</button>'
+      +'<button class="icon-btn" data-go="churches" aria-label="Search">'+ico('search',18)+'</button></div>',
+    extra:'<div class="mt-16">'+momentsStrip()+'</div>'})
+    +'<div class="view stack">'
+    +verseCard()
+    +priorityStrip()
+    +'<div class="sec-title"><span class="eyebrow accent">From your churches</span>'
+    +'<button class="chip'+(digest?' on':'')+'" data-act="toggle-digest">'+ico('list',14)+'Digest</button></div>'
+    +'<div class="scroll-x" style="margin-bottom:14px">'+filters.map(function(f){
+        return '<button class="chip'+(t===f?' on':'')+'" data-act="tab" data-v="'+f+'">'+f+'</button>';}).join('')+'</div>'
+    +(digest?digestCard(posts):'<div class="stack gap-14 stagger">'
+      +(cards.length?cards.join('')
+        :empty('church',state.ui.ready?'Nothing here yet':'Gathering your feed',
+          t==='Following'?'Follow a church and its posts, events and sermons land here.':'Churches you follow will fill this space.',
+          '<button class="btn btn-sm btn-primary" data-go="churches">Find churches</button>'))+'</div>')
+    +'<div style="height:30px"></div></div>';
+}
+function communityRail(){
+  const joined=myCommunityIds();
+  const list=state.data.communities.filter(function(c){return joined.indexOf(c.id)<0;}).slice(0,6);
+  if(!list.length)return '';
+  return '<section class="glass pad stack gap-14">'
+    +'<div class="row between"><span class="eyebrow accent">Communities to join</span>'
+    +'<button class="cap" data-go="community">See all</button></div>'
+    +'<div class="scroll-x" style="gap:12px">'+list.map(function(c){
+      return '<div class="glass pad-sm stack gap-10" style="min-width:176px;max-width:176px">'
+        +'<button class="stack gap-8" data-go="community-page" data-id="'+c.id+'" style="text-align:left">'
+        +'<span class="icon-btn" style="color:hsl('+c.hue+',80%,74%);border-color:hsla('+c.hue+',80%,70%,.4);background:hsla('+c.hue+',80%,70%,.12)">'+ico(c.icon||'users',18)+'</span>'
+        +'<span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span>'
+        +'<span class="cap num" style="font-size:11px">'+Number(c.members||0).toLocaleString('en-IN')+' members</span></span></button>'
+        +'<button class="btn btn-xs btn-outline btn-block" data-act="join-community" data-id="'+c.id+'">Join</button></div>';
+    }).join('')+'</div></section>';
+}
+function digestCard(posts){
+  const byType={};posts.forEach(function(p){byType[p.type]=(byType[p.type]||0)+1;});
+  return '<article class="glass pad stack gap-16">'
+    +'<span class="eyebrow accent">Daily digest · '+todayLabel()+'</span>'
+    +'<h3 class="h2">'+posts.length+' updates from '+new Set(posts.map(function(p){return p.churchId;})).size+' churches</h3>'
+    +'<div class="stack gap-10">'+Object.keys(byType).map(function(k){
+      return '<div class="row between"><span class="body">'+esc(k.charAt(0).toUpperCase()+k.slice(1))+'</span><span class="num accent">'+byType[k]+'</span></div>';}).join('')+'</div>'
+    +'<div class="stack gap-10">'+posts.slice(0,4).map(function(p){
+      return '<button class="row gap-10 between" data-go="post" data-id="'+p.id+'" style="text-align:left;padding:12px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
+        +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14px">'+esc(p.churchName)+'</span>'
+        +'<span class="cap" style="display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">'+esc(p.title||p.content)+'</span></span>'
+        +ico('chevR',16)+'</button>';}).join('')+'</div>'
+    +'<button class="btn btn-ghost btn-sm btn-block" data-act="toggle-digest">Open the full feed</button></article>';
+}
+
+/* ---------- churches directory ---------- */
+function viewChurches(){
+  const f=state.ui.dirFilters;
+  let list=state.data.churches.slice();
+  const liveIds=liveEvents().map(function(e){return e.churchId;});
+  if(f.q){const q=f.q.toLowerCase();list=list.filter(function(c){
+    return (c.name+' '+(c.city||'')+' '+(c.languages||[]).join(' ')+' '+(c.denomination||'')+' '+(c.serviceTimes||[]).join(' ')).toLowerCase().indexOf(q)>-1;});}
+  if(f.denom)list=list.filter(function(c){return c.denomination===f.denom;});
+  if(f.lang)list=list.filter(function(c){return (c.languages||[]).indexOf(f.lang)>-1;});
+  if(f.live)list=list.filter(function(c){return liveIds.indexOf(c.id)>-1;});
+  const langs=Array.from(new Set(state.data.churches.reduce(function(a,c){return a.concat(c.languages||[]);},[])));
+  const denoms=Array.from(new Set(state.data.churches.map(function(c){return c.denomination;}).filter(Boolean)));
+  const cities=Array.from(new Set(state.data.churches.map(function(c){return c.city;}).filter(Boolean)));
+  const church=isChurchSession();
+  return topbar(church?'Churches on the ark':'Churches',state.data.churches.length+' verified churches · '+cities.length+' cities',{
+    actions:'<button class="icon-btn'+(state.ui.dir==='map'?' active':'')+'" data-act="dir-view" aria-label="Toggle map">'+ico(state.ui.dir==='map'?'list':'pin',18)+'</button>',
+    back:church?'console-c2c':null,
+    extra:'<div class="mt-16"><div class="row gap-10">'
+      +'<div class="glass row gap-10" style="flex:1;padding:0 16px;height:52px;border-radius:var(--r-pill)">'+ico('search',18,'dim')
+      +'<input class="grow" id="dirQ" placeholder="Tamil service near me, Sunday 9am" value="'+esc(f.q)+'" style="background:none;border:0;outline:none;height:100%;min-width:0">'
+      +(f.q?'<button data-act="dir-clear" aria-label="Clear">'+ico('x',16)+'</button>':'')+'</div>'
+      +'<button class="btn btn-primary btn-sm" data-act="dir-search" style="height:52px;padding:0 20px">Search</button></div>'
+      +'<div class="scroll-x mt-12">'
+      +'<button class="chip'+(f.live?' on':'')+'" data-act="dir-live"><i class="dot-live"></i>Live now</button>'
+      +langs.map(function(l){return '<button class="chip'+(f.lang===l?' on':'')+'" data-act="dir-lang" data-v="'+esc(l)+'">'+esc(l)+'</button>';}).join('')
+      +denoms.map(function(d){return '<button class="chip'+(f.denom===d?' on':'')+'" data-act="dir-denom" data-v="'+esc(d)+'">'+esc(d)+'</button>';}).join('')
+      +'</div></div>'})
+    +'<div class="view stack">'
+    +(state.ui.dir==='map'?mapPanel(list):'')
+    +'<div class="stack gap-12 stagger mt-8">'
+    +(list.length?list.map(function(c){return churchCard(c,liveIds.indexOf(c.id)>-1);}).join('')
+      :empty('search',state.ui.ready?'No churches match':'Loading directory','Try clearing a filter or searching a different language or city.',
+        '<button class="btn btn-sm btn-ghost" data-act="dir-reset">Clear all filters</button>'))+'</div>'
+    +'<div style="height:30px"></div></div>';
+}
+function mapPanel(list){
+  return '<div class="glass" style="height:210px;overflow:hidden;position:relative;margin-bottom:14px">'
+    +'<div class="cover-art" style="background:radial-gradient(70% 90% at 30% 20%,rgba(127,212,245,.22),transparent 62%),linear-gradient(160deg,#111A3E,#0A0F2A)"></div>'
+    +'<svg viewBox="0 0 400 210" style="position:absolute;inset:0;width:100%;height:100%" aria-hidden="true">'
+    +'<g stroke="rgba(127,212,245,.16)" stroke-width="1">'
+    +[40,80,120,160].map(function(y){return '<path d="M0 '+y+'h400"/>';}).join('')
+    +[70,150,230,310].map(function(x){return '<path d="M'+x+' 0v210"/>';}).join('')+'</g>'
+    +'<path d="M0 150 C80 120 120 60 200 52 S340 30 400 10" stroke="rgba(0,163,225,.28)" stroke-width="1.4" fill="none"/></svg>'
+    +list.slice(0,6).map(function(c,i){
+      const x=14+((Math.abs(hash(c.id))%78)),y=16+((Math.abs(hash(c.name))%62));
+      return '<button data-go="church-profile" data-id="'+c.id+'" style="position:absolute;left:'+x+'%;top:'+y+'%;transform:translate(-50%,-100%)" aria-label="'+esc(c.name)+'">'
+        +'<span style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;background:rgba(12,17,40,.85);border:1px solid rgba(0,163,225,.4);color:var(--brand);font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4)">'
+        +ico('pin',13)+esc(c.name.split(' ')[0])+'</span></button>';}).join('')
+    +'<div style="position:absolute;left:14px;bottom:12px" class="cap">Prototype map · '+list.length+' churches in view</div></div>';
+}
+function churchCard(c,isLive){
+  const following=myChurchIds().indexOf(c.id)>-1;
+  if(isChurchSession())return churchCardC2C(c,isLive);
+  return '<article class="glass press pad stack gap-14" data-go="church-profile" data-id="'+c.id+'">'
+    +'<div class="row between gap-12">'
+    +'<div class="row gap-14" style="min-width:0">'
+    +'<div class="avatar avatar-lg" style="background:'+grad(c.id)+';border-radius:20px">'+initials(c.name)+'</div>'
+    +'<div class="stack gap-6" style="min-width:0">'
+    +'<div class="row gap-6 wrap"><h3 class="h2" style="font-size:20px">'+esc(c.name)+'</h3>'+(c.verified!==false?'<span class="accent" style="display:flex;align-self:center">'+ico('shield',15)+'</span>':'')+'</div>'
+    +'<span class="cap">'+esc(c.denomination||'')+' · '+esc(c.city||'')+'</span>'
+    +'<div class="row gap-6 wrap">'+(isLive?'<span class="badge badge-live"><i class="dot-live"></i>Live</span>':'')
+    +(c.languages||[]).slice(0,3).map(function(l){return '<span class="badge badge-ice">'+esc(l)+'</span>';}).join('')+'</div>'
+    +'</div></div></div>'
+    +'<p class="body" style="font-size:14.5px">'+esc(c.tagline||'')+'</p>'
+    +'<div class="row between gap-12">'
+    +'<span class="cap row gap-6">'+ico('clock',14)+esc((c.serviceTimes||[])[0]||'Service times inside')+'</span>'
+    +'<button class="btn btn-xs '+(following?'btn-ghost':'btn-outline')+'" data-act="follow" data-id="'+c.id+'">'+(following?ico('check',14)+'Following':ico('plus',14)+'Follow')+'</button>'
+    +'</div></article>';
+}
+/* the same card seen through a church account: connect / message instead of follow */
+function c2cButtons(c,size){
+  const me=state.session&&state.session.churchId;
+  if(!me||c.id===me)return '';
+  const conn=connectionBetween(me,c.id);
+  const cls='btn '+(size||'btn-xs');
+  if(conn&&conn.status==='accepted')return '<button class="'+cls+' btn-primary" data-act="c2c-message" data-id="'+c.id+'">'+ico('msg',14)+'Message</button>';
+  if(conn&&conn.status==='pending'&&conn.to===me)return '<button class="'+cls+' btn-primary" data-act="c2c-accept" data-id="'+conn.id+'">'+ico('check',14)+'Accept</button>';
+  if(conn&&conn.status==='pending')return '<button class="'+cls+' btn-ghost" data-act="c2c-cancel" data-id="'+conn.id+'">'+ico('clock',14)+'Requested</button>';
+  return '<button class="'+cls+' btn-outline" data-act="c2c-connect" data-id="'+c.id+'">'+ico('plus',14)+'Connect</button>';
+}
+function churchCardC2C(c,isLive){
+  const me=state.session.churchId;
+  const shared=myConnections(me).filter(function(id){return myConnections(c.id).indexOf(id)>-1;}).length;
+  return '<article class="glass press pad stack gap-14" data-go="church-profile" data-id="'+c.id+'">'
+    +'<div class="row between gap-12"><div class="row gap-14" style="min-width:0">'
+    +'<div class="avatar avatar-lg" style="background:'+grad(c.id)+';border-radius:20px">'+initials(c.name)+'</div>'
+    +'<div class="stack gap-6" style="min-width:0">'
+    +'<div class="row gap-6 wrap"><h3 class="h2" style="font-size:20px">'+esc(c.name)+'</h3>'+(c.verified!==false?'<span class="accent" style="display:flex;align-self:center">'+ico('shield',15)+'</span>':'')+'</div>'
+    +'<span class="cap">'+esc(c.denomination||'')+' · '+esc(c.city||'')+' · '+esc(c.pastorName||'')+'</span>'
+    +'<div class="row gap-6 wrap">'+(isLive?'<span class="badge badge-live"><i class="dot-live"></i>Live</span>':'')
+    +'<span class="badge badge-ice num">'+myConnections(c.id).length+' connections</span>'+(shared?'<span class="badge badge-accent num">'+shared+' shared</span>':'')+'</div>'
+    +'</div></div></div>'
+    +'<p class="body" style="font-size:14.5px">'+esc(c.tagline||'')+'</p>'
+    +'<div class="row between gap-12"><span class="cap row gap-6">'+ico('users',14)+'<span class="num">'+Number(c.followers||0).toLocaleString('en-IN')+'</span> followers</span>'+c2cButtons(c)+'</div></article>';
+}
+/* ---------- church profile ---------- */
+function viewChurchProfile(){
+  const c=churchById(state.params.id);
+  if(!c)return '<div class="view screen-pad">'+empty('church','Church not found','This profile may still be syncing.','<button class="btn btn-sm btn-ghost" data-go="churches">Back to directory</button>')+'</div>';
+  const following=myChurchIds().indexOf(c.id)>-1;
+  const home=state.session&&state.session.homeChurchId===c.id;
+  const church=isChurchSession(),mine=church&&state.session.churchId===c.id;
+  const tab=state.ui.churchTab;
+  const posts=churchPosts().filter(function(p){return p.churchId===c.id;}).sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);});
+  const conns=myConnections(c.id).map(churchById).filter(Boolean);
+  const evs=upcomingEvents().filter(function(e){return e.churchId===c.id;});
+  const serms=posts.filter(function(p){return p.type==='sermon';});
+  const camps=state.data.campaigns.filter(function(g){return g.churchId===c.id;});
+  const live=liveEvents().filter(function(e){return e.churchId===c.id;})[0];
+  let body='';
+  if(tab==='Posts')body=posts.length?'<div class="stack gap-14 stagger">'+posts.map(function(p){return postCard(p);}).join('')+'</div>':empty('edit','No posts yet','When this church publishes, it will appear here.');
+  else if(tab==='Events')body=evs.length?'<div class="stack gap-12 stagger">'+evs.map(eventCard).join('')+'</div>':empty('cal','No upcoming events','Check back soon — events are added weekly.');
+  else if(tab==='Sermons')body=serms.length?'<div class="stack gap-12 stagger">'+serms.map(function(p){
+      return '<button class="glass press pad-sm row gap-14 between" data-go="post" data-id="'+p.id+'" style="text-align:left">'
+        +'<span class="row gap-12" style="min-width:0"><span class="icon-btn active" style="flex:none">'+ico('play',18)+'</span>'
+        +'<span class="stack gap-3" style="min-width:0"><span class="h3">'+esc(p.title||'Message')+'</span>'
+        +'<span class="cap">'+esc(p.speaker||c.pastorName||'')+' · '+fmtDate(p.createdAt)+' · '+esc(p.duration||'38 min')+'</span></span></span>'
+        +ico('chevR',18)+'</button>';}).join('')+'</div>':empty('mic','Sermon library is filling up','Recorded messages appear here with transcript and summary.');
+  else if(tab==='Groups')body='<div class="stack gap-12">'+(c.ministries||['Worship','Youth','Prayer']).map(function(m,i){
+      return '<div class="glass pad-sm row between gap-12"><span class="row gap-12">'
+        +'<span class="avatar avatar-sm" style="background:'+grad(m+i)+'">'+initials(m)+'</span>'
+        +'<span class="stack gap-2"><span class="h3">'+esc(m)+'</span><span class="cap num">'+(12+(Math.abs(hash(m))%40))+' members · meets weekly</span></span></span>'
+        +'<button class="btn btn-xs btn-ghost" data-act="join-group" data-v="'+esc(m)+'">Request</button></div>';}).join('')+'</div>';
+  else if(tab==='Giving')body=camps.length?'<div class="stack gap-12">'+camps.map(campaignCard).join('')+'</div>'
+      :empty('gift','No active campaigns','This church has not opened a giving campaign yet.');
+  else body='<div class="stack gap-14">'
+      +'<div class="glass pad stack gap-12"><span class="eyebrow accent">About</span><p class="body">'+esc(c.about||c.tagline||'')+'</p></div>'
+      +'<div class="glass pad stack gap-14"><span class="eyebrow accent">Service times</span>'
+      +(c.serviceTimes||[]).map(function(s){return '<div class="row gap-10">'+ico('clock',16,'dim')+'<span class="body" style="color:var(--text-1)">'+esc(s)+'</span></div>';}).join('')
+      +'<hr class="divider"><div class="row gap-10">'+ico('pin',16,'dim')+'<span class="body" style="color:var(--text-1)">'+esc(c.address||c.city||'')+'</span></div>'
+      +'<div class="row gap-10">'+ico('me',16,'dim')+'<span class="body" style="color:var(--text-1)">'+esc(c.pastorName||'')+'</span></div>'
+      +'<div class="row gap-10">'+ico('globe',16,'dim')+'<span class="body" style="color:var(--text-1)">'+esc((c.languages||[]).join(' · '))+'</span></div></div>'
+      +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Ministries</span><div class="row gap-8 wrap">'
+      +(c.ministries||[]).map(function(m){return '<span class="chip static">'+esc(m)+'</span>';}).join('')+'</div></div>'
+      +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Gallery</span><div class="scroll-x" style="gap:10px">'
+      +['arches','festival','stage','water','hills','table'].map(function(k,i){
+        return '<div style="width:148px;height:100px;border-radius:14px;flex:none;overflow:hidden;position:relative;border:1px solid var(--border)">'+sceneArt(k,c.id+k+i)+'</div>';}).join('')
+      +'</div><p class="cap">Scene artwork until this church uploads its own photographs.</p></div>'
+      +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Connected churches · '+conns.length+'</span>'
+      +(conns.length?conns.map(function(x){return '<button class="row between gap-12" data-go="church-profile" data-id="'+x.id+'" style="text-align:left">'
+        +'<span class="row gap-10"><span class="avatar avatar-sm" style="background:'+grad(x.id)+'">'+initials(x.name)+'</span>'
+        +'<span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(x.name)+'</span><span class="cap">'+esc(x.city||'')+'</span></span></span>'+ico('chevR',16)+'</button>';}).join('')
+        :'<p class="cap">No connections yet.</p>')+'</div>';
+  return '<div class="view-wide" style="padding-top:14px">'
+    +'<button class="row gap-6 cap mt-8" data-go="'+(church?'console-c2c':'churches')+'" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+(church?'Churches':'Directory')+'</button>'
+    +'<div class="cover" style="height:190px">'+(photoFor(c.id)?'<img src="'+esc(photoFor(c.id))+'" alt="'+esc(c.name)+'" style="width:100%;height:100%;object-fit:cover;display:block">':coverArt(c.id))+'</div>'
+    +'<div class="view" style="padding:0;margin-top:-38px;position:relative;max-width:none">'
+    +'<div class="glass pad stack gap-16">'
+    +'<div class="row between gap-12" style="margin-top:-46px">'
+    +'<div class="avatar avatar-lg" style="background:'+grad(c.id)+';border:3px solid var(--bg-1);border-radius:26px">'+initials(c.name)+'</div>'
+    +(live?'<button class="badge badge-live" data-go="event" data-id="'+live.id+'" style="height:30px;padding:0 12px"><i class="dot-live"></i>Live now</button>':'')+'</div>'
+    +'<div class="stack gap-8"><div class="row gap-8 wrap"><h1 class="h1">'+esc(c.name)+'</h1>'+(c.verified!==false?verifiedTag():'<span class="badge badge-ice">Pending</span>')+'</div>'
+    +'<p class="body">'+esc(c.tagline||'')+'</p>'
+    +'<div class="row gap-14 wrap cap">'
+    +'<span class="row gap-6">'+ico('me',14)+'<span class="num">'+Number((c.followers||0)+(following?1:0)).toLocaleString('en-IN')+'</span> following</span>'
+    +'<span class="row gap-6">'+ico('church',14)+'<span class="num">'+conns.length+'</span> connections</span>'
+    +'<span class="row gap-6">'+ico('pin',14)+esc(c.city||'')+'</span>'
+    +'<span class="row gap-6">'+ico('globe',14)+esc((c.languages||[]).slice(0,2).join(', '))+'</span></div></div>'
+    +(church
+      ?'<div class="row gap-10 wrap">'+(mine?'<button class="btn btn-sm btn-primary grow" data-go="console">'+ico('grid',16)+'Open console</button>':c2cButtons(c,'btn-sm grow'))
+        +'<button class="icon-btn" data-act="share-church" data-id="'+c.id+'" aria-label="Share">'+ico('share',17)+'</button></div>'
+      :'<div class="row gap-10 wrap">'
+        +'<button class="btn btn-sm '+(following?'btn-ghost':'btn-primary')+' grow" data-act="follow" data-id="'+c.id+'">'+(following?ico('check',16)+'Following':ico('plus',16)+'Follow')+'</button>'
+        +'<button class="btn btn-sm btn-ghost" data-act="home-church" data-id="'+c.id+'">'+ico(home?'check':'star',16)+(home?'Home church':'Set as home')+'</button>'
+        +'<button class="icon-btn" data-act="church-msg" data-id="'+c.id+'" aria-label="Message">'+ico('msg',17)+'</button>'
+        +'<button class="icon-btn" data-act="share-church" data-id="'+c.id+'" aria-label="Share">'+ico('share',17)+'</button></div>')
+    +(camps.length?'<button class="btn btn-sm btn-outline btn-block" data-go="campaign" data-id="'+camps[0].id+'">'+ico('gift',16)+'Give to '+esc(camps[0].title)+'</button>':'')
+    +'</div>'
+    +'<div class="tabs mt-16">'+['Posts','Events','Sermons','Groups','Giving','About'].map(function(t){
+        return '<button class="tab'+(tab===t?' on':'')+'" data-act="church-tab" data-v="'+t+'">'+t+'</button>';}).join('')+'</div>'
+    +'<div class="mt-16">'+body+'</div><div style="height:36px"></div></div></div>';
+}
+function eventCard(e){
+  const going=(state.local.rsvps||[]).indexOf(e.id)>-1;
+  return '<article class="glass press pad stack gap-12" data-go="event" data-id="'+e.id+'">'
+    +'<div class="row between gap-12">'
+    +'<div class="stack gap-3" style="min-width:0">'
+    +'<span class="row gap-8">'+(e.isLive?'<span class="badge badge-live"><i class="dot-live"></i>Live</span>':'<span class="badge badge-accent">'+fmtDate(e.datetime)+'</span>')
+    +'<span class="cap">'+fmtTime(e.datetime)+'</span></span>'
+    +'<h3 class="h2" style="font-size:19px;margin-top:4px">'+esc(e.title)+'</h3>'
+    +'<span class="cap">'+esc(e.churchName||'')+' · '+esc(e.location||'Online')+'</span></div>'
+    +'<div class="stack center gap-2" style="flex:none;width:56px;height:56px;border-radius:18px;background:var(--surface-2);border:1px solid var(--border)">'
+    +'<span class="num" style="font-size:20px;line-height:1;font-weight:800;letter-spacing:-.02em">'+dt(e.datetime).getDate()+'</span>'
+    +'<span class="cap" style="font-size:10px;text-transform:uppercase;letter-spacing:.1em">'+MONTHS[dt(e.datetime).getMonth()]+'</span></div></div>'
+    +'<div class="row between gap-12"><span class="cap row gap-6">'+ico('users',14)+'<span class="num">'+(e.rsvpCount||0)+'</span> going'+(e.capacity?' · '+e.capacity+' seats':'')+'</span>'
+    +'<button class="btn btn-xs '+(going?'btn-ghost':'btn-outline')+'" data-act="rsvp" data-id="'+e.id+'">'+(going?ico('check',13)+'Going':'RSVP')+'</button></div></article>';
+}
+function viewEvent(){
+  const e=state.data.events.find(function(x){return x.id===state.params.id;});
+  if(!e)return '<div class="view screen-pad">'+empty('cal','Event not found','It may have ended or been removed.','<button class="btn btn-sm btn-ghost" data-go="home">Home</button>')+'</div>';
+  const going=(state.local.rsvps||[]).indexOf(e.id)>-1;
+  const c=churchById(e.churchId);
+  return '<div class="view" style="padding-top:14px">'
+    +'<button class="row gap-6 cap mt-8" data-go="'+(state.params.from||'home')+'" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+'Back</button>'
+    +'<div class="cover" style="height:'+(e.isLive?'220px':'160px')+'">'+(hasMedia(e)?mediaInner(e):coverArt(e.id))
+    +(e.isLive?'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">'
+      +'<button class="icon-btn active" data-act="join-live" data-id="'+e.id+'" style="width:66px;height:66px;background:rgba(12,17,40,.7);box-shadow:0 0 30px rgba(0,163,225,.35)">'+ico('play',26)+'</button>'
+      +'<span class="badge badge-live"><i class="dot-live"></i>Live now · <span class="num">'+(e.rsvpCount||0)+'</span> here</span></div>':'')
+    +'</div>'
+    +'<div class="glass pad stack gap-16 mt-16">'
+    +'<div class="stack gap-8">'
+    +'<span class="row gap-8 wrap">'+(e.isLive?'<span class="badge badge-live"><i class="dot-live"></i>Live</span>':'')
+    +'<span class="badge badge-accent">'+ico('cal',12)+fmtDate(e.datetime)+' · '+fmtTime(e.datetime)+'</span>'
+    +'<span class="badge badge-ice">'+ico(e.locationType==='online'?'globe':'pin',12)+esc(e.locationType==='online'?'Online':'In person')+'</span></span>'
+    +'<h1 class="h1">'+esc(e.title)+'</h1>'
+    +'<button class="row gap-10" data-go="church-profile" data-id="'+esc(e.churchId)+'" style="text-align:left">'
+    +'<span class="avatar avatar-sm" style="background:'+grad(e.churchId)+'">'+initials(e.churchName)+'</span>'
+    +'<span class="stack gap-2"><span class="h3" style="font-size:14px">'+esc(e.churchName||'')+'</span><span class="cap">'+esc((c&&c.city)||'')+'</span></span></button></div>'
+    +'<p class="body">'+esc(e.description||'').replace(/\n/g,'<br>')+'</p>'
+    +'<div class="stack gap-10">'
+    +'<div class="row gap-10">'+ico('pin',17,'dim')+'<span class="body" style="color:var(--text-1)">'+esc(e.location||'Online stream')+'</span></div>'
+    +'<div class="row gap-10">'+ico('users',17,'dim')+'<span class="body" style="color:var(--text-1)"><span class="num">'+(e.rsvpCount||0)+'</span> going'+(e.capacity?' of '+e.capacity+' seats':'')+'</span></div>'
+    +'<div class="row gap-10">'+ico('bell',17,'dim')+'<span class="body" style="color:var(--text-1)">Reminders 1 day and 1 hour before</span></div></div>'
+    +'<div class="row gap-10">'
+    +'<button class="btn '+(going?'btn-ghost':'btn-primary')+' grow" data-act="rsvp" data-id="'+e.id+'">'+(going?ico('check',18)+'You\'re going':'RSVP to attend')+'</button>'
+    +(e.isLive?'<button class="btn btn-outline" data-act="join-live" data-id="'+e.id+'">'+ico('play',17)+'Join</button>':'<button class="icon-btn" data-act="share-event" data-id="'+e.id+'">'+ico('share',17)+'</button>')+'</div>'
+    +'</div><div style="height:36px"></div></div>';
+}
+function viewPost(){
+  const p=state.data.posts.find(function(x){return x.id===state.params.id;});
+  if(!p)return '<div class="view screen-pad">'+empty('edit','Post not found','It may have been removed.','<button class="btn btn-sm btn-ghost" data-go="home">Home</button>')+'</div>';
+  const back=p.communityId?'data-go="community-page" data-id="'+esc(p.communityId)+'"':'data-go="'+esc(state.params.from&&state.params.from!=='post'&&state.params.from!=='moment'?state.params.from:(isChurchSession()?'console':'home'))+'"';
+  return '<div class="view" style="padding-top:14px">'
+    +'<button class="row gap-6 cap mt-8" '+back+' style="color:var(--text-3);margin-bottom:14px">'+ico('arrowL',16)+(p.communityId?esc((communityById(p.communityId)||{}).name||'Community'):'Back')+'</button>'
+    +postCard(p,{full:true})
+    +'<div class="sec-title"><span class="eyebrow accent">Conversation · '+commentsFor(p.id).length+'</span></div>'
+    +(commentsFor(p.id).length?'<div class="stack gap-10">'+commentsFor(p.id).map(function(c){
+      return '<article class="glass pad-sm row gap-12" style="align-items:flex-start">'
+        +'<button class="avatar avatar-sm" data-go="person-profile" data-id="'+esc(c.authorId||'')+'" style="background:'+grad(c.authorId||c.authorName)+';flex:none">'+initials(c.authorName)+'</button>'
+        +'<div class="stack gap-4" style="min-width:0">'
+        +'<div class="row gap-8 wrap"><span class="h3" style="font-size:14px">'+esc(c.authorName)+'</span>'
+        +(isMe(c.authorId)?'<span class="badge badge-ice" style="height:18px;padding:0 7px;font-size:9.5px">You</span>':'')
+        +'<span class="cap" style="font-size:11px">'+ago(c.createdAt)+'</span></div>'
+        +'<p class="body" style="font-size:14.5px;color:var(--text-1)">'+esc(c.text).replace(/\n/g,'<br>')+'</p>'
+        +'<div class="row gap-12"><button class="cap" data-act="amen-comment" data-id="'+c.id+'">\u{1F64F} Amen'+(c.amens?' · '+c.amens:'')+'</button>'
+        +'<button class="cap" data-act="reply-comment" data-v="'+esc(c.authorName)+'">Reply</button></div></div></article>';
+    }).join('')+'</div>'
+      :'<div class="glass pad" style="text-align:center"><p class="cap">No comments yet — be the first to say something kind.</p></div>')
+    +'<div class="glass row gap-10 mt-16" style="padding:8px 8px 8px 14px;border-radius:var(--r-pill);position:sticky;bottom:calc(var(--nav-h) + 14px);z-index:10">'
+    +'<span class="avatar avatar-sm" style="background:'+grad((state.session&&state.session.avatarSeed)||'guest')+';width:34px;height:34px">'+(state.session?initials(state.session.name):ico('me',15))+'</span>'
+    +'<input class="grow" id="cmtBox" placeholder="Write something kind…" style="background:none;border:0;outline:none;height:42px;min-width:0">'
+    +'<button class="btn btn-primary" data-act="comment" data-id="'+p.id+'" style="height:42px;width:42px;padding:0;border-radius:50%">'+ico('send',17)+'</button></div>'
+    +'<div style="height:30px"></div></div>';
+}
+
+/* ---------- believers (read-only cards: believers are met inside communities, not followed) ---------- */
+function viewPersonProfile(){
+  const id=state.params.id;
+  const me=isMe(id);
+  const p=me?meAsPerson():personById(id);
+  if(!p)return '<div class="view screen-pad">'+empty('me','Believer not found','This profile may have been removed.','<button class="btn btn-sm btn-ghost" data-go="home">Back</button>')+'</div>';
+  const posts=communityThreads().filter(function(x){return x.authorId===id;});
+  const prayers=state.data.prayers.filter(function(x){return x.authorId===id&&x.visibility==='public';});
+  const c=p.homeChurchId?churchById(p.homeChurchId):null;
+  const joined=me?myCommunityIds().map(communityById).filter(Boolean):Array.from(new Set(posts.map(function(x){return x.communityId;}))).map(communityById).filter(Boolean);
+  const tab=state.ui.personTab||'Posts';
+  let body='';
+  if(tab==='Posts')body=posts.length?'<div class="stack gap-14 stagger">'+posts.map(function(x){return postCard(x,{follow:false});}).join('')+'</div>'
+    :empty('edit',me?'You haven\'t written in a community yet':'Nothing shared yet',me?'Join a community and start a conversation — that is where believers speak on the ark.':'When they write in a community, it appears here.',
+      me?'<button class="btn btn-sm btn-primary" data-go="community">Browse communities</button>':'');
+  else if(tab==='Prayers')body=prayers.length?'<div class="stack gap-12">'+prayers.map(prayerCard).join('')+'</div>':empty('hands','No public prayer requests','Requests shared publicly appear here.');
+  else body='<div class="stack gap-14">'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">About</span><p class="body">'+esc(p.bio||'A believer on the journey.')+'</p>'
+    +(c?'<button class="row gap-10" data-go="church-profile" data-id="'+c.id+'" style="text-align:left">'+ico('church',16,'dim')
+      +'<span class="body" style="color:var(--text-1)">Home church · '+esc(c.name)+'</span></button>':'')
+    +'<div class="row gap-10">'+ico('pin',16,'dim')+'<span class="body" style="color:var(--text-1)">'+esc(p.city||'')+'</span></div>'
+    +(p.joinedAt?'<div class="row gap-10">'+ico('cal',16,'dim')+'<span class="body" style="color:var(--text-1)">On the ark since '+fmtDate(p.joinedAt)+'</span></div>':'')+'</div>'
+    +(joined.length?'<div class="glass pad stack gap-12"><span class="eyebrow accent">Communities</span><div class="row gap-8 wrap">'
+      +joined.map(function(x){return '<button class="chip" data-go="community-page" data-id="'+x.id+'">'+ico(x.icon||'users',13)+esc(x.name)+'</button>';}).join('')+'</div></div>':'')
+    +(me?'<div class="glass pad stack gap-12"><span class="eyebrow accent">Your profile</span>'
+      +'<button class="btn btn-ghost btn-block" data-act="edit-profile">'+ico('edit',17)+'Edit profile</button></div>':'');
+  return '<div class="view" style="padding-top:14px">'
+    +'<button class="row gap-6 cap mt-8" data-go="'+(state.params.from||'home')+'" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+'Back</button>'
+    +'<div class="cover" style="height:118px">'+coverArt(p.id)+'</div>'
+    +'<div class="glass pad stack gap-16" style="margin-top:-34px;position:relative">'
+    +'<div class="row between gap-12" style="margin-top:-44px">'
+    +'<span class="avatar avatar-lg" style="background:'+grad(p.id)+';border:3px solid var(--bg-1);border-radius:26px">'+initials(p.name)+'</span></div>'
+    +'<div class="stack gap-8"><h1 class="h1">'+esc(p.name)+'</h1>'
+    +'<p class="body">'+esc(p.bio||'A believer on the journey.')+'</p>'
+    +'<div class="row gap-14 wrap cap">'
+    +'<span class="row gap-6">'+ico('pin',14)+esc(p.city||'')+'</span>'
+    +(c?'<button class="row gap-6 ice" data-go="church-profile" data-id="'+c.id+'">'+ico('church',14)+esc(c.name)+'</button>':'')+'</div></div>'
+    +'<div class="row gap-16">'
+    +'<span class="stack gap-2"><span class="h3 num">'+posts.length+'</span><span class="cap" style="font-size:11px">Community posts</span></span>'
+    +'<span class="stack gap-2"><span class="h3 num">'+joined.length+'</span><span class="cap" style="font-size:11px">Communities</span></span>'
+    +'<span class="stack gap-2"><span class="h3 num">'+(me?myChurchIds().length:(p.following||0))+'</span><span class="cap" style="font-size:11px">Churches</span></span></div>'
+    +(me?'<button class="btn btn-sm btn-ghost btn-block" data-act="edit-profile">'+ico('edit',16)+'Edit profile</button>':'')
+    +'</div>'
+    +'<div class="tabs mt-16">'+['Posts','Prayers','About'].map(function(t){
+      return '<button class="tab'+(tab===t?' on':'')+'" data-act="person-tab" data-v="'+t+'">'+t+'</button>';}).join('')+'</div>'
+    +'<div class="mt-16">'+body+'</div><div style="height:36px"></div></div>';
+}
+function myOwnPosts(){const s=state.session;return s?state.data.posts.filter(function(p){return p.authorType==='person'&&p.authorId===s.id;}):[];}
+function savedPosts(){const ids=state.local.saved||[];return state.data.posts.filter(function(p){return ids.indexOf(p.id)>-1;});}
+function meAsPerson(){
+  const s=state.session;if(!s)return null;
+  return {id:s.id,name:s.name,city:s.city,bio:s.bio||'',homeChurchId:s.homeChurchId,followers:s.followers||0,
+    following:myChurchIds().length,joinedAt:s.createdAt};
+}
+
+/* ---------- moments (stories) ---------- */
+function viewMoment(){
+  const src=momentSources(),m=src[state.ui.momentIndex||0];
+  if(!m)return '';
+  const i=state.ui.momentPost||0,p=m.posts[Math.min(i,m.posts.length-1)];
+  const a=m.author,reacted=state.local.reacted[p.id];
+  return '<div class="story">'
+    +'<div class="story-bars">'+m.posts.map(function(x,k){
+      return '<span class="story-bar'+(k<i?' done':k===i?' now':'')+'"><i></i></span>';}).join('')+'</div>'
+    +'<div class="row between gap-12" style="padding:6px 16px 0">'
+    +'<button class="row gap-10" data-go="'+(a.type==='person'?'person-profile':'church-profile')+'" data-id="'+esc(a.id)+'" style="text-align:left">'
+    +'<span class="avatar avatar-sm" style="background:'+grad(a.seed)+'">'+initials(a.name)+'</span>'
+    +'<span class="stack gap-2"><span class="h3" style="font-size:14px">'+esc(a.name)+'</span>'
+    +'<span class="cap">'+ago(p.createdAt)+'</span></span></button>'
+    +'<div class="row gap-8">'+(m.live?'<span class="badge badge-live"><i class="dot-live"></i>Live</span>':'')
+    +'<button class="icon-btn" data-act="close-moment" aria-label="Close">'+ico('x',18)+'</button></div></div>'
+    +'<div class="story-body">'
+    +(hasMedia(p)?'<div style="position:absolute;inset:0;opacity:.5">'+mediaInner(p)+'</div>'
+      +'<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,8,19,.55),rgba(5,8,19,.9))"></div>':'')
+    +'<div class="story-nav"><button data-act="moment-prev" aria-label="Previous"></button><button data-act="moment-next" aria-label="Next"></button></div>'
+    +'<div class="aurora" style="height:60vh;opacity:.5"></div>'
+    +'<div class="stack gap-18" style="position:relative;z-index:2;max-width:560px;margin:0 auto;width:100%">'
+    +(p.title?'<h1 class="display" style="font-size:32px">'+esc(p.title)+'</h1>':'')
+    +'<p class="scripture" style="font-size:21px">'+esc(p.content||'')+'</p>'
+    +(p.verseRef?'<span class="verse-ref">'+esc(p.verseRef)+'</span>':'')
+    +(p.live?'':'<div class="row gap-8 wrap" style="position:relative;z-index:3">'
+    +REACTIONS.map(function(r){
+      return '<button class="react'+(reacted===r.k?' on':'')+'" data-act="react" data-id="'+p.id+'" data-k="'+r.k+'"><span class="em">'+r.e+'</span></button>';}).join('')
+    +'</div>')+'</div></div>'
+    +'<div class="row gap-10" style="padding:14px 16px calc(16px + env(safe-area-inset-bottom));position:relative;z-index:3">'
+    +(p.live?'':'<button class="btn btn-ghost btn-sm grow" data-go="church-profile" data-id="'+esc(a.id)+'">'+ico('church',16)+'Visit church</button>')
+    +(m.live?'<button class="btn btn-primary btn-sm grow" data-act="join-live" data-id="'+esc(p.eventId||(liveEvents().find(function(e){return e.churchId===a.id;})||{}).id||'')+'">'+ico('play',16)+'Join the stream</button>':'')
+    +'</div></div>';
+}
+
+/* ---------- notifications ---------- */
+function notifItems(){
+  const out=[],cf=myChurchIds(),s=state.session,now=Date.now();
+  if(isChurchSession()&&s.churchId){
+    threadsFor(s.churchId).forEach(function(t){const m=lastMsg(t);if(!m.from||m.from===s.churchId)return;
+      out.push({t:m.at,icon:'msg',tone:'ice',title:esc((t.names||{})[m.from]||'A church')+' sent a message',sub:esc(m.text.slice(0,72)),go:'console-thread',id:t.id});});
+    pendingFor(s.churchId).forEach(function(c){const ch=churchById(c.from);
+      out.push({t:c.createdAt||new Date().toISOString(),icon:'church',tone:'accent',title:esc((ch&&ch.name)||'A church')+' wants to connect',sub:'Accept from the Churches tab',go:'console-c2c',id:''});});
+    return out.sort(function(a,b){return dt(b.t)-dt(a.t);}).slice(0,40);
+  }
+  churchPosts().forEach(function(p){
+    if(cf.indexOf(p.churchId)<0)return;
+    out.push({t:p.createdAt,icon:'church',tone:p.type==='broadcast'&&p.priority==='Urgent'?'rose':'accent',
+      title:esc(p.churchName||'A church')+(p.type==='sermon'?' posted a sermon':p.type==='broadcast'?' sent a broadcast':p.type==='event'?' announced an event':p.type==='occasion'?' shared an occasion':' shared a post'),
+      sub:esc((p.title||p.content||'').slice(0,72)),go:'post',id:p.id});
+  });
+  liveEvents().forEach(function(e){
+    out.push({t:new Date().toISOString(),icon:'radio',tone:'live',title:esc(e.churchName)+' is live now',sub:esc(e.title),go:'event',id:e.id});
+  });
+  reminderEvents().forEach(function(e){
+    const h=(dt(e.datetime).getTime()-now)/3600e3,r=reminderPref(e.id);
+    if(h<=1&&h>-1&&r.h1)out.push({t:new Date(now-60e3).toISOString(),icon:'bell',tone:'accent',title:'Starting soon · '+esc(e.title),sub:esc(e.churchName||'')+' · '+fmtTime(e.datetime),go:'event',id:e.id});
+    else if(h<=24&&h>1&&r.d1)out.push({t:new Date(now-3600e3).toISOString(),icon:'bell',tone:'accent',title:'Tomorrow · '+esc(e.title),sub:esc(e.churchName||'')+' · '+fmtDate(e.datetime)+' '+fmtTime(e.datetime),go:'event',id:e.id});
+  });
+  state.data.prayers.forEach(function(pr){
+    if(!isMe(pr.authorId)||!pr.prayingCount)return;
+    out.push({t:pr.createdAt,icon:'hands',tone:'rose',title:pr.prayingCount+' people are praying for you',sub:esc(pr.text.slice(0,72)),go:'journey',id:''});
+  });
+  state.data.comments.forEach(function(c){
+    const p=state.data.posts.find(function(x){return x.id===c.postId;});
+    if(!p||!isMe(p.authorId)||isMe(c.authorId))return;
+    out.push({t:c.createdAt,icon:'msg',tone:'ice',title:esc(c.authorName)+' replied in '+esc((communityById(p.communityId)||{}).name||'a community'),sub:esc(c.text.slice(0,72)),go:'post',id:c.postId});
+  });
+  return out.sort(function(a,b){return dt(b.t)-dt(a.t);}).slice(0,40);
+}
+function viewNotifications(){
+  const items=notifItems();
+  const tones={accent:'var(--brand)',live:'var(--live)',rose:'var(--rose)',ice:'var(--ice)',mint:'var(--mint)'};
+  return topbar('Notifications','What happened while you were away',{back:'home',
+    actions:'<button class="chip" data-act="mark-read-notifs">'+ico('check',14)+'Mark read</button>'})
+    +'<div class="view stack gap-10">'
+    +(items.length?items.map(function(n){
+      const unread=!state.local.notifSeen||dt(n.t)>dt(state.local.notifSeen);
+      return '<button class="glass press pad-sm row gap-12 between" data-go="'+n.go+'" data-id="'+esc(n.id)+'" style="text-align:left'+(unread?';border-color:rgba(0,163,225,.28)':'')+'">'
+        +'<span class="row gap-12" style="min-width:0"><span class="icon-btn" style="flex:none;color:'+tones[n.tone]+'">'+ico(n.icon,17)+'</span>'
+        +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+n.title+'</span>'
+        +'<span class="cap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+n.sub+'</span>'
+        +'<span class="cap" style="font-size:11px">'+ago(n.t)+'</span></span></span>'
+        +(unread?'<span style="width:8px;height:8px;border-radius:50%;background:var(--brand);flex:none;box-shadow:0 0 10px rgba(0,163,225,.6)"></span>':ico('chevR',16))
+        +'</button>';}).join('')
+      :empty('bell','Nothing new','Follow churches and believers and their news lands here.','<button class="btn btn-sm btn-primary" data-go="churches">Find people to follow</button>'))
+    +'<div style="height:30px"></div></div>';
+}
+
+/* ---------- journey ---------- */
+function viewJourney(){
+  const tab=state.ui.journeyTab,tabs=['Timeline','Plan','Prayer','Journal','Family'];
+  let body='';
+  if(tab==='Timeline')body=journeyTimeline();
+  else if(tab==='Plan')body=journeyPlan();
+  else if(tab==='Prayer')body=journeyPrayer();
+  else if(tab==='Journal')body=journeyJournal();
+  else body=journeyFamily();
+  return topbar('Journey','Your walk, gathered',{
+    actions:'<button class="icon-btn" data-act="add-milestone" aria-label="Add milestone">'+ico('plus',18)+'</button>',
+    extra:'<div class="tabs mt-16">'+tabs.map(function(t){return '<button class="tab'+(tab===t?' on':'')+'" data-act="journey-tab" data-v="'+t+'">'+t+'</button>';}).join('')+'</div>'})
+    +'<div class="view stack">'+body+'<div style="height:30px"></div></div>';
+}
+function journeyItems(){
+  const items=[];
+  (state.local.milestones||[]).forEach(function(m){items.push({t:m.date,k:'milestone',title:m.title,sub:m.note||'Milestone'});});
+  (state.local.rsvps||[]).forEach(function(id){const e=state.data.events.find(function(x){return x.id===id;});
+    if(e)items.push({t:e.datetime,k:'event',title:e.title,sub:'RSVP · '+(e.churchName||''),id:e.id});});
+  (state.local.giving||[]).forEach(function(g){items.push({t:g.date,k:'giving',title:'Gave '+money(g.amount),sub:g.campaign});});
+  (state.local.journal||[]).slice(0,6).forEach(function(j){items.push({t:j.date,k:'journal',title:j.answered?'Answered prayer':'Journal entry',sub:j.text.slice(0,70)});});
+  if(state.local.lastRead)items.push({t:state.local.lastRead,k:'read',title:'Daily reading complete',sub:(myPlan()||{}).title||'Reading plan'});
+  return items.sort(function(a,b){return dt(b.t)-dt(a.t);});
+}
+function calendarCard(items){
+  const base=state.ui.calMonth?new Date(state.ui.calMonth):new Date();
+  const y=base.getFullYear(),m=base.getMonth();
+  const first=new Date(y,m,1),start=(first.getDay()+6)%7; // Monday first
+  const days=new Date(y,m+1,0).getDate(),prevDays=new Date(y,m,0).getDate();
+  const today=new Date();
+  const key=function(d){return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();};
+  const marks={};
+  items.forEach(function(i){const k=key(dt(i.t));marks[k]=marks[k]||[];if(marks[k].indexOf(i.k)<0)marks[k].push(i.k);});
+  upcomingEvents().forEach(function(e){if(myChurchIds().indexOf(e.churchId)<0)return;const k=key(dt(e.datetime));marks[k]=marks[k]||[];if(marks[k].indexOf('church')<0)marks[k].push('church');});
+  const tone={event:'var(--brand)',church:'var(--ice)',read:'var(--mint)',journal:'var(--rose)',milestone:'var(--brand)',giving:'var(--mint)'};
+  const sel=state.ui.calDay;
+  let cells='';
+  for(let i=0;i<start;i++)cells+='<span class="day dim">'+(prevDays-start+i+1)+'</span>';
+  for(let d=1;d<=days;d++){
+    const k=y+'-'+m+'-'+d,isT=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d;
+    cells+='<button class="day'+(isT?' today':'')+(sel===k?' on':'')+'" data-act="cal-day" data-v="'+k+'">'+d
+      +'<span class="marks">'+(marks[k]||[]).slice(0,3).map(function(t){return '<i style="background:'+tone[t]+'"></i>';}).join('')+'</span></button>';
+  }
+  const total=start+days,rest=(7-total%7)%7;
+  for(let i=1;i<=rest;i++)cells+='<span class="day dim">'+i+'</span>';
+  let dayList='';
+  if(sel){
+    const parts=sel.split('-').map(Number);
+    const list=items.filter(function(i){return key(dt(i.t))===sel;})
+      .concat(upcomingEvents().filter(function(e){return myChurchIds().indexOf(e.churchId)>-1&&key(dt(e.datetime))===sel&&(state.local.rsvps||[]).indexOf(e.id)<0;})
+        .map(function(e){return {t:e.datetime,k:'church',title:e.title,sub:esc(e.churchName||'')+' · not yet RSVP\'d',id:e.id};}));
+    dayList='<hr class="divider"><div class="stack gap-8"><span class="cap">'+fmtDate(new Date(parts[0],parts[1],parts[2]).toISOString())+'</span>'
+      +(list.length?list.map(function(i){return '<button class="row between gap-10" '+(i.id?'data-go="event" data-id="'+i.id+'"':'')+' style="text-align:left;padding:11px 13px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
+        +'<span class="row gap-10" style="min-width:0"><i style="width:8px;height:8px;border-radius:50%;background:'+tone[i.k]+';flex:none"></i>'
+        +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14px">'+esc(i.title)+'</span><span class="cap">'+fmtTime(i.t)+' · '+i.sub+'</span></span></span>'+(i.id?ico('chevR',15):'')+'</button>';}).join('')
+        :'<p class="cap">Nothing on this day. A quiet one.</p>')+'</div>';
+  }
+  return '<div class="glass pad stack gap-12 mt-14">'
+    +'<div class="row between gap-10"><button class="icon-btn" data-act="cal-nav" data-v="-1" aria-label="Previous month" style="width:34px;height:34px">'+ico('chevL',16)+'</button>'
+    +'<span class="h3">'+['January','February','March','April','May','June','July','August','September','October','November','December'][m]+' <span class="dim num">'+y+'</span></span>'
+    +'<button class="icon-btn" data-act="cal-nav" data-v="1" aria-label="Next month" style="width:34px;height:34px">'+ico('chevR',16)+'</button></div>'
+    +'<div class="cal">'+['M','T','W','T','F','S','S'].map(function(d){return '<span class="dow">'+d+'</span>';}).join('')+cells+'</div>'
+    +'<div class="row gap-12 wrap cap" style="font-size:11px">'+[['var(--brand)','Going'],['var(--ice)','Your churches'],['var(--mint)','Reading · giving'],['var(--rose)','Journal']].map(function(l){
+      return '<span class="row gap-6"><i style="width:7px;height:7px;border-radius:50%;background:'+l[0]+'"></i>'+l[1]+'</span>';}).join('')+'</div>'
+    +dayList+'</div>';
+}
+function remindersCard(){
+  const list=reminderEvents().slice(0,5);
+  if(!list.length)return '';
+  return '<div class="glass pad stack gap-12 mt-14"><div class="row between"><span class="eyebrow accent">Reminders</span><span class="cap">1 day · 1 hour before</span></div>'
+    +list.map(function(e){const r=reminderPref(e.id);
+      return '<div class="row between gap-10"><button class="stack gap-2" data-go="event" data-id="'+e.id+'" style="text-align:left;min-width:0">'
+        +'<span class="h3" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block">'+esc(e.title)+'</span>'
+        +'<span class="cap">'+fmtDate(e.datetime)+' · '+fmtTime(e.datetime)+'</span></button>'
+        +'<span class="row gap-6" style="flex:none"><button class="chip'+(r.d1?' on':'')+'" data-act="rem-toggle" data-id="'+e.id+'" data-k="d1" style="height:28px;padding:0 10px;font-size:11px">1d</button>'
+        +'<button class="chip'+(r.h1?' on':'')+'" data-act="rem-toggle" data-id="'+e.id+'" data-k="h1" style="height:28px;padding:0 10px;font-size:11px">1h</button></span></div>';}).join('')
+    +'<p class="cap">'+ico('bell',12)+' Sent in '+esc(state.prefs.lang)+', quiet hours respected.</p></div>';
+}
+function journeyTimeline(){
+  const items=journeyItems();
+  const p=myPlan();
+  return '<div class="glass pad row between gap-16 mt-8">'
+    +ring(planPct(),84,planPct()+'%','read')
+    +'<div class="stack gap-6 grow"><span class="eyebrow accent">Current rhythm</span>'
+    +'<span class="h2">'+esc(p?p.title:'No plan yet')+'</span>'
+    +'<span class="cap">'+(p?'Day '+(state.local.planDay||0)+' of '+p.days+' · '+(state.local.streak||0)+' day streak':'Choose a plan to begin')+'</span></div>'
+    +'<button class="btn btn-xs btn-outline" data-act="journey-tab" data-v="Plan">Open</button></div>'
+    +calendarCard(items)
+    +remindersCard()
+    +'<div class="sec-title"><span class="eyebrow accent">Your light-path</span><span class="cap num">'+items.length+' moments</span></div>'
+    +(items.length?'<div class="path stagger">'+items.slice(0,24).map(function(i){
+      const cls=i.k==='journal'?' rose':i.k==='event'?' soft':'';
+      return '<div class="node'+cls+'"><div class="glass pad-sm stack gap-4">'
+        +'<span class="cap">'+fmtDate(i.t)+' · '+fmtTime(i.t)+'</span>'
+        +'<span class="h3">'+esc(i.title)+'</span>'
+        +'<span class="cap">'+esc(i.sub||'')+'</span></div></div>';}).join('')+'</div>'
+      :empty('journey','Your path starts here','RSVP to an event, finish a reading, or add a milestone like baptism — each becomes a light on your path.',
+        '<button class="btn btn-sm btn-primary" data-act="add-milestone">Add a milestone</button>'));
+}
+function journeyPlan(){
+  const p=myPlan();
+  if(!p)return empty('book','No plan chosen','Pick a reading plan to set your daily rhythm.','<button class="btn btn-sm btn-primary" data-act="browse-plans">Browse plans</button>');
+  const day=(state.local.planDay||0),v=VERSES[(day+2)%VERSES.length],doneToday=state.local.lastRead&&isToday(state.local.lastRead);
+  return '<div class="stack gap-14 mt-8">'
+    +'<div class="glass pad stack gap-16"><div class="row between gap-16">'
+    +'<div class="stack gap-6"><span class="eyebrow accent">'+esc(p.title)+'</span>'
+    +'<h2 class="h1">Day '+(day+ (doneToday?0:1))+'</h2>'
+    +'<span class="cap">'+esc(p.todayRef||v.r)+' · about 6 minutes</span></div>'
+    +ring(planPct(),78,planPct()+'%','done')+'</div>'
+    +'<div class="progress"><i style="width:'+planPct()+'%"></i></div>'
+    +'<p class="scripture">“'+esc(v.t)+'”</p><span class="verse-ref">'+esc(v.r)+'</span>'
+    +'<p class="body">'+esc(p.description)+'</p>'
+    +'<div class="row gap-10">'
+    +'<button class="btn '+(doneToday?'btn-ghost':'btn-primary')+' grow" data-act="mark-read"'+(doneToday?' disabled':'')+'>'+(doneToday?ico('check',18)+'Read today':'Mark today complete')+'</button>'
+    +'<button class="icon-btn" data-act="note-verse" aria-label="Add note">'+ico('edit',17)+'</button></div></div>'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Switch plan</span>'
+    +state.data.plans.map(function(x){const on=x.id===p.id;
+      return '<button class="row between gap-12" data-act="set-plan" data-id="'+x.id+'" style="padding:13px 14px;border-radius:var(--r-md);background:'+(on?'var(--brand-dim)':'var(--surface)')+';border:1px solid '+(on?'rgba(0,163,225,.35)':'var(--border)')+';text-align:left">'
+        +'<span class="stack gap-2"><span class="h3">'+esc(x.title)+'</span><span class="cap">'+x.days+' days · '+esc(x.category||'Scripture')+'</span></span>'
+        +(on?'<span class="accent">'+ico('check',18)+'</span>':ico('chevR',16))+'</button>';}).join('')+'</div>'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Reminders</span>'
+    +prefRow('Daily reading nudge','events','A gentle ping at 7:00am')
+    +'<p class="cap">Quiet hours are respected — nothing between 10pm and 6am.</p></div></div>';
+}
+function journeyPrayer(){
+  const list=state.data.prayers.slice().sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);});
+  return '<div class="stack gap-14 mt-8">'
+    +'<button class="glass press pad row between gap-12" data-act="new-prayer" style="text-align:left;border-color:rgba(232,145,154,.28)">'
+    +'<span class="row gap-12">'+ico('hands',22,'rose')+'<span class="stack gap-2"><span class="h3">Share a prayer request</span><span class="cap">Public, church-only, or anonymous</span></span></span>'
+    +'<span class="icon-btn">'+ico('plus',18)+'</span></button>'
+    +(list.length?list.map(prayerCard).join(''):empty('hands','The prayer chain is quiet','Be the first to share a request — the chain lights up when someone prays.'))+'</div>';
+}
+function prayerCard(pr){
+  const prayed=(state.local.prayed||[]).indexOf(pr.id)>-1;
+  const anon=pr.visibility==='anonymous';
+  return '<article class="glass pad stack gap-12'+(pr.answered?' answered':'')+'"'+(pr.answered?' style="border-color:rgba(79,203,152,.3)"':'')+'>'
+    +(pr.answered?'<span class="badge badge-mint">'+ico('check',12)+'Answered</span>':'')
+    +'<div class="row between gap-12"><div class="row gap-10" style="min-width:0">'
+    +'<span class="avatar avatar-sm" style="background:'+(anon?'linear-gradient(135deg,#6B7299,#3A4166)':grad(pr.id))+'">'+(anon?ico('lock',15):initials(pr.authorName))+'</span>'
+    +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(anon?'Anonymous':pr.authorName||'A believer')+'</span>'
+    +'<span class="cap">'+ago(pr.createdAt)+(pr.churchName?' · '+esc(pr.churchName):'')+'</span></span></div>'
+    +'<span class="badge '+(pr.visibility==='church'?'badge-ice':anon?'badge-lav':'badge-rose')+'">'+esc(pr.visibility==='church'?'Church only':anon?'Anonymous':'Public')+'</span></div>'
+    +'<p class="body" style="color:var(--text-1)">'+esc(pr.text).replace(/\n/g,'<br>')+'</p>'
+    +'<div class="row between gap-12">'
+    +'<div class="row gap-8"><div class="row" style="margin-right:2px">'
+    +[0,1,2].map(function(i){return '<span class="avatar avatar-sm" style="width:24px;height:24px;border-radius:9px;font-size:10px;margin-left:'+(i?'-8px':'0')+';background:'+grad(pr.id+i)+';border:1.5px solid var(--bg-1)">'+String.fromCharCode(65+((Math.abs(hash(pr.id+i))%26)))+'</span>';}).join('')
+    +'</div><span class="cap"><span class="num">'+((pr.prayingCount||0)+(prayed?1:0))+'</span> praying</span></div>'
+    +'<button class="btn btn-xs '+(prayed?'btn-ghost':'btn-outline')+'" data-act="pray" data-id="'+pr.id+'">'+(prayed?'\u{1F64F} Praying':'\u{1F64F} I\'m praying')+'</button></div></article>';
+}
+function journeyJournal(){
+  const list=(state.local.journal||[]);
+  return '<div class="stack gap-14 mt-8">'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">New entry</span>'
+    +'<textarea class="textarea" id="jEntry" placeholder="What is on your heart today? Tag people or needs…"></textarea>'
+    +'<div class="row gap-10"><button class="btn btn-primary grow" data-act="add-journal">Save privately '+ico('lock',16)+'</button></div>'
+    +'<p class="cap">'+ico('lock',13)+' Journal entries never leave this device.</p></div>'
+    +(list.length?list.map(function(j,i){
+      return '<article class="glass pad stack gap-10"><div class="row between gap-10">'
+        +'<span class="cap">'+fmtDate(j.date)+' · '+fmtTime(j.date)+'</span>'
+        +(j.answered?'<span class="badge badge-mint">'+ico('check',12)+'Answered</span>':'<button class="chip" data-act="mark-answered" data-i="'+i+'">Mark answered</button>')+'</div>'
+        +'<p class="body" style="color:var(--text-1)">'+esc(j.text).replace(/\n/g,'<br>')+'</p>'
+        +(j.answered?'<button class="chip" data-act="testify" data-i="'+i+'">'+ico('share',14)+'Share as testimony</button>':'')+'</article>';}).join('')
+      :empty('edit','Your journal is empty','Write the first line. Later you can mark a prayer answered and share the testimony.'));
+}
+function journeyFamily(){
+  const fam=state.local.family||[];
+  return '<div class="stack gap-14 mt-8">'
+    +'<div class="glass pad stack gap-14"><span class="eyebrow accent">Family account</span>'
+    +'<p class="body">Add children and youth to your account. Kids spaces are moderated, ad-free, and everything a child sees is visible to you.</p>'
+    +'<button class="btn btn-primary btn-block" data-act="add-family">'+ico('plus',18)+'Add a family member</button></div>'
+    +(fam.length?'<div class="stack gap-12">'+fam.map(function(f,i){
+      return '<div class="glass pad-sm row between gap-12"><span class="row gap-12">'
+        +'<span class="avatar" style="background:'+grad(f.name+i)+'">'+initials(f.name)+'</span>'
+        +'<span class="stack gap-2"><span class="h3">'+esc(f.name)+'</span><span class="cap">'+esc(f.type)+' · parental controls on</span></span></span>'
+        +'<button class="icon-btn" data-act="family-settings" data-i="'+i+'">'+ico('settings',17)+'</button></div>';}).join('')+'</div>'
+      :'')
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Kids space preview</span>'
+    +'<div class="row gap-10" style="overflow-x:auto">'+[['Memory verses','book'],['Bible stories','music'],['Quiet games','star']].map(function(k,i){
+      return '<div style="min-width:140px;padding:16px;border-radius:var(--r-md);background:'+grad('kid'+i)+';color:#FFFFFF">'
+        +'<div style="opacity:.85">'+ico(k[1],20)+'</div><div class="h3" style="margin-top:8px;color:#FFFFFF">'+k[0]+'</div></div>';}).join('')+'</div></div></div>';
+}
+/* ---------- community ---------- */
+function communityCard(c){
+  const joined=myCommunityIds().indexOf(c.id)>-1;
+  const n=communityThreads(c.id).length;
+  return '<article class="glass press pad row between gap-14" data-go="community-page" data-id="'+c.id+'" style="overflow:hidden">'
+    +'<div class="row gap-14" style="min-width:0">'
+    +'<span class="icon-btn" style="flex:none;width:48px;height:48px;border-radius:16px;color:hsl('+c.hue+',80%,74%);border-color:hsla('+c.hue+',80%,70%,.4);background:hsla('+c.hue+',80%,70%,.12)">'+ico(c.icon||'users',21)+'</span>'
+    +'<div class="stack gap-3" style="min-width:0"><span class="h3">'+esc(c.name)+'</span>'
+    +'<span class="cap" style="display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">'+esc(c.tagline||'')+'</span>'
+    +'<span class="cap num" style="font-size:11px">'+Number(c.members||0).toLocaleString('en-IN')+' members · '+n+' conversation'+(n===1?'':'s')+'</span></div></div>'
+    +'<button class="btn btn-xs '+(joined?'btn-ghost':'btn-outline')+'" data-act="join-community" data-id="'+c.id+'" style="flex:none">'+(joined?ico('check',13)+'Joined':'Join')+'</button></article>';
+}
+function viewCommunity(){
+  const camps=state.data.campaigns,joined=myCommunityIds();
+  const mine=state.data.communities.filter(function(c){return joined.indexOf(c.id)>-1;});
+  const others=state.data.communities.filter(function(c){return joined.indexOf(c.id)<0;});
+  const recent=communityThreads().filter(function(p){return joined.indexOf(p.communityId)>-1;}).slice(0,3);
+  const tiles=[
+    {i:'news',l:'Christian news',d:'Curated sources · the underreported section'},
+    {i:'music',l:'Worship music',d:'Lyrics, chords, transpose, set-list builder'},
+    {i:'bag',l:'Marketplace',d:'Verified businesses, speakers, AV and sound'}
+  ];
+  return topbar('Community','Beyond your four walls',{
+    extra:'<button class="glass press pad row between gap-16 mt-16" data-go="biblegpt" style="text-align:left;border-color:rgba(192,143,208,.34)">'
+      +'<span class="row gap-14"><span class="icon-btn" style="color:var(--lavender);border-color:rgba(192,143,208,.4);background:rgba(192,143,208,.12)">'+ico('sparkle',20)+'</span>'
+      +'<span class="stack gap-3"><span class="h2" style="font-size:20px">BibleGPT</span><span class="cap">Ask, study, summarise, translate — always with sources</span></span></span>'
+      +ico('chevR',20)+'</button>'})
+    +'<div class="view stack">'
+    +(mine.length?'<div class="sec-title"><span class="eyebrow accent">Your communities</span><span class="cap num">'+mine.length+' joined</span></div>'
+      +'<div class="stack gap-12 stagger">'+mine.map(communityCard).join('')+'</div>':'')
+    +(recent.length?'<div class="sec-title"><span class="eyebrow accent">New in your communities</span></div><div class="stack gap-14 stagger">'+recent.map(function(p){return postCard(p);}).join('')+'</div>':'')
+    +'<div class="sec-title"><span class="eyebrow accent">'+(mine.length?'More communities':'Communities')+'</span><span class="cap">Believers talk here</span></div>'
+    +(others.length?'<div class="stack gap-12 stagger">'+others.map(communityCard).join('')+'</div>':'<p class="cap">You have joined every community on the ark.</p>')
+    +'<div class="sec-title"><span class="eyebrow accent">Giving campaigns · across churches</span></div>'
+    +(camps.length?'<div class="stack gap-12 stagger">'+camps.map(campaignCard).join('')+'</div>'
+      :empty('gift','No campaigns yet','Cross-church campaigns will appear here.'))
+    +'<div class="sec-title"><span class="eyebrow accent">Coming to the ark</span></div>'
+    +'<div class="stack gap-12">'+tiles.map(function(t){
+      return '<button class="glass press pad row between gap-14" data-act="soon" data-v="'+esc(t.l)+'" style="text-align:left;overflow:hidden">'
+        +'<span class="row gap-14" style="min-width:0"><span class="icon-btn" style="flex:none">'+ico(t.i,19)+'</span>'
+        +'<span class="stack gap-3" style="min-width:0"><span class="h3">'+esc(t.l)+'</span><span class="cap">'+esc(t.d)+'</span></span></span>'
+        +'<span class="badge badge-lav">Soon</span></button>';}).join('')+'</div>'
+    +'<div style="height:30px"></div></div>';
+}
+function viewCommunityPage(){
+  const c=communityById(state.params.id);
+  if(!c)return '<div class="view screen-pad">'+empty('users','Community not found','It may have been archived.','<button class="btn btn-sm btn-ghost" data-go="community">Communities</button>')+'</div>';
+  const joined=myCommunityIds().indexOf(c.id)>-1;
+  const threads=communityThreads(c.id);
+  const sort=state.ui.threadSort||'Latest';
+  const list=sort==='Most amen'?threads.slice().sort(function(a,b){return reactionTotal(b)-reactionTotal(a);}):threads;
+  return '<div class="view" style="padding-top:14px">'
+    +'<button class="row gap-6 cap mt-8" data-go="community" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+'Communities</button>'
+    +'<div class="cover" style="height:140px">'+coverArt(c.id)+'</div>'
+    +'<div class="glass pad stack gap-16" style="margin-top:-34px;position:relative">'
+    +'<div class="row between gap-12" style="margin-top:-44px"><span class="icon-btn" style="width:66px;height:66px;border-radius:22px;border:3px solid var(--bg-1);color:hsl('+c.hue+',80%,74%);background:hsla('+c.hue+',60%,40%,.9)">'+ico(c.icon||'users',28)+'</span>'
+    +'<span class="badge badge-ice num">'+Number(c.members||0).toLocaleString('en-IN')+' members</span></div>'
+    +'<div class="stack gap-8"><h1 class="h1">'+esc(c.name)+'</h1><p class="body">'+esc(c.about||c.tagline||'')+'</p>'
+    +'<div class="row gap-8 wrap cap">'+ico('shield',14,'accent')+'<span>Moderated by '+esc((c.mods||[]).join(', ')||'community leaders')+'</span></div></div>'
+    +'<div class="row gap-10">'
+    +'<button class="btn btn-sm '+(joined?'btn-ghost':'btn-primary')+' grow" data-act="join-community" data-id="'+c.id+'">'+(joined?ico('check',16)+'Joined':ico('plus',16)+'Join community')+'</button>'
+    +(joined?'<button class="btn btn-sm btn-outline" data-act="new-thread" data-id="'+c.id+'">'+ico('edit',16)+'Start a conversation</button>':'')+'</div></div>'
+    +'<div class="sec-title"><span class="eyebrow accent">Conversations · '+threads.length+'</span>'
+    +'<span class="row gap-6">'+['Latest','Most amen'].map(function(s){return '<button class="chip'+(sort===s?' on':'')+'" data-act="thread-sort" data-v="'+s+'" style="height:28px;padding:0 10px;font-size:11.5px">'+s+'</button>';}).join('')+'</span></div>'
+    +(list.length?'<div class="stack gap-14 stagger">'+list.map(function(p){return postCard(p);}).join('')+'</div>'
+      :empty('msg','Quiet for now',joined?'Start the first conversation — a question is a fine way to begin.':'Join to start the first conversation.',
+        joined?'<button class="btn btn-sm btn-primary" data-act="new-thread" data-id="'+c.id+'">Start a conversation</button>':''))
+    +'<div style="height:36px"></div></div>';
+}
+function campaignCard(g){
+  const pct=Math.min(100,Math.round((g.raised/g.goal)*100));
+  return '<article class="glass press pad stack gap-14" data-go="campaign" data-id="'+g.id+'">'
+    +'<div class="row between gap-12"><div class="stack gap-4" style="min-width:0">'
+    +'<span class="eyebrow accent">'+esc(g.category||'Campaign')+'</span>'
+    +'<h3 class="h2" style="font-size:20px">'+esc(g.title)+'</h3>'
+    +'<span class="cap">'+esc(g.churchName||'')+'</span></div>'
+    +'<span class="badge badge-mint num">'+pct+'%</span></div>'
+    +'<div class="progress"><i style="width:'+pct+'%"></i></div>'
+    +'<div class="row between"><span class="h3 accent num">'+money(g.raised)+'</span><span class="cap num">of '+money(g.goal)+'</span></div></article>';
+}
+function viewCampaign(){
+  const g=state.data.campaigns.find(function(x){return x.id===state.params.id;})||state.data.campaigns[0];
+  if(!g)return '<div class="view screen-pad">'+empty('gift','Campaign not found','It may have closed.','<button class="btn btn-sm btn-ghost" data-go="community">Community</button>')+'</div>';
+  const pct=Math.min(100,Math.round((g.raised/g.goal)*100));
+  const amounts=[500,1000,2500,5000];
+  const mine=(state.local.giving||[]).filter(function(x){return x.campaignId===g.id;});
+  return '<div class="view" style="padding-top:14px">'
+    +'<button class="row gap-6 cap mt-8" data-go="community" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+'Back</button>'
+    +'<div class="cover" style="height:170px">'+(photoFor(g.id)?'<img src="'+esc(photoFor(g.id))+'" alt="'+esc(g.title)+'" style="width:100%;height:100%;object-fit:cover;display:block">':coverArt(g.id))+'</div>'
+    +'<div class="glass pad stack gap-16 mt-16">'
+    +'<div class="stack gap-8"><span class="eyebrow accent">'+esc(g.category||'Campaign')+'</span>'
+    +'<h1 class="h1">'+esc(g.title)+'</h1>'
+    +'<button class="cap row gap-6" data-go="church-profile" data-id="'+esc(g.churchId)+'">'+ico('church',14)+esc(g.churchName||'')+ico('chevR',13)+'</button></div>'
+    +'<div class="stack gap-10"><div class="progress" style="height:9px"><i style="width:'+pct+'%"></i></div>'
+    +'<div class="row between"><span class="h2 accent num">'+money(g.raised)+'</span><span class="cap num">raised of '+money(g.goal)+' · '+pct+'%</span></div></div>'
+    +'<p class="body">'+esc(g.description||'')+'</p>'
+    +'<hr class="divider">'
+    +'<span class="eyebrow accent">Choose an amount</span>'
+    +'<div class="row gap-8 wrap">'+amounts.map(function(a){
+      return '<button class="chip'+(state.ui.giveAmt===a?' on':'')+'" data-act="give-amt" data-v="'+a+'">'+money(a)+'</button>';}).join('')
+    +'<button class="chip'+(amounts.indexOf(state.ui.giveAmt)<0?' on':'')+'" data-act="give-custom">Other</button></div>'
+    +'<button class="btn btn-primary btn-block" data-act="give" data-id="'+g.id+'">'+ico('gift',18)+'Give '+money(state.ui.giveAmt)+'</button>'
+    +'<div class="row gap-8 center cap">'+ico('lock',13)+'Prototype — no payment is processed and no card details are collected.</div>'
+    +'</div>'
+    +'<div class="glass pad stack gap-12 mt-14"><span class="eyebrow accent">Transparency</span>'
+    +[['Building materials',48],['Local labour',32],['Furnishing & sound',20]].map(function(r){
+      return '<div class="stack gap-6"><div class="row between"><span class="body" style="font-size:14.5px">'+r[0]+'</span><span class="cap num">'+r[1]+'%</span></div>'
+        +'<div class="progress" style="height:5px"><i style="width:'+r[1]+'%"></i></div></div>';}).join('')
+    +'<p class="cap">Every campaign publishes where the money went, with receipts. 80G-ready receipts are issued automatically.</p></div>'
+    +(mine.length?'<div class="glass pad stack gap-10 mt-14"><span class="eyebrow accent">Your gifts to this campaign</span>'
+      +mine.map(function(x){return '<div class="row between"><span class="cap">'+fmtDate(x.date)+'</span><span class="h3 num">'+money(x.amount)+'</span></div>';}).join('')+'</div>':'')
+    +'<div style="height:36px"></div></div>';
+}
+
+/* ---------- BibleGPT ---------- */
+const KB=[
+  {k:['anxious','anxiety','worry','worried','fear','afraid','panic','stress'],a:'Scripture meets anxiety with presence rather than argument. Paul’s instruction is practical: name the worry, hand it over in prayer, and let thanksgiving reframe it. The promised result is not that circumstances change first, but that peace guards your heart while they do.',v:['Philippians 4:6','Joshua 1:9','John 14:27']},
+  {k:['peace','calm','rest','tired','weary','burnout','exhausted'],a:'Rest in Scripture is a person before it is a practice. Jesus invites the labouring and heavy-laden to come — not to try harder, but to exchange a heavy yoke for his. The peace he gives is described as unlike what the world hands out: it does not depend on conditions.',v:['Matthew 11:28','John 14:27','Psalm 23:1']},
+  {k:['forgive','forgiveness','bitter','angry','anger','hurt','betrayed'],a:'Forgiveness in the New Testament is grounded in what has already been forgiven us — it flows downhill from grace, not uphill from willpower. It does not require pretending the wound was small, and it is not the same as trusting someone again immediately. Reconciliation and forgiveness are related but distinct.',v:['Lamentations 3:22','Romans 8:28']},
+  {k:['guidance','decision','direction','future','job','career','confused','choose'],a:'The wisdom books frame guidance as trust plus counsel rather than a hidden code to crack. Trusting the LORD with the whole heart, refusing to lean only on your own understanding, and seeking wise counsel is the pattern — direction usually clarifies as you walk, not before you step.',v:['Proverbs 3:5','Psalm 119:105']},
+  {k:['strength','weak','weakness','strong','tired of trying','fail','failure'],a:'Paul’s answer to his own unresolved weakness was not removal but sufficiency: grace that is enough, and strength that is perfected precisely where he is weakest. Waiting on the LORD is described as an exchange of strength, not a summoning of your own.',v:['2 Corinthians 12:9','Isaiah 40:31']},
+  {k:['pray','prayer','how to pray','praying'],a:'Prayer in Scripture is startlingly ordinary: requests made known, thanksgiving mixed in, and stillness that lets God be God. The pattern across the Psalms is honesty first — lament, question and praise all sit side by side without apology.',v:['Philippians 4:6','Psalm 46:10']},
+  {k:['grief','loss','death','died','mourning','sad','depressed','lonely'],a:'Lament is a legitimate, well-attested form of faith — roughly a third of the Psalms are laments. Grief is not treated as a lapse in trust. Mercies that are new every morning are offered to people in the middle of ruins, not after they have recovered.',v:['Lamentations 3:22','Psalm 23:1','Matthew 11:28']},
+  {k:['love','marriage','relationship','friend','family'],a:'Love in the New Testament is described in verbs rather than feelings — patient, kind, not self-seeking, keeping no record of wrongs. That framing makes love something you can practise on a day when the feeling is thin.',v:['Romans 8:28','John 14:27']},
+  {k:['money','giving','tithe','finance','debt','poor'],a:'Generosity in Scripture is consistently tied to trust rather than surplus — the widow’s two coins are praised over larger gifts. Giving is framed as cheerful and deliberate, never coerced, and always paired with care for the poor among you.',v:['Proverbs 3:5','Romans 8:28']},
+  {k:['bible','read','study','scripture','where to start','beginner'],a:'A common starting path is one Gospel (Luke reads well for newcomers), then Acts for what happened next, then a Psalm a day alongside it. Scripture describes itself as a lamp for the next step rather than a floodlight over the whole road — small daily portions suit that image.',v:['Psalm 119:105','Isaiah 40:31']}
+];
+const PASTORAL=['should i divorce','divorce','should i leave my church','baptism mode','speaking in tongues','predestination','end times','rapture','who is right','denomination is correct','abortion','politics','vote','suicide','harm myself','kill myself','medication','diagnosis','lawsuit','legal advice'];
+function findVerse(ref){return VERSES.find(function(v){return v.r===ref;})||{r:ref,t:'Open this passage in the reader.'};}
+function bibleAnswer(qRaw){
+  const q=String(qRaw||'').toLowerCase();
+  if(PASTORAL.some(function(p){return q.indexOf(p)>-1;}))return {pastoral:true,
+    a:'This one deserves a person, not an app. Questions like this land differently depending on your story, your church’s teaching, and things I cannot see from here. I would rather hand you to someone who knows you.',v:[]};
+  let best=null,score=0;
+  KB.forEach(function(e){const s=e.k.reduce(function(a,k){return a+(q.indexOf(k)>-1?1:0);},0);if(s>score){score=s;best=e;}});
+  if(!best)return {a:'I could not find a clear anchor for that in the passages I hold. Try naming the situation in plain words — “I am anxious about work”, “how do I forgive my brother”, “where should I start reading” — and I will bring the passages that speak to it.',v:['Psalm 119:105']};
+  const mode=state.ui.chatMode;
+  let a=best.a;
+  if(mode==='Study')a=best.a+'\n\nCross-references worth sitting with: '+best.v.join(' · ')+'. Note the original-language sense — the New Testament word for peace (eirene) carries the Hebrew shalom behind it: wholeness and right order, not merely the absence of noise.';
+  if(mode==='Kids')a='Here is a simple way to see it: God is close to you, even when things feel big or scary. You can talk to him about anything — like telling a parent who always listens. He promises to stay with you and help you be brave.';
+  if(mode==='Summarise')a='In short: '+best.a.split('.')[0]+'. The passages below carry the weight of it.';
+  if(mode==='Translate')a='[Translated for your language setting — '+esc(state.prefs.lang)+']\n\n'+best.a;
+  return {a:a,v:best.v};
+}
+function viewBibleGPT(){
+  const modes=['Ask','Study','Summarise','Translate','Kids'];
+  const msgs=state.ui.chat;
+  return '<div class="view stack" style="padding-top:14px;min-height:100dvh">'
+    +'<div class="row between gap-12 mt-8">'
+    +'<button class="row gap-6 cap" data-go="community" style="color:var(--text-3)">'+ico('arrowL',16)+'Community</button>'
+    +'<button class="chip" data-act="clear-chat">'+ico('x',14)+'Clear</button></div>'
+    +'<div class="row gap-12 mt-16"><span class="icon-btn" style="color:var(--lavender);border-color:rgba(192,143,208,.4);background:rgba(192,143,208,.12);flex:none">'+ico('sparkle',20)+'</span>'
+    +'<div class="stack gap-3"><h1 class="h1" style="font-size:26px">BibleGPT</h1>'
+    +'<span class="cap">Grounded in Scripture · tuned to '+esc((state.session&&state.session.denom)||'your church')+'</span></div></div>'
+    +'<div class="scroll-x mt-16">'+modes.map(function(m){
+      return '<button class="chip chip-lav'+(state.ui.chatMode===m?' on':'')+'" data-act="chat-mode" data-v="'+m+'">'+m+'</button>';}).join('')+'</div>'
+    +'<div class="stack gap-12 mt-16" style="flex:1">'
+    +(msgs.length?msgs.map(function(m){
+        if(m.role==='user')return '<div class="bubble me">'+esc(m.text)+'</div>';
+        return '<div class="stack gap-10" style="align-self:flex-start;max-width:92%">'
+          +'<div class="bubble ai">'+esc(m.text).replace(/\n/g,'<br>')+'</div>'
+          +(m.verses&&m.verses.length?'<div class="row gap-8 wrap">'+m.verses.map(function(v){
+            return '<button class="verse-chip" data-act="open-verse" data-r="'+esc(v)+'">'+ico('book',13)+esc(v)+'</button>';}).join('')+'</div>':'')
+          +(m.pastoral?'<button class="btn btn-sm btn-outline" data-act="ask-pastor">'+ico('msg',16)+'Ask my pastor</button>':'')
+          +'<span class="cap" style="font-size:11px">'+(m.pastoral?'Pastoral question — routed to a person':'Sources shown above · answers may be corrected by your pastors')+'</span></div>';}).join('')
+      +(state.ui.chatBusy?'<div class="bubble ai typing"><i></i><i></i><i></i></div>':'')
+      :'<div class="glass pad stack gap-16" style="border-color:rgba(192,143,208,.22)">'
+        +'<span class="eyebrow" style="color:var(--lavender)">Try asking</span>'
+        +['I feel anxious about work','How do I forgive someone who hurt me','Where should I start reading the Bible','What does Scripture say about rest']
+          .map(function(s){return '<button class="row between gap-10" data-act="ask" data-v="'+esc(s)+'" style="text-align:left;padding:13px 15px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
+            +'<span class="body" style="color:var(--text-1);font-size:14.5px">'+esc(s)+'</span>'+ico('chevR',16)+'</button>';}).join('')
+        +'<p class="cap">Doctrinal and pastoral questions are handed to your pastor, not answered here. No medical or legal advice.</p></div>')
+    +'</div>'
+    +'<div class="glass row gap-10 mt-16" style="padding:8px 8px 8px 18px;border-radius:var(--r-pill);position:sticky;bottom:calc(var(--nav-h) + 14px);z-index:10">'
+    +'<input class="grow" id="chatBox" placeholder="Ask anything…" style="background:none;border:0;outline:none;height:44px;min-width:0">'
+    +'<button class="btn btn-primary" data-act="chat-send" style="height:44px;width:44px;padding:0;border-radius:50%">'+ico('send',18)+'</button></div>'
+    +'<div style="height:26px"></div></div>';
+}
+
+/* ---------- live stream ---------- */
+const LIVE_CHAT=[['Anitha R.','Joining from Koramangala 🙏'],['Joseph K.','Praying along from Hyderabad'],['Mercy T.','The choir sounds beautiful tonight'],['Samuel P.','180 of us under the tarpaulin are watching too'],['Ruth A.','Amen. Amen.'],['Grace M.','Br. Immanuel opened his eyes today — praise God']];
+function liveChat(){return state.ui.liveChat||(state.ui.liveChat=LIVE_CHAT.map(function(m){return {n:m[0],t:m[1]};}));}
+function viewLive(){
+  const e=state.data.events.find(function(x){return x.id===state.params.id;});
+  if(!e)return '<div class="view screen-pad">'+empty('radio','Stream not found','This stream may have ended.','<button class="btn btn-sm btn-ghost" data-go="home">Home</button>')+'</div>';
+  const here=(state.local.rsvps||[]).indexOf(e.id)>-1,chat=liveChat();
+  return '<div class="view" style="padding-top:14px">'
+    +'<button class="row gap-6 cap mt-8" data-go="'+(state.params.from||'home')+'" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+'Leave stream</button>'
+    +'<div class="live-stage">'+coverArt(e.id)
+    +'<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,8,19,.05),rgba(5,8,19,.78))"></div>'
+    +'<div style="position:absolute;top:14px;left:14px;right:14px" class="row between gap-10">'
+    +'<span class="badge badge-live"><i class="dot-live"></i>Live · <span class="num">'+(e.rsvpCount||0)+'</span> watching</span>'
+    +'<span class="badge badge-accent">'+ico('globe',12)+esc(state.prefs.lang)+' captions</span></div>'
+    +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span class="icon-btn active" style="width:70px;height:70px;background:rgba(12,17,40,.6);box-shadow:0 0 34px rgba(0,163,225,.4)">'+ico('play',28)+'</span></div>'
+    +'<div style="position:absolute;left:16px;right:90px;bottom:16px" class="stack gap-4"><span class="h2" style="font-size:20px;color:#F2F4FF">'+esc(e.title)+'</span><span class="cap" style="color:#B6BEE0">'+esc(e.churchName||'')+' · '+esc(e.location||'Online')+'</span></div>'
+    +'<div class="live-float" aria-hidden="true"></div></div>'
+    +'<div class="row gap-8 mt-12 wrap">'+REACTIONS.map(function(r){return '<button class="react" data-act="live-react" data-e="'+r.e+'" aria-label="'+r.l+'"><span class="em">'+r.e+'</span>'+r.l+'</button>';}).join('')+'</div>'
+    +'<div class="row gap-10 mt-12">'
+    +'<button class="btn btn-sm '+(here?'btn-ghost':'btn-primary')+' grow" data-act="live-here" data-id="'+e.id+'">'+ico(here?'check':'pin',16)+(here?'You\'re here':'I\'m here')+'</button>'
+    +(isChurchSession()?'':'<button class="btn btn-sm btn-outline" data-act="new-prayer">'+ico('hands',16)+'Prayer request</button>')+'</div>'
+    +'<div class="glass pad stack gap-12 mt-14"><div class="row between"><span class="eyebrow accent">Live chat</span><span class="cap num">'+chat.length+' messages</span></div>'
+    +'<div class="live-chat" id="liveChat">'+chat.map(function(m){return '<div class="live-msg'+(m.me?' me':'')+'"><b>'+esc(m.n)+'</b><span>'+esc(m.t)+'</span></div>';}).join('')+'</div>'
+    +'<div class="row gap-8"><input class="input grow" id="liveBox" placeholder="Say something kind…" style="padding:12px 16px;border-radius:var(--r-pill)">'
+    +'<button class="btn btn-primary" data-act="live-send" style="height:48px;width:48px;padding:0;border-radius:50%;flex:none">'+ico('send',16)+'</button></div></div>'
+    +'<div class="glass pad stack gap-8 mt-14"><span class="eyebrow accent">After the stream</span><p class="body">The replay lands in the sermon library of '+esc(e.churchName||'the church')+' automatically, with a transcript and a BibleGPT summary.</p></div>'
+    +'<div style="height:30px"></div></div>';
+}
+
+/* ---------- designed "coming soon" screens ---------- */
+const SOON={
+  'Christian news':{i:'news',eye:'Community',lead:'A curated feed from verified sources, plus community-reported stories reviewed before they publish.',pts:['Verified sources only, clearly labelled','Community reports moderated before publish','Categories, save and share','An “underreported” section for the stories the wider press skips'],hue:200},
+  'Worship music':{i:'music',eye:'Community',lead:'Lyrics, chords and licensed streaming — for worship teams, and for the drive to church.',pts:['Lyrics and chords with one-tap transpose','Set-list builder for worship teams','Church song of the week','Licensed streaming, audio-first for low data'],hue:280},
+  'Marketplace':{i:'bag',eye:'Community',lead:'Verified Christian businesses, bookstores, event vendors, guest speakers and AV teams. Inquiries stay in the app.',pts:['Every listing verified before it appears','Reviews from churches that actually hired them','Sponsored listings clearly labelled','Inquiry by in-app message, no phone numbers scraped'],hue:40},
+  'Scheduling':{i:'clock',eye:'Church console',lead:'Schedule posts and broadcasts to land at the right hour, with quiet hours respected.',pts:['Pick a date and time per post','Quiet hours 10pm–6am respected automatically','Urgent prayer alerts bypass quiet hours'],hue:45},
+  'Reminders':{i:'bell',eye:'Church console',lead:'Automatic reminders one day and one hour before every event, in each member’s language.',pts:['1 day and 1 hour before, per event','Sent in the member’s preferred language','Live-stream link included when there is one'],hue:45},
+  'Volunteer rosters':{i:'cal',eye:'Ministry ops',lead:'Drag-and-drop Sunday rosters for ushers, worship, kids church and media.',pts:['Drag-and-drop schedule by ministry','Swap requests between volunteers','QR attendance check-in at the door'],hue:160},
+  'QR attendance':{i:'grid',eye:'Ministry ops',lead:'One QR at the door. Members tap to check in; leaders see who came.',pts:['Works offline in the sanctuary','Family check-in in one tap','Attendance trends per service'],hue:160},
+  'Transfer letters':{i:'file',eye:'Ministry ops',lead:'Issue and receive membership transfer letters between verified churches.',pts:['Issued by the sending church, accepted by the receiving one','The member consents before anything moves','Full history kept for both churches'],hue:160},
+  'Transparency report':{i:'file',eye:'Giving',lead:'Where every rupee of a campaign went, with photographs and receipts.',pts:['Spend by category, updated as invoices land','Photos from the site','Auto 80G receipts for every donor'],hue:45},
+  'Recurring giving':{i:'clock',eye:'Giving',lead:'Monthly giving by UPI mandate or card, paused or changed any time.',pts:['UPI autopay and cards','Pause, change or stop in one tap','One annual statement for tax'],hue:45},
+  'Reply to member':{i:'msg',eye:'Pastoral care',lead:'Private replies from pastors to prayer and care requests.',pts:['Visible only to the member and pastors','Book a visit or a call from the reply','Nothing leaves the care queue'],hue:340},
+  'Prayer request to church':{i:'hands',eye:'Believer',lead:'Send a prayer request straight to a church’s pastoral care queue.',pts:['Private by default','Pastors reply from the care queue','Mark it answered when it is'],hue:340},
+  'Visit request':{i:'cal',eye:'Believer',lead:'Ask a church about visiting — service times, language and where to park.',pts:['Answered by a real person at the church','Directions and service time in one card','Someone to meet you at the door if you want'],hue:230}
+};
+function stainedGlass(h){
+  const h2=(h+50)%360,h3=(h+190)%360,id='sg'+h;
+  return '<svg viewBox="0 0 400 230" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#171F4A"/><stop offset="1" stop-color="#0B1026"/></linearGradient></defs>'
+    +'<rect width="400" height="230" fill="url(#'+id+')"/>'
+    +'<g stroke="rgba(255,255,255,.14)" stroke-width="1">'
+    +'<path d="M0 230 L70 50 L150 230Z" fill="hsla('+h+',75%,66%,.28)"/>'
+    +'<path d="M120 230 L200 0 L280 230Z" fill="hsla('+h2+',75%,70%,.22)"/>'
+    +'<path d="M250 230 L330 70 L400 230Z" fill="hsla('+h3+',70%,66%,.26)"/>'
+    +'<path d="M0 130 L60 0 L130 130Z" fill="hsla('+h2+',70%,72%,.12)"/>'
+    +'<path d="M300 0 L400 0 L400 120Z" fill="hsla('+h+',70%,66%,.14)"/>'
+    +'<circle cx="200" cy="78" r="36" fill="rgba(0,163,225,.16)"/><circle cx="200" cy="78" r="18" fill="rgba(245,208,131,.22)"/></g></svg>';
+}
+function viewSoon(){
+  const key=state.params.v,m=SOON[key]||{i:'sparkle',eye:'Coming soon',lead:'This module is specified and designed, and lands in the next build phase.',pts:[],hue:260};
+  const back=state.params.from&&state.params.from!=='soon'?state.params.from:'community';
+  return '<div class="view" style="padding-top:14px">'
+    +'<button class="row gap-6 cap mt-8" data-go="'+esc(back)+'" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+'Back</button>'
+    +'<div class="soon-hero">'+stainedGlass(m.hue)
+    +'<div class="stack gap-8" style="position:relative;z-index:2"><span class="row gap-8"><span class="badge badge-lav">Next phase</span><span class="eyebrow" style="color:#38BDF1">'+esc(m.eye)+'</span></span>'
+    +'<h1 class="display" style="font-size:34px;color:#F2F4FF">'+esc(key||'Coming soon')+'</h1></div></div>'
+    +'<div class="glass pad stack gap-16 mt-16"><p class="body" style="font-size:16.5px;color:var(--text-1)">'+esc(m.lead)+'</p>'
+    +(m.pts.length?'<div class="stack gap-10">'+m.pts.map(function(p){return '<div class="row gap-12" style="align-items:flex-start"><span class="accent" style="flex:none;margin-top:3px">'+ico('check',16)+'</span><span class="body">'+esc(p)+'</span></div>';}).join('')+'</div>':'')
+    +'<hr class="divider"><div class="row gap-10 wrap"><button class="btn btn-sm btn-primary" data-act="notify-soon" data-v="'+esc(key)+'">'+ico('bell',16)+'Tell me when it lands</button>'
+    +'<button class="btn btn-sm btn-ghost" data-go="'+esc(back)+'">Back</button></div></div>'
+    +'<div class="glass pad stack gap-8 mt-14"><span class="eyebrow accent">Why it waits</span><p class="body">The first release of believersArk is deliberately narrow: churches, feed, communities, journey, prayer and giving — fully working. Everything here is designed against the same system, so it slots in without a redesign.</p></div>'
+    +'<div style="height:30px"></div></div>';
+}
+
+/* ---------- me & settings ---------- */
+function prefRow(label,key,sub){
+  const on=!!state.prefs[key];
+  return '<button class="row between gap-12" data-act="pref" data-k="'+key+'" style="text-align:left;width:100%">'
+    +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:15px">'+esc(label)+'</span>'+(sub?'<span class="cap">'+esc(sub)+'</span>':'')+'</span>'
+    +'<span class="switch'+(on?' on':'')+'" role="switch" aria-checked="'+on+'"></span></button>';
+}
+function viewMe(){
+  const s=state.session,follows=myChurchIds();
+  const isChurch=s&&s.role==='church';
+  const guest=!s;
+  return topbar(guest?'You':esc(s.name||'You'),guest?'Guest · browsing':(isChurch?'Church account':'Believer · '+esc(s.city||'')),{
+    actions:'<button class="icon-btn" data-go="settings" aria-label="Settings">'+ico('settings',18)+'</button>'})
+    +'<div class="view stack">'
+    +(guest?'<div class="glass pad stack gap-14"><span class="eyebrow accent">You\'re browsing as a guest</span>'
+      +'<h3 class="h2">Create your account</h3><p class="body">Follow churches, keep a journey, join the prayer chain and give — all in one place.</p>'
+      +'<button class="btn btn-primary btn-block" data-go="welcome">Get started</button></div>'
+      :'<div class="glass pad row gap-16 between">'
+      +'<div class="row gap-14" style="min-width:0"><div class="avatar avatar-lg" style="background:'+grad(s.id)+'">'+initials(s.name)+'</div>'
+      +'<div class="stack gap-4" style="min-width:0"><span class="h2">'+esc(s.name)+'</span>'
+      +'<span class="cap">'+esc(s.email||'')+'</span>'
+      +'<span class="row gap-6 wrap mt-4">'+(isChurch?'<span class="badge '+(s.verified?'badge-accent':'badge-ice')+'">'+(s.verified?ico('shield',12)+'Verified church':'Pending')+'</span>'
+        :'<span class="badge badge-ice">'+esc(s.lang||'English')+'</span><span class="badge badge-accent">'+(state.local.streak||0)+' day streak</span>')+'</span></div></div></div>')
+    +(!guest&&!isChurch?'<div class="row gap-12 mt-14">'
+      +'<div class="stat grow"><div class="v accent num">'+follows.length+'</div><div class="cap mt-4">Churches</div></div>'
+      +'<div class="stat grow"><div class="v num" style="color:var(--ice)">'+myCommunityIds().length+'</div><div class="cap mt-4">Communities</div></div>'
+      +'<div class="stat grow"><div class="v num" style="color:var(--mint)">'+(state.local.rsvps||[]).length+'</div><div class="cap mt-4">Events</div></div></div>'
+      +'<div class="row gap-12 mt-12">'
+      +'<div class="stat grow"><div class="v num" style="color:var(--rose)">'+(state.local.prayed||[]).length+'</div><div class="cap mt-4">Prayers prayed</div></div>'
+      +'<div class="stat grow"><div class="v num accent">'+money(totalGiven())+'</div><div class="cap mt-4">Given</div></div></div>'
+      +'<button class="btn btn-ghost btn-block mt-14" data-go="person-profile" data-id="'+esc(s.id)+'">'+ico('me',17)+'View my profile</button>':'')
+    +(isChurch?'<div class="glass pad stack gap-12 mt-14"><span class="eyebrow accent">Church tools</span>'
+      +'<button class="btn btn-primary btn-block" data-go="console">'+ico('grid',17)+'Open church console</button>'
+      +(s.churchId?'<button class="btn btn-ghost btn-block" data-go="church-profile" data-id="'+esc(s.churchId)+'">'+ico('eye',17)+'View public profile</button>':'')
+      +'<button class="btn btn-ghost btn-block" data-go="console-c2c">'+ico('msg',17)+'Church-to-church inbox</button></div>':'')
+    +(isChurch?'':'<div class="sec-title"><span class="eyebrow accent">Churches you follow</span>'
+    +(follows.length?'<button class="cap" data-go="churches">Find more</button>':'')+'</div>'
+    +(follows.length?'<div class="stack gap-10">'+follows.map(function(id){const c=churchById(id);if(!c)return '';
+      const home=s&&s.homeChurchId===id;
+      return '<button class="glass press pad-sm row between gap-12" data-go="church-profile" data-id="'+id+'" style="text-align:left">'
+        +'<span class="row gap-12" style="min-width:0"><span class="avatar avatar-sm" style="background:'+grad(id)+'">'+initials(c.name)+'</span>'
+        +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">'+esc(c.city||'')+'</span></span></span>'
+        +(home?'<span class="badge badge-accent">'+ico('star',12)+'Home</span>':ico('chevR',16))+'</button>';}).join('')+'</div>'
+      :empty('church','No churches yet','Follow a church to fill your feed with its life.','<button class="btn btn-sm btn-primary" data-go="churches">Browse the directory</button>'))
+    +(myCommunityIds().length?'<div class="sec-title"><span class="eyebrow accent">Your communities</span>'
+      +'<button class="cap" data-go="community">See all</button></div>'
+      +'<div class="row gap-8 wrap">'+myCommunityIds().map(function(id){const c=communityById(id);if(!c)return '';
+        return '<button class="chip" data-go="community-page" data-id="'+id+'">'+ico(c.icon||'users',13)+esc(c.name)+'</button>';}).join('')+'</div>'
+      :''))
+    +'<div class="stack gap-10 mt-24">'
+    +(isChurch?'':meRow('star','Saved posts',(state.local.saved||[]).length+' saved','saved'))
+    +meRow('settings','Settings & privacy','Theme, language, notifications','settings')
+    +(isChurch?'':meRow('gift','Giving history','Receipts, 80G statements','giving-history'))
+    +(isChurch?'':meRow('users','Family','Child and youth profiles','family'))
+    +(guest?'':'<button class="glass press pad-sm row between gap-12" data-act="signout" style="text-align:left"><span class="row gap-12">'
+      +'<span class="icon-btn" style="flex:none">'+ico('logout',18)+'</span><span class="h3">Sign out</span></span>'+ico('chevR',16)+'</button>')
+    +'</div><div style="height:30px"></div></div>';
+}
+function meRow(icon,title,sub,route){
+  return '<button class="glass press pad-sm row between gap-12" data-go="'+route+'" style="text-align:left">'
+    +'<span class="row gap-12" style="min-width:0"><span class="icon-btn" style="flex:none">'+ico(icon,18)+'</span>'
+    +'<span class="stack gap-2" style="min-width:0"><span class="h3">'+esc(title)+'</span><span class="cap">'+esc(sub)+'</span></span></span>'
+    +ico('chevR',16)+'</button>';
+}
+function viewSettings(){
+  const dark=state.theme==='dark';
+  if(isChurchSession())return topbar('Settings','Church account',{back:'me'})
+    +'<div class="view stack gap-14">'
+    +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Appearance</span>'
+    +'<div class="row gap-10">'
+    +'<button class="glass press pad-sm stack gap-8 grow" data-act="theme" data-v="dark" style="'+(dark?'border-color:rgba(0,163,225,.45)':'')+'">'
+    +'<span class="row between">'+ico('moon',18,dark?'accent':'')+(dark?'<span class="accent">'+ico('check',16)+'</span>':'')+'</span>'
+    +'<span class="h3">Charcoal</span><span class="cap">Dark ground, same blue</span></button>'
+    +'<button class="glass press pad-sm stack gap-8 grow" data-act="theme" data-v="light" style="'+(!dark?'border-color:rgba(0,163,225,.45)':'')+'">'
+    +'<span class="row between">'+ico('sun',18,!dark?'accent':'')+(!dark?'<span class="accent">'+ico('check',16)+'</span>':'')+'</span>'
+    +'<span class="h3">Daylight</span><span class="cap">White ground, charcoal ink</span></button></div></div>'
+    +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Notifications</span>'
+    +prefRow('Church-to-church messages','broadcast','New messages and connection requests')
+    +'<hr class="divider">'+prefRow('Prayer requests','prayer','Private requests to the care queue')
+    +'<hr class="divider">'+prefRow('Quiet hours','quiet','Nothing between 10pm and 6am')+'</div>'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Church profile</span>'
+    +(state.session.churchId?'<button class="btn btn-ghost btn-block" data-go="church-profile" data-id="'+esc(state.session.churchId)+'">'+ico('eye',17)+'View public profile</button>':'')
+    +'<button class="btn btn-ghost btn-block" data-act="export">'+ico('file',17)+'Export church data</button></div>'
+    +'<div class="glass pad stack gap-8"><span class="eyebrow accent">About</span>'
+    +'<div class="row gap-10">'+arkGlyph(30)+wordmark(17)+'</div>'
+    +'<p class="cap">Prototype build · Sacred Futurism design system · Data '+(state.ui.dbState==='live'?'syncing live':'local to this device')+'</p></div>'
+    +'<div style="height:30px"></div></div>';
+  return topbar('Settings','Yours to shape',{back:'me'})
+    +'<div class="view stack gap-14">'
+    +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Appearance</span>'
+    +'<div class="row gap-10">'
+    +'<button class="glass press pad-sm stack gap-8 grow" data-act="theme" data-v="dark" style="'+(dark?'border-color:rgba(0,163,225,.45)':'')+'">'
+    +'<span class="row between">'+ico('moon',18,dark?'accent':'')+(dark?'<span class="accent">'+ico('check',16)+'</span>':'')+'</span>'
+    +'<span class="h3">Charcoal</span><span class="cap">Dark ground, same blue</span></button>'
+    +'<button class="glass press pad-sm stack gap-8 grow" data-act="theme" data-v="light" style="'+(!dark?'border-color:rgba(0,163,225,.45)':'')+'">'
+    +'<span class="row between">'+ico('sun',18,!dark?'accent':'')+(!dark?'<span class="accent">'+ico('check',16)+'</span>':'')+'</span>'
+    +'<span class="h3">Daylight</span><span class="cap">White ground, charcoal ink</span></button></div></div>'
+    +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Language</span>'
+    +'<select class="select" id="setLang" data-act="lang">'+LANGS.map(function(l){return '<option'+(state.prefs.lang===l?' selected':'')+'>'+l+'</option>';}).join('')+'</select>'
+    +'<p class="cap">Sermons and broadcasts are auto-translated into your language where a transcript exists.</p></div>'
+    +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Notifications</span>'
+    +prefRow('Church broadcasts','broadcast','Announcements from churches you follow')
+    +'<hr class="divider">'+prefRow('Daily digest instead of feed','digest','One summary a day, no drip')
+    +'<hr class="divider">'+prefRow('Event reminders','events','1 day and 1 hour before')
+    +'<hr class="divider">'+prefRow('Prayer chain alerts','prayer','Urgent requests only')
+    +'<hr class="divider">'+prefRow('Quiet hours','quiet','Nothing between 10pm and 6am')+'</div>'
+    +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Privacy</span>'
+    +'<div class="field"><label class="label" for="setVis">Who can see my activity</label>'
+    +'<select class="select" id="setVis" data-act="visibility">'
+    +['Only me','My church','Everyone'].map(function(v){const k=v==='Only me'?'me':v==='My church'?'church':'all';
+      return '<option value="'+k+'"'+(state.prefs.visibility===k?' selected':'')+'>'+v+'</option>';}).join('')+'</select></div>'
+    +prefRow('Show my giving on my profile','showGiving','Off by default — giving stays private')
+    +'<p class="cap">'+ico('lock',13)+' No ads. Member data is never sold or shared with third parties.</p></div>'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Your data</span>'
+    +'<button class="btn btn-ghost btn-block" data-act="export">'+ico('file',17)+'Export my data</button>'
+    +'<button class="btn btn-ghost btn-block" data-act="delete-account" style="color:var(--live)">'+ico('x',17)+'Delete my account</button></div>'
+    +'<div class="glass pad stack gap-8"><span class="eyebrow accent">About</span>'
+    +'<div class="row gap-10">'+arkGlyph(30)+wordmark(17)+'</div>'
+    +'<p class="cap">Prototype build · Sacred Futurism design system · Data '+(state.ui.dbState==='live'?'syncing live':'local to this device')+'</p></div>'
+    +'<div style="height:30px"></div></div>';
+}
+function viewGivingHistory(){
+  const list=(state.local.giving||[]).slice().reverse();
+  return topbar('Giving history',money(totalGiven())+' given in total',{back:'me'})
+    +'<div class="view stack gap-12">'
+    +(list.length?list.map(function(g){
+      return '<article class="glass pad stack gap-12"><div class="row between gap-12">'
+        +'<div class="stack gap-3"><span class="h3">'+esc(g.campaign)+'</span><span class="cap">'+esc(g.church||'')+' · '+fmtDate(g.date)+'</span></div>'
+        +'<span class="h2 accent num">'+money(g.amount)+'</span></div>'
+        +'<div class="row between gap-12"><span class="badge badge-mint">'+ico('check',12)+'Receipt '+esc(g.receipt)+'</span>'
+        +'<button class="chip" data-act="view-receipt" data-id="'+esc(g.receipt)+'">'+ico('file',14)+'View receipt</button></div></article>';}).join('')
+      :empty('gift','No giving yet','When you give to a campaign, receipts appear here — 80G ready.',
+        '<button class="btn btn-sm btn-primary" data-go="community">See campaigns</button>'))
+    +'<div style="height:30px"></div></div>';
+}
+function viewSaved(){
+  const list=savedPosts();
+  return topbar('Saved',list.length+' post'+(list.length===1?'':'s')+' kept for later',{back:'me'})
+    +'<div class="view stack gap-14">'
+    +(list.length?list.map(function(p){return postCard(p);}).join('')
+      :empty('star','Nothing saved yet','Tap the star on any post to keep it here — sermons, testimonies, verses.',
+        '<button class="btn btn-sm btn-primary" data-go="home">Back to the feed</button>'))
+    +'<div style="height:30px"></div></div>';
+}
+function viewFamily(){
+  return topbar('Family','Safe spaces for children and youth',{back:'me'})+'<div class="view">'+journeyFamily()+'<div style="height:30px"></div></div>';
+}
+/* ---------- church console ---------- */
+function myChurch(){const s=state.session;return s&&s.churchId?churchById(s.churchId):null;}
+function myPosts(){const s=state.session;return state.data.posts.filter(function(p){return s&&p.churchId===s.churchId;}).sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);});}
+function myEvents(){const s=state.session;return state.data.events.filter(function(e){return s&&e.churchId===s.churchId;}).sort(function(a,b){return dt(a.datetime)-dt(b.datetime);});}
+function myCampaigns(){const s=state.session;return state.data.campaigns.filter(function(g){return s&&g.churchId===s.churchId;});}
+function viewConsole(){
+  const c=myChurch(),posts=myPosts(),evs=myEvents(),camps=myCampaigns();
+  const reach=posts.reduce(function(a,p){return a+Object.keys(p.reactions||{}).reduce(function(x,k){return x+(p.reactions[k]||0);},0);},0);
+  const raised=camps.reduce(function(a,g){return a+(g.raised||0);},0);
+  const prayers=state.data.prayers.filter(function(p){return p.churchId===(state.session&&state.session.churchId);});
+  return topbar(esc((c&&c.name)||(state.session&&state.session.church&&state.session.church.name)||'Your church'),'Church console',{
+    actions:'<div class="row gap-8">'+(state.session&&state.session.verified?verifiedTag():'')+'</div>',
+    extra:'<div class="row gap-10 mt-16 wrap">'
+      +'<button class="btn btn-sm btn-primary" data-go="console-compose">'+ico('edit',16)+'Publish</button>'
+      +'<button class="btn btn-sm btn-ghost" data-act="compose" data-v="broadcast">'+ico('radio',16)+'Broadcast</button>'
+      +(c?'<button class="btn btn-sm btn-ghost" data-go="church-profile" data-id="'+c.id+'">'+ico('eye',16)+'Public view</button>':'')+'</div>'})
+    +'<div class="view-wide stack">'
+    +'<div class="row gap-12 wrap">'
+    +[['Followers',Number((c&&c.followers)||0).toLocaleString('en-IN'),'accent'],['Reach this week',Number(reach).toLocaleString('en-IN'),'ice'],['Upcoming events',evs.filter(function(e){return dt(e.datetime)>=new Date();}).length,'mint'],['Given this month',money(raised),'accent']]
+      .map(function(s){return '<div class="stat" style="flex:1;min-width:150px"><div class="v '+s[2]+' num">'+s[1]+'</div><div class="cap mt-4">'+s[0]+'</div></div>';}).join('')+'</div>'
+    +'<div class="sec-title"><span class="eyebrow accent">Needs you</span></div>'
+    +'<div class="stack gap-10">'
+    +consoleRow('hands','Pastoral care queue',prayers.length+' prayer requests · 2 visitation asks','console-care','badge-rose',prayers.length||3)
+    +consoleRow('msg','Church-to-church',(function(){const id=state.session&&state.session.churchId;const u=id?unreadThreads(id):0,p=id?pendingFor(id).length:0;
+        return (u?u+' unread message'+(u>1?'s':''):'Inbox is clear')+' · '+(p?p+' connection request'+(p>1?'s':''):'no new requests');})(),'console-c2c','badge-ice',
+        (state.session&&state.session.churchId)?unreadThreads(state.session.churchId)+pendingFor(state.session.churchId).length:0)
+    +consoleRow('users','Join requests','4 members waiting for approval','console-members','badge-accent',4)
+    +'</div>'
+    +'<div class="sec-title"><span class="eyebrow accent">Recent posts</span><button class="cap" data-go="console-compose">New post</button></div>'
+    +(posts.length?'<div class="stack gap-12">'+posts.slice(0,4).map(function(p){
+      const rx=Object.keys(p.reactions||{}).reduce(function(x,k){return x+(p.reactions[k]||0);},0);
+      return '<div class="glass pad-sm row between gap-12"><div class="stack gap-3" style="min-width:0">'
+        +'<span class="h3" style="font-size:14.5px">'+esc(p.title||p.content.slice(0,52))+'</span>'
+        +'<span class="cap">'+esc(p.type)+' · '+ago(p.createdAt)+' · <span class="num">'+rx+'</span> reactions</span></div>'
+        +'<button class="chip" data-go="post" data-id="'+p.id+'">View</button></div>';}).join('')+'</div>'
+      :empty('edit','Nothing published yet','Your first post goes to every follower\'s feed.','<button class="btn btn-sm btn-primary" data-go="console-compose">Write a post</button>'))
+    +'<div class="sec-title"><span class="eyebrow accent">Ministry operations</span></div>'
+    +'<div class="stack gap-10">'
+    +consoleRow('users','Members & groups','Roles, small groups, transfer letters','console-members','',0)
+    +consoleRow('cal','Volunteer rosters','Sunday teams, QR attendance check-in','console-members','',0)
+    +consoleRow('gift','Giving & campaigns',(camps.length?camps.length+' open campaign'+(camps.length===1?'':'s'):'No campaign open')+' · auto 80G receipts','console-giving','',0)
+    +'</div><div style="height:30px"></div></div>';
+}
+function consoleRow(icon,title,sub,route,badge,count){
+  return '<button class="glass press pad-sm row between gap-12" data-go="'+route+'" style="text-align:left">'
+    +'<span class="row gap-12" style="min-width:0"><span class="icon-btn" style="flex:none">'+ico(icon,18)+'</span>'
+    +'<span class="stack gap-2" style="min-width:0"><span class="h3">'+esc(title)+'</span><span class="cap">'+esc(sub)+'</span></span></span>'
+    +(count?'<span class="badge '+(badge||'badge-accent')+' num">'+count+'</span>':ico('chevR',16))+'</button>';
+}
+function photoField(){
+  const p=state.ui.composePhoto;
+  return '<div class="field"><label class="label">Photograph <span style="text-transform:none;letter-spacing:0;font-weight:500">(optional)</span></label>'
+    +'<input type="file" id="photoInput" accept="image/*" hidden>'
+    +(p?'<div class="photo-slot" style="border-style:solid;cursor:default"><img src="'+esc(p)+'" alt="The photograph you attached"></div>'
+        +'<div class="row between gap-10 mt-8"><span class="cap" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(state.ui.composePhotoName||'Photo attached')+'</span>'
+        +'<span class="row gap-6" style="flex:none"><button class="chip" data-act="pick-photo">Replace</button>'
+        +'<button class="chip" data-act="clear-photo">'+ico('x',13)+'Remove</button></span></div>'
+      :'<button class="photo-slot" data-act="pick-photo"><span class="slot-hint">'+ico('upload',24,'accent')
+        +'<span class="h3">Add a photo</span><span class="cap">From this device · resized before it is saved</span></span></button>')
+    +'<p class="cap mt-8">'+ico('sparkle',12)+' With no photo, the post carries a scene illustration from the design system.</p></div>';
+}
+function readPhoto(file){
+  if(!file||!/^image\//.test(file.type||'')){toast('That file is not an image');return;}
+  const fr=new FileReader();
+  fr.onerror=function(){toast('Could not read that file');};
+  fr.onload=function(){
+    const img=new Image();
+    img.onerror=function(){toast('Could not read that image');};
+    img.onload=function(){
+      const max=1000,sc=Math.min(1,max/Math.max(img.width,img.height));
+      const w=Math.max(1,Math.round(img.width*sc)),h=Math.max(1,Math.round(img.height*sc));
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      let out='';
+      try{out=c.toDataURL('image/jpeg',0.72);if(out.length>420000)out=c.toDataURL('image/jpeg',0.5);}
+      catch(e){toast('Could not process that image');return;}
+      state.ui.composePhoto=out;state.ui.composePhotoName=file.name;
+      render();toast('Photo attached');
+    };
+    img.src=fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+const SCENE_FOR_TYPE={sermon:'arches',event:'stage',story:'rays',occasion:'festival',text:'hills',prayer:'canopy'};
+function viewConsoleCompose(){
+  const t=state.ui.composeType||'post';
+  const types=[['post','Post','edit'],['story','Story','sparkle'],['sermon','Sermon','mic'],['event','Event','cal'],['broadcast','Broadcast','radio'],['occasion','Occasion','star'],['poll','Poll','list']];
+  let form='';
+  if(t==='story'){
+    form='<div class="row gap-10 cap" style="padding:12px 14px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(0,163,225,.26);color:var(--brand)">'
+      +ico('clock',15)+'Stories sit at the top of every follower\'s home for 24 hours, then fade.</div>'
+      +'<div class="field"><label class="label" for="fBody">What is happening right now?</label><textarea class="textarea" id="fBody" placeholder="Choir warm-up done. Doors open at 6:30…" style="min-height:110px"></textarea></div>'
+      +'<div class="field"><label class="label" for="fVerse">Attach a verse (optional)</label><select class="select" id="fVerse"><option value="">No verse</option>'
+      +VERSES.map(function(v){return '<option value="'+esc(v.r)+'">'+esc(v.r)+'</option>';}).join('')+'</select></div>';
+  }else if(t==='event'){
+    form='<div class="field"><label class="label" for="fTitle">Event title</label><input class="input" id="fTitle" placeholder="Night of worship"></div>'
+      +'<div class="row gap-10"><div class="field grow"><label class="label" for="fDate">Date</label><input class="input" id="fDate" type="date"></div>'
+      +'<div class="field grow"><label class="label" for="fTime">Time</label><input class="input" id="fTime" type="time" value="18:00"></div></div>'
+      +'<div class="field"><label class="label" for="fLoc">Location</label><input class="input" id="fLoc" placeholder="Main sanctuary, or a stream link"></div>'
+      +'<div class="field"><label class="label" for="fCap">Capacity</label><input class="input" id="fCap" type="number" inputmode="numeric" placeholder="250"></div>'
+      +'<div class="field"><label class="label" for="fBody">Description</label><textarea class="textarea" id="fBody" placeholder="What should people expect?"></textarea></div>'
+      +'<label class="row between gap-12" style="padding:14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
+      +'<span class="stack gap-2"><span class="h3" style="font-size:15px">Stream this live</span><span class="cap">Adds a live player and chat overlay</span></span>'
+      +'<input type="checkbox" id="fLive" style="width:20px;height:20px;accent-color:var(--brand)"></label>';
+  }else if(t==='broadcast'){
+    form='<div class="field"><label class="label">Priority</label><div class="row gap-8">'
+      +['Normal','Important','Urgent'].map(function(p,i){return '<button class="chip'+(( state.ui.bPriority||'Normal')===p?' on':'')+'" data-act="b-priority" data-v="'+p+'">'+p+'</button>';}).join('')+'</div></div>'
+      +'<div class="field"><label class="label">Audience</label><div class="row gap-8 wrap">'
+      +['Everyone','Youth','Worship team','Small groups','Members only'].map(function(a){return '<button class="chip'+((state.ui.bAudience||'Everyone')===a?' on':'')+'" data-act="b-audience" data-v="'+esc(a)+'">'+esc(a)+'</button>';}).join('')+'</div></div>'
+      +'<div class="field"><label class="label" for="fBody">Announcement</label><textarea class="textarea" id="fBody" placeholder="Read-only announcement to your people…"></textarea></div>'
+      +'<div class="row gap-10 cap" style="padding:12px 14px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(0,163,225,.26);color:var(--brand)">'
+      +ico('clock',15)+'Quiet hours respected — urgent bypasses them.</div>';
+  }else if(t==='sermon'){
+    form='<div class="field"><label class="label" for="fTitle">Sermon title</label><input class="input" id="fTitle" placeholder="The God who stays"></div>'
+      +'<div class="field"><label class="label" for="fSpeaker">Speaker</label><input class="input" id="fSpeaker" placeholder="Pr. Daniel Selvam"></div>'
+      +'<button class="glass press pad-sm row between gap-12" data-act="mock-upload-audio" style="text-align:left;border-style:dashed">'
+      +'<span class="row gap-12">'+ico('upload',20,'accent')+'<span class="stack gap-2"><span class="h3">Upload audio or video</span>'
+      +'<span class="cap">'+(state.ui.audioUp?'sunday-message.mp3 · transcript ready':'Auto transcript, summary and translation follow')+'</span></span></span>'
+      +(state.ui.audioUp?'<span class="badge badge-mint">'+ico('check',12)+'Ready</span>':'<span class="icon-btn">'+ico('plus',18)+'</span>')+'</button>'
+      +'<div class="field"><label class="label" for="fBody">Notes for your people</label><textarea class="textarea" id="fBody" placeholder="Key points, passage, application…"></textarea></div>';
+  }else if(t==='poll'){
+    form='<div class="field"><label class="label" for="fBody">Question</label><input class="input" id="fBody" placeholder="Which night suits the prayer meeting?"></div>'
+      +'<div class="field"><label class="label" for="fOpt">Options (comma separated)</label><input class="input" id="fOpt" placeholder="Tuesday, Thursday, Saturday"></div>';
+  }else if(t==='occasion'){
+    form='<div class="field"><label class="label">Occasion</label><div class="row gap-8 wrap">'
+      +['Baptism','Wedding','Dedication','Anniversary','Ordination'].map(function(o){return '<button class="chip'+((state.ui.occasion||'Baptism')===o?' on':'')+'" data-act="occasion" data-v="'+o+'">'+o+'</button>';}).join('')+'</div></div>'
+      +'<div class="field"><label class="label" for="fBody">Share the joy</label><textarea class="textarea" id="fBody" placeholder="Twelve believers were baptised this morning…"></textarea></div>';
+  }else{
+    form='<div class="field"><label class="label" for="fBody">What do you want to say?</label><textarea class="textarea" id="fBody" placeholder="Speak to your church…" style="min-height:150px"></textarea></div>';
+  }
+  if(['post','story','sermon','event','occasion'].indexOf(t)>-1)form+=photoField();
+  return topbar('Publish','Composer',{back:'console',
+    extra:'<div class="scroll-x mt-16">'+types.map(function(x){
+      return '<button class="chip'+(t===x[0]?' on':'')+'" data-act="compose" data-v="'+x[0]+'">'+ico(x[2],14)+x[1]+'</button>';}).join('')+'</div>'})
+    +'<div class="view stack gap-14">'
+    +'<div class="glass pad stack gap-16">'+form+'</div>'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Schedule</span>'
+    +'<div class="row gap-8"><button class="chip on" data-act="noop">Publish now</button><button class="chip" data-act="soon" data-v="Scheduling">Schedule</button></div></div>'
+    +'<button class="btn btn-primary btn-block" data-act="publish" data-v="'+t+'">'+ico('send',18)+'Publish to '+(( myChurch()&&myChurch().followers)||0)+' followers</button>'
+    +'<div style="height:30px"></div></div>';
+}
+function viewConsoleEvents(){
+  const evs=myEvents();
+  return topbar('Events','Gatherings and streams',{back:'console',
+    actions:'<button class="icon-btn active" data-act="compose" data-v="event" aria-label="New event">'+ico('plus',18)+'</button>'})
+    +'<div class="view stack gap-12">'
+    +(evs.length?evs.map(function(e){
+      return '<article class="glass pad stack gap-12"><div class="row between gap-12">'
+        +'<div class="stack gap-3"><span class="row gap-8">'+(e.isLive?'<span class="badge badge-live"><i class="dot-live"></i>Live</span>':'<span class="badge badge-accent">'+fmtDate(e.datetime)+'</span>')+'</span>'
+        +'<span class="h2" style="font-size:19px">'+esc(e.title)+'</span>'
+        +'<span class="cap">'+fmtTime(e.datetime)+' · '+esc(e.location||'Online')+'</span></div>'
+        +'<div class="stack gap-4" style="text-align:right"><span class="h3 accent num">'+(e.rsvpCount||0)+'</span><span class="cap">RSVPs</span></div></div>'
+        +'<div class="row gap-8 wrap"><button class="chip" data-act="toggle-live" data-id="'+e.id+'">'+ico('radio',14)+(e.isLive?'End live':'Go live')+'</button>'
+        +'<button class="chip" data-go="event" data-id="'+e.id+'">'+ico('eye',14)+'Preview</button>'
+        +'<button class="chip" data-act="soon" data-v="Reminders">'+ico('bell',14)+'Reminders</button></div></article>';}).join('')
+      :empty('cal','No events yet','Create your first gathering — RSVPs, reminders and replay are automatic.',
+        '<button class="btn btn-sm btn-primary" data-act="compose" data-v="event">Create an event</button>'))
+    +'<div style="height:30px"></div></div>';
+}
+function viewConsoleGiving(){
+  const camps=myCampaigns();
+  return topbar('Giving','Campaigns and receipts',{back:'console',
+    actions:'<button class="icon-btn active" data-act="new-campaign" aria-label="New campaign">'+ico('plus',18)+'</button>'})
+    +'<div class="view stack gap-14">'
+    +(camps.length?camps.map(function(g){const pct=Math.min(100,Math.round(g.raised/g.goal*100));
+      return '<article class="glass pad stack gap-14"><div class="row between gap-12">'
+        +'<div class="stack gap-3"><span class="eyebrow accent">'+esc(g.category||'Campaign')+'</span><span class="h2">'+esc(g.title)+'</span></div>'
+        +'<span class="badge badge-mint num">'+pct+'%</span></div>'
+        +'<div class="progress"><i style="width:'+pct+'%"></i></div>'
+        +'<div class="row between"><span class="h3 accent num">'+money(g.raised)+'</span><span class="cap num">goal '+money(g.goal)+'</span></div>'
+        +'<div class="row gap-8 wrap"><button class="chip" data-go="campaign" data-id="'+g.id+'">'+ico('eye',14)+'Public page</button>'
+        +'<button class="chip" data-act="soon" data-v="Transparency report">'+ico('file',14)+'Report</button>'
+        +'<button class="chip" data-act="soon" data-v="Recurring giving">'+ico('clock',14)+'Recurring</button></div></article>';}).join('')
+      :empty('gift','No campaigns yet','Open a campaign for a building fund, missions or benevolence.',
+        '<button class="btn btn-sm btn-primary" data-act="new-campaign">Start a campaign</button>'))
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Payments</span>'
+    +'<div class="row between gap-12"><span class="body">UPI · Razorpay</span><span class="badge badge-mint">'+ico('check',12)+'Ready</span></div>'
+    +'<div class="row between gap-12"><span class="body">Cards · international</span><span class="badge badge-ice">Stripe</span></div>'
+    +'<div class="row between gap-12"><span class="body">Auto receipts (80G)</span><span class="badge badge-mint">'+ico('check',12)+'On</span></div>'
+    +'<p class="cap">Prototype build — no payment gateway is connected and no money moves.</p></div>'
+    +'<div style="height:30px"></div></div>';
+}
+function viewConsoleMembers(){
+  const rows=[['Anitha Raj','Worship team','Leader'],['Joseph Kumar','Ushers','Member'],['Priya S.','Sunday school','Leader'],['David M.','Youth','Member'],['Sarah T.','Prayer team','Member']];
+  return topbar('Members','People and ministries',{back:'console'})
+    +'<div class="view stack gap-14">'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Join requests · 4</span>'
+    +['Grace Mathew','Samuel P.','Ruth Anand','Vinod K.'].map(function(n){
+      return '<div class="row between gap-12"><span class="row gap-10"><span class="avatar avatar-sm" style="background:'+grad(n)+'">'+initials(n)+'</span>'
+        +'<span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(n)+'</span><span class="cap">Requested to join</span></span></span>'
+        +'<span class="row gap-6"><button class="chip" data-act="approve-member" data-v="'+esc(n)+'">'+ico('check',14)+'Approve</button></span></div>';}).join('')+'</div>'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Members</span>'
+    +rows.map(function(r){return '<div class="row between gap-12"><span class="row gap-10">'
+      +'<span class="avatar avatar-sm" style="background:'+grad(r[0])+'">'+initials(r[0])+'</span>'
+      +'<span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(r[0])+'</span><span class="cap">'+esc(r[1])+'</span></span></span>'
+      +'<span class="badge '+(r[2]==='Leader'?'badge-accent':'badge-ice')+'">'+r[2]+'</span></div>';}).join('')+'</div>'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Ministry operations</span>'
+    +'<button class="btn btn-ghost btn-block" data-act="soon" data-v="Volunteer rosters">'+ico('cal',17)+'Volunteer rosters</button>'
+    +'<button class="btn btn-ghost btn-block" data-act="soon" data-v="QR attendance">'+ico('grid',17)+'QR attendance check-in</button>'
+    +'<button class="btn btn-ghost btn-block" data-act="soon" data-v="Transfer letters">'+ico('file',17)+'Transfer letters</button></div>'
+    +'<div style="height:30px"></div></div>';
+}
+function viewConsoleC2C(){
+  const me=state.session&&state.session.churchId;
+  if(!me)return topbar('Church to church','Verified churches only',{back:'console'})+'<div class="view">'+empty('shield','Verification first','Church-to-church messaging opens once your church is verified.','<button class="btn btn-sm btn-ghost" data-go="pending">See status</button>')+'</div>';
+  const tab=state.ui.c2cTab||'Inbox';
+  const threads=threadsFor(me),incoming=pendingFor(me),outgoing=pendingFrom(me);
+  const conns=myConnections(me).map(churchById).filter(Boolean);
+  const seen=state.local.threadSeen||{};
+  const discover=state.data.churches.filter(function(c){return c.id!==me&&!connectionBetween(me,c.id);});
+  let body='';
+  if(tab==='Inbox'){
+    body=(threads.length?'<div class="stack gap-10 stagger">'+threads.map(function(t){
+      const other=(t.churchIds||[]).filter(function(x){return x!==me;})[0],c=churchById(other),m=lastMsg(t);
+      const unread=m.from&&m.from!==me&&(!seen[t.id]||dt(m.at)>dt(seen[t.id]));
+      return '<button class="glass press pad-sm row between gap-12" data-go="console-thread" data-id="'+t.id+'" style="text-align:left'+(unread?';border-color:rgba(0,163,225,.32)':'')+'">'
+        +'<span class="row gap-12" style="min-width:0"><span class="avatar" style="background:'+grad(other)+'">'+initials((c&&c.name)||(t.names||{})[other]||'?')+'</span>'
+        +'<span class="stack gap-2" style="min-width:0"><span class="row gap-6"><span class="h3" style="font-size:15px">'+esc((c&&c.name)||(t.names||{})[other]||'Church')+'</span>'+ico('shield',13,'accent')+'</span>'
+        +'<span class="cap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'+(unread?'color:var(--text-1);font-weight:600':'')+'">'+(m.from===me?'You: ':'')+esc(m.text)+'</span>'
+        +'<span class="cap" style="font-size:11px">'+esc(t.topic||'')+(t.topic?' · ':'')+ago(m.at)+'</span></span></span>'
+        +(unread?'<span style="width:9px;height:9px;border-radius:50%;background:var(--brand);flex:none;box-shadow:0 0 10px rgba(0,163,225,.6)"></span>':ico('chevR',16))+'</button>';}).join('')+'</div>'
+      :empty('msg','No conversations yet','Connect with a church, then open a conversation from its profile or the Connections tab.','<button class="btn btn-sm btn-primary" data-act="c2c-tab" data-v="Discover">Find churches</button>'));
+  }else if(tab==='Connections'){
+    body=(incoming.length?'<div class="glass pad stack gap-12"><span class="eyebrow accent">Requests · '+incoming.length+'</span>'
+      +incoming.map(function(x){const c=churchById(x.from)||{name:'A church'};
+        return '<div class="row between gap-12"><button class="row gap-10" data-go="church-profile" data-id="'+x.from+'" style="text-align:left;min-width:0">'
+          +'<span class="avatar avatar-sm" style="background:'+grad(x.from)+'">'+initials(c.name)+'</span>'
+          +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">'+esc(c.city||'')+' · '+ago(x.createdAt)+'</span></span></button>'
+          +'<span class="row gap-6" style="flex:none"><button class="btn btn-xs btn-primary" data-act="c2c-accept" data-id="'+x.id+'">'+ico('check',13)+'Accept</button>'
+          +'<button class="icon-btn" data-act="c2c-decline" data-id="'+x.id+'" aria-label="Decline" style="width:32px;height:32px">'+ico('x',14)+'</button></span></div>';}).join('')+'</div>':'')
+      +'<div class="glass pad stack gap-12 mt-14"><span class="eyebrow accent">Connected · '+conns.length+'</span>'
+      +(conns.length?conns.map(function(c){return '<div class="row between gap-12"><button class="row gap-10" data-go="church-profile" data-id="'+c.id+'" style="text-align:left;min-width:0">'
+        +'<span class="avatar avatar-sm" style="background:'+grad(c.id)+'">'+initials(c.name)+'</span>'
+        +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">'+esc(c.city||'')+' · '+esc(c.denomination||'')+'</span></span></button>'
+        +'<button class="chip" data-act="c2c-message" data-id="'+c.id+'" style="flex:none">'+ico('msg',14)+'Message</button></div>';}).join('')
+        :'<p class="cap">No connections yet. Find churches in the Discover tab.</p>')+'</div>'
+      +(outgoing.length?'<div class="glass pad stack gap-12 mt-14"><span class="eyebrow accent">Sent · waiting</span>'
+        +outgoing.map(function(x){const c=churchById(x.to)||{name:'A church'};
+          return '<div class="row between gap-12"><span class="row gap-10"><span class="avatar avatar-sm" style="background:'+grad(x.to)+'">'+initials(c.name)+'</span>'
+            +'<span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">Requested '+ago(x.createdAt)+'</span></span></span>'
+            +'<button class="chip" data-act="c2c-cancel" data-id="'+x.id+'">Withdraw</button></div>';}).join('')+'</div>':'');
+  }else{
+    body='<div class="row gap-10 mb-12" style="margin-bottom:12px"><button class="btn btn-ghost btn-sm grow" data-go="churches">'+ico('search',15)+'Search the full directory</button></div>'
+      +(discover.length?'<div class="stack gap-12 stagger">'+discover.map(function(c){return churchCardC2C(c,liveEvents().some(function(e){return e.churchId===c.id;}));}).join('')+'</div>'
+        :'<p class="cap">You are connected with every verified church on the ark.</p>');
+  }
+  return topbar('Church to church','Verified churches only',{back:'console',
+    extra:'<div class="tabs mt-16">'+['Inbox','Connections','Discover'].map(function(t){
+      const n=t==='Inbox'?unreadThreads(me):t==='Connections'?incoming.length:0;
+      return '<button class="tab'+(tab===t?' on':'')+'" data-act="c2c-tab" data-v="'+t+'">'+t+(n?' <span class="num" style="color:var(--brand)">'+n+'</span>':'')+'</button>';}).join('')+'</div>'})
+    +'<div class="view stack">'
+    +'<div class="row gap-10 cap" style="padding:12px 14px;border-radius:var(--r-md);background:rgba(127,212,245,.08);border:1px solid rgba(127,212,245,.24);margin-bottom:14px">'
+    +ico('shield',15,'ice')+'<span>Messages here travel only between verified churches. Believers never see them.</span></div>'
+    +body+'<div style="height:30px"></div></div>';
+}
+function viewConsoleThread(){
+  const me=state.session&&state.session.churchId;
+  const t=state.data.threads.find(function(x){return x.id===state.params.id;});
+  if(!t||!me)return '<div class="view screen-pad">'+empty('msg','Conversation not found','It may have been removed.','<button class="btn btn-sm btn-ghost" data-go="console-c2c">Inbox</button>')+'</div>';
+  const other=(t.churchIds||[]).filter(function(x){return x!==me;})[0],c=churchById(other)||{name:(t.names||{})[other]||'Church'};
+  const mineName=(churchById(me)||{}).name||(state.session.church&&state.session.church.name)||'Your church';
+  const msgs=(t.messages||[]).slice().sort(function(a,b){return dt(a.at)-dt(b.at);});
+  return '<div class="view" style="padding-top:14px;display:flex;flex-direction:column;min-height:calc(100dvh - 40px)">'
+    +'<div class="row between gap-12 mt-8" style="margin-bottom:14px">'
+    +'<button class="row gap-6 cap" data-go="console-c2c" style="color:var(--text-3)">'+ico('arrowL',16)+'Inbox</button>'
+    +'<button class="chip" data-go="church-profile" data-id="'+esc(other)+'">'+ico('eye',14)+'Profile</button></div>'
+    +'<div class="glass pad-sm row gap-12" style="margin-bottom:14px"><span class="avatar" style="background:'+grad(other)+'">'+initials(c.name)+'</span>'
+    +'<span class="stack gap-2" style="min-width:0"><span class="row gap-6"><span class="h3">'+esc(c.name)+'</span>'+ico('shield',14,'accent')+'</span>'
+    +'<span class="cap">'+esc(c.city||'')+(c.pastorName?' · '+esc(c.pastorName):'')+(t.topic?' · '+esc(t.topic):'')+'</span></span></div>'
+    +'<div class="stack gap-10" style="flex:1" id="threadBody">'
+    +(msgs.length?msgs.map(function(m){const out=m.from===me;
+      return '<div class="thread-msg '+(out?'out':'in')+'"><span class="who">'+esc(out?mineName:c.name)+'</span>'+esc(m.text).replace(/\n/g,'<br>')+'<span class="when">'+fmtDate(m.at)+' · '+fmtTime(m.at)+'</span></div>';}).join('')
+      :'<p class="cap" style="text-align:center;padding:20px">Say hello — this is the start of your conversation with '+esc(c.name)+'.</p>')+'</div>'
+    +'<div class="glass row gap-10 mt-16" style="padding:8px 8px 8px 16px;border-radius:26px;position:sticky;bottom:calc(var(--nav-h) + 14px);z-index:10;align-items:flex-end">'
+    +'<textarea class="grow" id="threadBox" placeholder="Write to '+esc(c.name)+'…" rows="1" style="background:none;border:0;outline:none;min-height:42px;max-height:120px;resize:none;padding:10px 0;min-width:0;line-height:1.4"></textarea>'
+    +'<button class="btn btn-primary" data-act="c2c-send" data-id="'+t.id+'" style="height:42px;width:42px;padding:0;border-radius:50%;flex:none">'+ico('send',17)+'</button></div>'
+    +'<div style="height:24px"></div></div>';
+}
+function viewConsoleCare(){
+  const prayers=state.data.prayers.filter(function(p){return p.churchId===(state.session&&state.session.churchId)||p.visibility==='church';});
+  return topbar('Pastoral care','Private queue · pastors only',{back:'console'})
+    +'<div class="view stack gap-14">'
+    +'<div class="row gap-10 cap" style="padding:13px 15px;border-radius:var(--r-md);background:rgba(232,145,154,.1);border:1px solid rgba(232,145,154,.28);color:var(--rose)">'
+    +ico('lock',15)+'Private requests are visible only to pastors of this church.</div>'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Visitation & counselling</span>'
+    +[['Hospital visit · Mrs. Mary','Requested 2 days ago','Urgent'],['Marriage counselling','Requested yesterday','Normal'],['Home dedication','This Saturday','Normal']].map(function(r){
+      return '<div class="row between gap-12"><span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(r[0])+'</span><span class="cap">'+esc(r[1])+'</span></span>'
+        +'<span class="badge '+(r[2]==='Urgent'?'badge-rose':'badge-ice')+'">'+r[2]+'</span></div>';}).join('')+'</div>'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Prayer requests · '+prayers.length+'</span>'
+    +(prayers.length?prayers.slice(0,6).map(function(p){
+      return '<div class="stack gap-6" style="padding:13px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
+        +'<div class="row between gap-10"><span class="h3" style="font-size:14px">'+esc(p.visibility==='anonymous'?'Anonymous':p.authorName)+'</span>'
+        +'<span class="cap">'+ago(p.createdAt)+'</span></div>'
+        +'<span class="body" style="font-size:14.5px">'+esc(p.text)+'</span>'
+        +'<div class="row gap-8"><button class="chip" data-act="pray" data-id="'+p.id+'">\u{1F64F} Pray</button>'
+        +'<button class="chip" data-act="soon" data-v="Reply to member">'+ico('msg',14)+'Reply</button></div></div>';}).join('')
+      :'<p class="cap">No requests waiting.</p>')+'</div>'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">From BibleGPT</span>'
+    +'<p class="body">Questions the assistant handed to a pastor appear here.</p>'
+    +((state.local.care||[]).length?(state.local.care||[]).map(function(q){
+      return '<div class="row between gap-12" style="padding:12px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
+        +'<span class="body" style="font-size:14.5px">'+esc(q.q)+'</span><span class="badge badge-lav">Waiting</span></div>';}).join('')
+      :'<p class="cap">Nothing waiting right now.</p>')+'</div>'
+    +'<div style="height:30px"></div></div>';
+}
+/* ---------- sheets ---------- */
+function renderSheet(){
+  const s=state.ui.sheet;if(!s)return '';
+  let inner='';
+  if(s.kind==='prayer'){
+    inner='<span class="eyebrow accent">New prayer request</span><h2 class="h1 mt-8">Share it with the chain</h2>'
+      +'<textarea class="textarea mt-16" id="prText" placeholder="What would you like prayer for?"></textarea>'
+      +'<div class="row gap-8 wrap mt-16">'+[['public','Public'],['church','Church only'],['anonymous','Anonymous']].map(function(v){
+        return '<button class="chip'+((state.ui.prVis||'public')===v[0]?' on':'')+'" data-act="pr-vis" data-v="'+v[0]+'">'+v[1]+'</button>';}).join('')+'</div>'
+      +'<button class="btn btn-primary btn-block mt-16" data-act="submit-prayer">Post to the prayer chain</button>'
+      +'<p class="cap mt-12">Private requests reach only the pastors of your church.</p>';
+  }else if(s.kind==='post'){
+    const types=[['question','Question','msg'],['testimony','Testimony','star'],['praise','Praise','sparkle'],['prayer','Prayer','hands'],['text','Word','edit']];
+    const t=state.ui.postType||'question',cm=communityById(s.params.id)||{name:'the community'};
+    inner='<span class="eyebrow accent">New conversation · '+esc(cm.name)+'</span><h2 class="h1 mt-8">What is on your heart?</h2>'
+      +'<div class="scroll-x mt-16">'+types.map(function(x){
+        return '<button class="chip'+(t===x[0]?' on':'')+'" data-act="post-type" data-v="'+x[0]+'">'+ico(x[2],14)+x[1]+'</button>';}).join('')+'</div>'
+      +'<textarea class="textarea mt-16" id="npText" placeholder="'+(t==='testimony'?'Tell what God has done…':t==='praise'?'What are you thankful for?':t==='prayer'?'What do you need prayer for?':t==='question'?'Ask the community…':'Share a word…')+'" style="min-height:140px"></textarea>'
+      +'<div class="field mt-12"><label class="label" for="npVerse">Attach a verse (optional)</label>'
+      +'<select class="select" id="npVerse"><option value="">No verse</option>'
+      +VERSES.map(function(v){return '<option value="'+esc(v.r)+'">'+esc(v.r)+'</option>';}).join('')+'</select></div>'
+      +'<div class="row gap-10 mt-16"><button class="btn btn-primary grow" data-act="submit-post" data-id="'+esc(cm.id||'')+'">'+ico('send',18)+'Post to '+esc(cm.name)+'</button></div>'
+      +'<p class="cap mt-12">Visible to members of this community. Moderators can remove unkind replies.</p>';
+  }else if(s.kind==='profile'){
+    const u=state.session||{};
+    inner='<span class="eyebrow accent">Edit profile</span><h2 class="h1 mt-8">How others see you</h2>'
+      +'<div class="field mt-16"><label class="label" for="epName">Name</label><input class="input" id="epName" value="'+esc(u.name||'')+'"></div>'
+      +'<div class="field mt-12"><label class="label" for="epCity">City</label><input class="input" id="epCity" value="'+esc(u.city||'')+'"></div>'
+      +'<div class="field mt-12"><label class="label" for="epBio">Bio</label><textarea class="textarea" id="epBio" placeholder="A line about your walk" style="min-height:90px">'+esc(u.bio||'')+'</textarea></div>'
+      +'<button class="btn btn-primary btn-block mt-16" data-act="save-profile">Save profile</button>';
+  }else if(s.kind==='milestone'){
+    inner='<span class="eyebrow accent">Add a milestone</span><h2 class="h1 mt-8">Mark the moment</h2>'
+      +'<div class="row gap-8 wrap mt-16">'+['Baptism','Confirmation','Marriage','Dedication','First communion','Ordination'].map(function(m){
+        return '<button class="chip'+((state.ui.msType||'Baptism')===m?' on':'')+'" data-act="ms-type" data-v="'+esc(m)+'">'+esc(m)+'</button>';}).join('')+'</div>'
+      +'<div class="field mt-16"><label class="label" for="msDate">Date</label><input class="input" id="msDate" type="date"></div>'
+      +'<div class="field mt-12"><label class="label" for="msNote">Note</label><input class="input" id="msNote" placeholder="At St. Thomas, with my family"></div>'
+      +'<button class="btn btn-primary btn-block mt-16" data-act="submit-milestone">Add to my path</button>';
+  }else if(s.kind==='family'){
+    inner='<span class="eyebrow accent">Add family member</span><h2 class="h1 mt-8">Who are we adding?</h2>'
+      +'<div class="field mt-16"><label class="label" for="fmName">Name</label><input class="input" id="fmName" placeholder="Ruth"></div>'
+      +'<div class="row gap-8 mt-16">'+['Child','Youth','Adult'].map(function(t){
+        return '<button class="chip'+((state.ui.fmType||'Child')===t?' on':'')+'" data-act="fm-type" data-v="'+t+'">'+t+'</button>';}).join('')+'</div>'
+      +'<div class="glass pad-sm stack gap-8 mt-16"><span class="eyebrow">Parental controls</span>'
+      +'<span class="cap">Kids content only · no direct messages · everything visible to you</span></div>'
+      +'<button class="btn btn-primary btn-block mt-16" data-act="submit-family">Add member</button>';
+  }else if(s.kind==='verse'){
+    const v=findVerse(s.params.r);
+    inner='<span class="verse-ref">'+esc(v.r)+'</span>'
+      +'<p class="scripture mt-16">“'+esc(v.t)+'”</p>'
+      +'<p class="cap mt-16">King James Version · public domain</p>'
+      +'<div class="row gap-10 mt-16"><button class="btn btn-ghost btn-sm grow" data-act="note-verse">'+ico('edit',15)+'Note</button>'
+      +'<button class="btn btn-ghost btn-sm grow" data-act="share-verse">'+ico('share',15)+'Share</button></div>';
+  }else if(s.kind==='notifications'){
+    const items=[['Grace Cathedral is live now','2m','live'],['Your reading plan is waiting','1h','accent'],['3 people are praying for your request','3h','rose'],['Building fund reached 62%','1d','mint']];
+    inner='<span class="eyebrow accent">Notifications</span><h2 class="h1 mt-8">Recent</h2><div class="stack gap-10 mt-16">'
+      +items.map(function(i){return '<div class="row between gap-12" style="padding:13px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
+        +'<span class="body" style="font-size:14.5px;color:var(--text-1)">'+esc(i[0])+'</span><span class="cap">'+i[1]+'</span></div>';}).join('')+'</div>'
+      +'<button class="btn btn-ghost btn-block mt-16" data-go="settings">Notification settings</button>';
+  }else if(s.kind==='receipt'){
+    const g=(state.local.giving||[]).filter(function(x){return x.receipt===s.params.id;})[0]||{};
+    inner='<div class="stack center gap-10"><div class="icon-btn active" style="width:54px;height:54px">'+ico('check',26)+'</div>'
+      +'<span class="eyebrow accent">Receipt '+esc(g.receipt||'')+'</span>'
+      +'<span class="display" style="font-size:34px">'+money(g.amount||0)+'</span></div>'
+      +'<div class="stack gap-10 mt-24">'
+      +[['Campaign',g.campaign||''],['Church',g.church||''],['Date',g.date?fmtDate(g.date):''],['Method','UPI (prototype)'],['80G eligible','Yes']]
+        .map(function(r){return '<div class="row between gap-12"><span class="cap">'+r[0]+'</span><span class="h3" style="font-size:14.5px">'+esc(r[1])+'</span></div>';}).join('')+'</div>'
+      +'<p class="cap mt-16">Prototype receipt — no payment was processed.</p>';
+  }else if(s.kind==='campaign'){
+    inner='<span class="eyebrow accent">New campaign</span><h2 class="h1 mt-8">What are you raising for?</h2>'
+      +'<div class="field mt-16"><label class="label" for="gcTitle">Title</label><input class="input" id="gcTitle" placeholder="Building fund"></div>'
+      +'<div class="field mt-12"><label class="label" for="gcGoal">Goal (₹)</label><input class="input" id="gcGoal" type="number" inputmode="numeric" placeholder="500000"></div>'
+      +'<div class="row gap-8 wrap mt-16">'+['Building','Missions','Benevolence','Youth','Relief'].map(function(c){
+        return '<button class="chip'+((state.ui.gcCat||'Building')===c?' on':'')+'" data-act="gc-cat" data-v="'+c+'">'+c+'</button>';}).join('')+'</div>'
+      +'<div class="field mt-16"><label class="label" for="gcDesc">Description</label><textarea class="textarea" id="gcDesc" placeholder="What will this build?"></textarea></div>'
+      +'<button class="btn btn-primary btn-block mt-16" data-act="submit-campaign">Open campaign</button>';
+  }else if(s.kind==='amount'){
+    inner='<span class="eyebrow accent">Custom amount</span><h2 class="h1 mt-8">How much would you like to give?</h2>'
+      +'<div class="field mt-16"><label class="label" for="amtIn">Amount (₹)</label><input class="input" id="amtIn" type="number" inputmode="numeric" placeholder="1500"></div>'
+      +'<button class="btn btn-primary btn-block mt-16" data-act="set-amount">Set amount</button>';
+  }else if(s.kind==='summary'){
+    const p=state.data.posts.find(function(x){return x.id===s.params.id;})||{};
+    inner='<div class="row gap-10"><span class="icon-btn" style="color:var(--lavender);border-color:rgba(192,143,208,.4)">'+ico('sparkle',18)+'</span>'
+      +'<div class="stack gap-2"><span class="h3">Sermon summary</span><span class="cap">Generated from the transcript</span></div></div>'
+      +'<h2 class="h2 mt-16">'+esc(p.title||'Sunday message')+'</h2>'
+      +'<div class="stack gap-10 mt-16">'+['God’s faithfulness is measured by his character, not our circumstances.','Lament is a legitimate language of faith — the Psalms model it.','Practical step: name one worry aloud in prayer today and leave it there.']
+        .map(function(t,i){return '<div class="row gap-10"><span class="accent num" style="font-size:18px;font-weight:800">'+(i+1)+'</span><span class="body" style="color:var(--text-1)">'+esc(t)+'</span></div>';}).join('')+'</div>'
+      +'<div class="row gap-8 wrap mt-16">'+['Lamentations 3:22','Psalm 46:10'].map(function(v){
+        return '<button class="verse-chip" data-act="open-verse" data-r="'+esc(v)+'">'+ico('book',13)+esc(v)+'</button>';}).join('')+'</div>'
+      +'<p class="cap mt-16">In this prototype the summary is illustrative. Pastors can correct summaries before they publish.</p>';
+  }else if(s.kind==='message'){
+    const c=churchById(s.params.id)||{};
+    inner='<span class="eyebrow accent">Message '+esc(c.name||'church')+'</span>'
+      +'<div class="glass pad stack gap-12 mt-16" style="border-color:rgba(127,212,245,.28)">'
+      +'<div class="row gap-10">'+ico('shield',18,'ice')+'<span class="body" style="font-size:14.5px">Direct messages are between <b>verified churches</b> only. Believers reach a church through its posts, events and prayer chain.</span></div></div>'
+      +'<div class="stack gap-10 mt-16">'
+      +'<button class="btn btn-ghost btn-block" data-act="soon" data-v="Prayer request to church">'+ico('hands',17)+'Send a prayer request</button>'
+      +'<button class="btn btn-ghost btn-block" data-act="soon" data-v="Visit request">'+ico('cal',17)+'Ask about visiting</button></div>';
+  }else if(s.kind==='soon'){
+    inner='<div class="stack center gap-14" style="text-align:center">'
+      +'<div class="icon-btn" style="width:56px;height:56px;color:var(--lavender);border-color:rgba(192,143,208,.35);background:rgba(192,143,208,.1)">'+ico('sparkle',26)+'</div>'
+      +'<span class="badge badge-lav">In design</span>'
+      +'<h2 class="h1">'+esc(s.params.v||'Coming soon')+'</h2>'
+      +'<p class="body">This module is specified and designed, and lands in the next build phase of believersArk. The MVP focuses on churches, feed, journey, prayer and giving.</p></div>';
+  }
+  if(s.kind==='image'){
+    const p=state.data.posts.find(function(x){return x.id===s.params.id;})
+      ||state.data.events.find(function(x){return x.id===s.params.id;})||{};
+    const caption=String(p.title||p.content||p.description||'').slice(0,200);
+    return '<div class="lightbox" data-act="close-sheet">'
+      +'<div class="row between gap-12" style="padding:14px 16px">'
+      +'<span class="row gap-10" style="min-width:0"><span class="avatar avatar-sm" style="background:'+grad(p.churchId||p.authorId||p.id)+'">'+initials(p.churchName||p.authorName||'?')+'</span>'
+      +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14px;color:#F2F4FF">'+esc(p.churchName||p.authorName||'believersArk')+'</span>'
+      +'<span class="cap">'+(p.photo?'Photograph':'Scene artwork')+'</span></span></span>'
+      +'<button class="icon-btn" data-act="close-sheet" aria-label="Close">'+ico('x',18)+'</button></div>'
+      +'<div class="lightbox-stage" data-stop="1"><div class="lightbox-frame">'+mediaInner(p)+'</div></div>'
+      +(caption?'<p class="body" style="padding:0 20px 26px;max-width:820px;margin:0 auto;text-align:center">'+esc(caption)+'</p>':'')
+      +'</div>';
+  }
+  return '<div class="sheet-bg" data-act="close-sheet"><div class="sheet" data-stop="1"><div class="grip"></div>'+inner+'<div style="height:8px"></div></div></div>';
+}
+
+/* ---------- root render ---------- */
+function render(){
+  document.documentElement.setAttribute('data-app-theme',state.theme);
+  const r=state.route;
+  let html='';
+  if(r==='splash')html=viewSplash();
+  else if(r==='welcome')html=viewWelcome();
+  else if(r==='auth')html=viewAuth();
+  else if(r==='otp')html=viewOtp();
+  else if(r==='onboard')html=viewOnboardBeliever();
+  else if(r==='onboard-church')html=viewOnboardChurch();
+  else if(r==='pending')html=viewPending();
+  else if(r==='moment')html=viewMoment();
+  else{
+    let body='';
+    if(r==='home')body=viewHome();
+    else if(r==='churches')body=viewChurches();
+    else if(r==='church-profile')body=viewChurchProfile();
+    else if(r==='person-profile')body=viewPersonProfile();
+    else if(r==='notifications')body=viewNotifications();
+    else if(r==='saved')body=viewSaved();
+    else if(r==='event')body=viewEvent();
+    else if(r==='post')body=viewPost();
+    else if(r==='journey')body=viewJourney();
+    else if(r==='community')body=viewCommunity();
+    else if(r==='community-page')body=viewCommunityPage();
+    else if(r==='live')body=viewLive();
+    else if(r==='soon')body=viewSoon();
+    else if(r==='console-thread')body=viewConsoleThread();
+    else if(r==='campaign')body=viewCampaign();
+    else if(r==='biblegpt')body=viewBibleGPT();
+    else if(r==='me')body=viewMe();
+    else if(r==='settings')body=viewSettings();
+    else if(r==='giving-history')body=viewGivingHistory();
+    else if(r==='family')body=viewFamily();
+    else if(r==='console')body=viewConsole();
+    else if(r==='console-compose')body=viewConsoleCompose();
+    else if(r==='console-events')body=viewConsoleEvents();
+    else if(r==='console-giving')body=viewConsoleGiving();
+    else if(r==='console-members')body=viewConsoleMembers();
+    else if(r==='console-c2c')body=viewConsoleC2C();
+    else if(r==='console-care')body=viewConsoleCare();
+    else body=viewHome();
+    html='<div class="shell">'+renderNav()+'<main class="main" id="main">'+body+'</main></div>';
+  }
+  document.getElementById('root').innerHTML=html+renderSheet()+(state.ui.toast?'<div class="toast">'+esc(state.ui.toast)+'</div>':'');
+}
+
+/* ---------- actions ---------- */
+function val(id){const el=document.getElementById(id);return el?String(el.value||'').trim():'';}
+function requireAuth(){
+  if(state.session)return true;
+  toast('Sign in to do that');
+  setTimeout(function(){go('welcome');},700);
+  return false;
+}
+const ACTIONS={
+  guest:function(){state.session=null;saveSession();go('home');},
+  'send-otp':function(){
+    const id=val('authId')||state.ui.authId;
+    if(!id){toast('Enter your email or phone');return;}
+    state.ui.authId=id;
+    state.ui.otp=String(Math.floor(100000+Math.random()*900000));
+    go('otp');
+  },
+  'verify-otp':async function(){
+    const v=val('otpInput');
+    if(v!==state.ui.otp){toast('That code doesn\'t match — try again');return;}
+    const key=accountKey(state.ui.authId);
+    const existing=await loadProfile(key);
+    if(existing&&existing.name){
+      applyProfile(key,existing);
+      if(state.session.role==='church')go(state.session.verified?'console':'pending');
+      else{go('home');toast('Welcome back, '+String(existing.name).split(' ')[0]);}
+      return;
+    }
+    if(state.ui.authRole==='church'){state.ui.onboard={};go('onboard-church');}
+    else{state.ui.onboard={follows:(state.local.follows||[]).slice(),lang:'English'};state.ui.step=0;go('onboard');}
+  },
+  oauth:function(el){
+    toast(el.dataset.p+' sign-in needs live keys — use email or phone here');
+  },
+  'ob-follow':function(el){
+    const o=state.ui.onboard;o.follows=o.follows||[];
+    const i=o.follows.indexOf(el.dataset.id);
+    if(i>-1)o.follows.splice(i,1);else o.follows.push(el.dataset.id);
+    render();
+  },
+  'ob-plan':function(el){state.ui.onboard.planId=el.dataset.id;render();},
+  'ob-back':function(){state.ui.step=Math.max(0,state.ui.step-1);render();},
+  'ob-next':function(){
+    const o=state.ui.onboard;
+    if(state.ui.step===0){
+      const n=val('obName');
+      if(!n){toast('Tell us your name');return;}
+      o.name=n;o.city=val('obCity');o.lang=val('obLang')||'English';o.denom=val('obDenom');
+      state.ui.step=1;render();return;
+    }
+    if(state.ui.step===1){state.ui.step=2;render();return;}
+    const key=accountKey(state.ui.authId);
+    const session={id:'u_'+key,key:key,role:'believer',name:o.name,city:o.city,lang:o.lang,denom:o.denom,bio:'',
+      avatarSeed:'u_'+key,followers:0,email:state.ui.authId,planId:o.planId||(state.data.plans[0]||{}).id,
+      homeChurchId:(o.follows||[])[0]||null,createdAt:new Date().toISOString()};
+    state.session=session;saveSession();
+    state.prefs.lang=o.lang||'English';savePrefs();
+    state.local.follows=(o.follows||[]).slice();
+    state.local.planDay=0;state.local.streak=0;saveLocal();
+    (o.follows||[]).forEach(function(id){dbBump('churches',id,'followers',1);});
+    saveProfile();
+    go('home');toast('Welcome to the ark, '+String(o.name).split(' ')[0]);
+  },
+  'mock-upload':function(){state.ui.onboard.docs=true;toast('Documents attached');render();},
+  'mock-upload-audio':function(){state.ui.audioUp=true;toast('Audio uploaded · transcript generated');render();},
+  'church-submit':async function(){
+    const name=val('cName');
+    if(!name){toast('Your church needs a name');return;}
+    const church={name:name,denomination:val('cDenom')||'Non-denominational',city:val('cCity'),address:val('cAddr'),
+      serviceTimes:val('cTimes')?val('cTimes').split('·').map(function(s){return s.trim();}):['Sun 9:30am'],
+      languages:val('cLangs')?val('cLangs').split(',').map(function(s){return s.trim();}):['English'],
+      pastorName:val('cPastor'),tagline:val('cTag')||'A church family on believersArk',
+      about:val('cTag')||'',ministries:['Worship','Prayer','Youth'],followers:0,verified:false,createdAt:new Date().toISOString()};
+    state.session={id:uid('c_'),role:'church',name:val('cPastor')||name,email:state.ui.authId,church:church,verified:false,churchId:null};
+    saveSession();go('pending');
+  },
+  'approve-church':async function(){
+    const s=state.session;if(!s||!s.church)return;
+    const c=Object.assign({},s.church,{verified:true});
+    const id=await dbAdd('churches',c);
+    s.verified=true;s.churchId=id||('local_'+uid());
+    if(!id){state.data.churches.push(Object.assign({id:s.churchId},c));}
+    saveSession();go('console');toast('Verified — your church is live in the directory');
+  },
+  'demo-church':function(el){
+    const c=churchById(el.dataset.id);if(!c)return;
+    state.session={id:'c_'+c.id,role:'church',name:c.pastorName||c.name,email:'demo@'+c.id+'.believersark.app',churchId:c.id,verified:true,demo:true,createdAt:new Date().toISOString()};
+    saveSession();state.ui.c2cTab='Inbox';go('console');toast('Signed in as '+c.name);
+  },
+  signout:function(){state.session=null;saveSession();state.ui.chat=[];state.ui.liveChat=null;go('welcome');toast('Signed out');},
+  tab:function(el){state.ui.tab=el.dataset.v;render();},
+  'toggle-digest':function(){state.prefs.digest=!state.prefs.digest;savePrefs();render();},
+  notifications:function(){openSheet('notifications');},
+  'share-verse':function(){const v=verseOfDay();shareText('“'+v.t+'” — '+v.r,'verse');},
+  'open-verse':function(el){openSheet('verse',{r:el.dataset.r});},
+  'share-post':function(el){const p=state.data.posts.find(function(x){return x.id===el.dataset.id;})||{};shareText((p.title?p.title+' — ':'')+(p.content||'').slice(0,140)+' · '+(p.churchName||p.authorName||'believersArk'),'post/'+el.dataset.id);},
+  'share-church':function(el){const c=churchById(el.dataset.id)||{};shareText(c.name+' · '+(c.tagline||''),'church/'+el.dataset.id);},
+  'share-event':function(el){const e=state.data.events.find(function(x){return x.id===el.dataset.id;})||{};shareText(e.title+' · '+fmtDate(e.datetime)+' '+fmtTime(e.datetime)+' · '+(e.churchName||''),'event/'+el.dataset.id);},
+  /* communities */
+  'join-community':function(el){
+    if(isChurchSession()){toast('Communities are for believers — churches speak through posts and broadcasts');return;}
+    if(!requireAuth())return;
+    const id=el.dataset.id,c=communityById(id),list=state.local.communities=(state.local.communities||[]);
+    const i=list.indexOf(id);
+    if(i>-1){list.splice(i,1);dbBump('communities',id,'members',-1);toast('Left '+((c&&c.name)||'the community'));}
+    else{list.push(id);dbBump('communities',id,'members',1);toast('Welcome to '+((c&&c.name)||'the community')+' — say hello when you are ready');}
+    saveLocal();render();
+  },
+  'thread-sort':function(el){state.ui.threadSort=el.dataset.v;render();},
+  'new-thread':function(el){
+    if(!requireAuth())return;
+    if(myCommunityIds().indexOf(el.dataset.id)<0){toast('Join the community first');return;}
+    state.ui.postType=state.ui.postType||'question';openSheet('post',{id:el.dataset.id});
+  },
+  /* journey calendar + reminders */
+  'cal-day':function(el){state.ui.calDay=state.ui.calDay===el.dataset.v?null:el.dataset.v;render();},
+  'cal-nav':function(el){const b=state.ui.calMonth?new Date(state.ui.calMonth):new Date();b.setDate(1);b.setMonth(b.getMonth()+Number(el.dataset.v));state.ui.calMonth=b.toISOString();state.ui.calDay=null;render();},
+  'rem-toggle':function(el){
+    const id=el.dataset.id,k=el.dataset.k,r=Object.assign({},reminderPref(id));r[k]=!r[k];
+    state.local.reminders=state.local.reminders||{};state.local.reminders[id]=r;saveLocal();render();
+    toast(r[k]?'Reminder on':'Reminder off');
+  },
+  /* live stream */
+  'join-live':function(el){go('live',{id:el.dataset.id,from:state.route==='moment'?'home':state.route});clearTimeout(ACTIONS._mt);},
+  'live-react':function(el){
+    const box=document.querySelector('.live-float');if(!box)return;
+    const s=document.createElement('span');s.textContent=el.dataset.e;s.style.setProperty('--dx',Math.round(Math.random()*44-22)+'px');box.appendChild(s);
+    setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},2900);
+  },
+  'live-here':function(el){
+    if(!requireAuth())return;
+    const e=state.data.events.find(function(x){return x.id===el.dataset.id;});if(!e)return;
+    if(state.local.rsvps.indexOf(e.id)<0){state.local.rsvps.push(e.id);saveLocal();dbBump('events',e.id,'rsvpCount',1);e.rsvpCount=(e.rsvpCount||0)+1;}
+    render();toast('Attendance recorded — welcome');
+  },
+  'live-send':function(){
+    const t=val('liveBox');if(!t)return;
+    liveChat().push({n:(state.session&&state.session.name)||'Guest',t:t,me:true});
+    render();const c=document.getElementById('liveChat');if(c)c.scrollTop=c.scrollHeight;
+  },
+  'notify-soon':function(el){toast('We\'ll tell you when '+el.dataset.v+' lands');},
+  /* church-to-church */
+  'c2c-tab':function(el){state.ui.c2cTab=el.dataset.v;if(state.route!=='console-c2c')go('console-c2c');else render();},
+  'c2c-connect':async function(el){
+    const me=state.session&&state.session.churchId;if(!me)return;
+    const to=el.dataset.id,c=churchById(to);
+    if(connectionBetween(me,to))return;
+    const doc={from:me,to:to,status:'pending',createdAt:new Date().toISOString()};
+    const id=await dbAdd('churchConnections',doc);
+    render();toast('Request sent to '+((c&&c.name)||'the church'));
+    if(/^ch\d$/.test(to)){ /* seeded churches answer on their own in this prototype */
+      setTimeout(function(){dbUpdate('churchConnections',id,{status:'accepted',acceptedAt:new Date().toISOString()});render();toast((c&&c.name)+' accepted your connection');},2200);
+    }
+  },
+  'c2c-accept':function(el){
+    const x=state.data.connections.find(function(y){return y.id===el.dataset.id;});if(!x)return;
+    dbUpdate('churchConnections',x.id,{status:'accepted',acceptedAt:new Date().toISOString()});
+    const c=churchById(x.from);render();toast('Connected with '+((c&&c.name)||'the church'));
+  },
+  'c2c-decline':function(el){
+    const x=state.data.connections.find(function(y){return y.id===el.dataset.id;});if(!x)return;
+    dbUpdate('churchConnections',x.id,{status:'declined'});render();toast('Request declined');
+  },
+  'c2c-cancel':function(el){
+    const x=state.data.connections.find(function(y){return y.id===el.dataset.id;});if(!x)return;
+    dbUpdate('churchConnections',x.id,{status:'withdrawn'});render();toast('Request withdrawn');
+  },
+  'c2c-message':async function(el){
+    const me=state.session&&state.session.churchId;if(!me)return;
+    const other=el.dataset.id,conn=connectionBetween(me,other);
+    if(!conn||conn.status!=='accepted'){toast('Connect first — messages travel only between connected churches');return;}
+    let t=threadBetween(me,other);
+    if(!t){
+      const a=churchById(me)||{},b=churchById(other)||{},names={};names[me]=a.name||(state.session.church&&state.session.church.name)||'Your church';names[other]=b.name||'Church';
+      const doc={churchIds:[me,other],names:names,topic:'',messages:[],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+      const id=await dbAdd('churchThreads',doc);
+      t=localDoc('churchThreads',id)||Object.assign({id:id},doc);
+      if(!localDoc('churchThreads',id))state.data.threads.push(t);
+    }
+    go('console-thread',{id:t.id});
+  },
+  'c2c-send':function(el){
+    const me=state.session&&state.session.churchId;if(!me)return;
+    const box=document.getElementById('threadBox'),text=box?String(box.value||'').trim():'';
+    if(!text){toast('Write something first');return;}
+    const t=state.data.threads.find(function(x){return x.id===el.dataset.id;});if(!t)return;
+    const msgs=(t.messages||[]).concat([{from:me,text:text,at:new Date().toISOString()}]);
+    dbUpdate('churchThreads',t.id,{messages:msgs,updatedAt:new Date().toISOString()});
+    state.local.threadSeen=state.local.threadSeen||{};state.local.threadSeen[t.id]=new Date().toISOString();saveLocal();
+    render();
+    const b=document.getElementById('threadBody');if(b)window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  },
+  summarise:function(el){openSheet('summary',{id:el.dataset.id});},
+  react:function(el){
+    const id=el.dataset.id,k=el.dataset.k,prev=state.local.reacted[id];
+    if(prev===k){delete state.local.reacted[id];dbBump('posts',id,'reactions.'+k,-1);}
+    else{state.local.reacted[id]=k;dbBump('posts',id,'reactions.'+k,1);if(prev)dbBump('posts',id,'reactions.'+prev,-1);}
+    saveLocal();
+    const p=state.data.posts.find(function(x){return x.id===id;});
+    if(p){p.reactions=p.reactions||{};p.reactions[k]=(p.reactions[k]||0)+(prev===k?-1:1);if(prev&&prev!==k)p.reactions[prev]=Math.max(0,(p.reactions[prev]||0)-1);}
+    render();
+  },
+  follow:async function(el){
+    const id=el.dataset.id,i=state.local.follows.indexOf(id);
+    const c=churchById(id);
+    if(i>-1){state.local.follows.splice(i,1);dbBump('churches',id,'followers',-1);toast('Unfollowed'+(c?' '+c.name:''));}
+    else{state.local.follows.push(id);dbBump('churches',id,'followers',1);
+      toast(state.session?'Following '+((c&&c.name)||'this church')+' — their posts are in your feed':'Following. Sign in to keep this across devices.');}
+    saveLocal();saveProfile();render();
+  },
+  'save-post':function(el){
+    const id=el.dataset.id,i=(state.local.saved||[]).indexOf(id);
+    if(i>-1){state.local.saved.splice(i,1);toast('Removed from saved');}
+    else{state.local.saved.push(id);toast('Saved — find it in Me › Saved posts');}
+    saveLocal();render();
+  },
+  'post-type':function(el){state.ui.postType=el.dataset.v;render();},
+  'submit-post':async function(el){
+    const s=state.session;if(!s)return;
+    const text=val('npText');if(!text){toast('Write something first');return;}
+    const verse=val('npVerse'),cid=el.dataset.id||(state.ui.sheet&&state.ui.sheet.params.id);
+    const doc={authorType:'person',authorId:s.id,authorName:s.name,authorCity:s.city||'',communityId:cid||null,
+      type:state.ui.postType||'question',content:text,verseRef:verse||null,
+      reactions:{amen:0,bless:0,peace:0,love:0,fire:0},comments:0,createdAt:new Date().toISOString()};
+    closeSheet();
+    await dbAdd('posts',doc);
+    state.ui.threadSort='Latest';go('community-page',{id:cid});toast('Posted — the community can see it');
+  },
+  'open-moment':function(el){
+    state.ui.momentIndex=Number(el.dataset.i)||0;state.ui.momentPost=0;
+    const m=momentSources()[state.ui.momentIndex];
+    if(m){const k=m.author.type+':'+m.author.id;
+      if((state.local.seenMoments||[]).indexOf(k)<0){state.local.seenMoments.push(k);saveLocal();}}
+    go('moment');
+    clearTimeout(ACTIONS._mt);ACTIONS._mt=setTimeout(function(){ACTIONS['moment-next']();},7000);
+  },
+  'moment-next':function(){
+    if(state.route!=='moment')return;
+    const src=momentSources(),m=src[state.ui.momentIndex||0];
+    if(!m)return go('home');
+    if((state.ui.momentPost||0)+1<m.posts.length){state.ui.momentPost=(state.ui.momentPost||0)+1;}
+    else if((state.ui.momentIndex||0)+1<src.length){
+      state.ui.momentIndex=(state.ui.momentIndex||0)+1;state.ui.momentPost=0;
+      const k=src[state.ui.momentIndex].author.type+':'+src[state.ui.momentIndex].author.id;
+      if((state.local.seenMoments||[]).indexOf(k)<0){state.local.seenMoments.push(k);saveLocal();}
+    }else{clearTimeout(ACTIONS._mt);return go('home');}
+    render();
+    clearTimeout(ACTIONS._mt);ACTIONS._mt=setTimeout(function(){ACTIONS['moment-next']();},7000);
+  },
+  'moment-prev':function(){
+    if((state.ui.momentPost||0)>0)state.ui.momentPost--;
+    else if((state.ui.momentIndex||0)>0){state.ui.momentIndex--;state.ui.momentPost=0;}
+    render();
+    clearTimeout(ACTIONS._mt);ACTIONS._mt=setTimeout(function(){ACTIONS['moment-next']();},7000);
+  },
+  'close-moment':function(){clearTimeout(ACTIONS._mt);go('home');},
+  'person-tab':function(el){state.ui.personTab=el.dataset.v;render();},
+  'mark-read-notifs':function(){state.local.notifSeen=new Date().toISOString();saveLocal();render();toast('All caught up');},
+  'edit-profile':function(){if(!requireAuth())return;openSheet('profile');},
+  'save-profile':function(){
+    const n=val('epName');if(!n){toast('Add your name');return;}
+    state.session.name=n;state.session.city=val('epCity');state.session.bio=val('epBio');
+    saveSession();saveProfile();closeSheet();render();toast('Profile updated');
+  },
+  'amen-comment':function(el){
+    const c=state.data.comments.find(function(x){return x.id===el.dataset.id;});
+    if(!c)return;
+    dbBump('comments',c.id,'amens',1);c.amens=(c.amens||0)+1;render();
+  },
+  'reply-comment':function(el){
+    const box=document.getElementById('cmtBox');
+    if(box){box.value='@'+el.dataset.v+' ';box.focus();}
+  },
+  'home-church':function(el){
+    if(!requireAuth())return;
+    state.session.homeChurchId=state.session.homeChurchId===el.dataset.id?null:el.dataset.id;
+    if(state.session.homeChurchId&&state.local.follows.indexOf(el.dataset.id)<0)state.local.follows.push(el.dataset.id);
+    saveSession();saveLocal();saveProfile();render();toast(state.session.homeChurchId?'Set as your home church':'Home church cleared');
+  },
+  'church-msg':function(el){openSheet('message',{id:el.dataset.id});},
+  'church-tab':function(el){state.ui.churchTab=el.dataset.v;render();},
+  'dir-view':function(){state.ui.dir=state.ui.dir==='map'?'list':'map';render();},
+  'dir-search':function(){state.ui.dirFilters.q=val('dirQ');render();},
+  'dir-clear':function(){state.ui.dirFilters.q='';render();},
+  'dir-live':function(){state.ui.dirFilters.live=!state.ui.dirFilters.live;render();},
+  'dir-lang':function(el){state.ui.dirFilters.lang=state.ui.dirFilters.lang===el.dataset.v?'':el.dataset.v;render();},
+  'dir-denom':function(el){state.ui.dirFilters.denom=state.ui.dirFilters.denom===el.dataset.v?'':el.dataset.v;render();},
+  'dir-reset':function(){state.ui.dirFilters={q:'',denom:'',lang:'',live:false};render();},
+  rsvp:function(el){
+    if(!requireAuth())return;
+    const id=el.dataset.id,i=state.local.rsvps.indexOf(id);
+    if(i>-1){state.local.rsvps.splice(i,1);dbBump('events',id,'rsvpCount',-1);toast('RSVP cancelled');}
+    else{state.local.rsvps.push(id);dbBump('events',id,'rsvpCount',1);toast('You\'re going — reminders are set');}
+    const e=state.data.events.find(function(x){return x.id===id;});
+    if(e)e.rsvpCount=Math.max(0,(e.rsvpCount||0)+(i>-1?-1:1));
+    saveLocal();render();
+  },
+  comment:async function(el){
+    if(!requireAuth())return;
+    const box=document.getElementById('cmtBox'),t=box?String(box.value||'').trim():'';
+    if(!t){toast('Write something first');return;}
+    if(box)box.value='';
+    const s=state.session;
+    const doc={postId:el.dataset.id,authorId:s.id,authorName:s.name,text:t,amens:0,createdAt:new Date().toISOString()};
+    await dbAdd('comments',doc);
+    dbBump('posts',el.dataset.id,'comments',1);
+    render();toast('Comment posted');
+  },
+  'journey-tab':function(el){state.ui.journeyTab=el.dataset.v;render();},
+  'browse-plans':function(){state.ui.journeyTab='Plan';render();},
+  'set-plan':function(el){
+    if(!requireAuth())return;
+    state.session.planId=el.dataset.id;saveSession();saveProfile();toast('Plan updated');render();
+  },
+  'mark-read':function(){
+    if(!requireAuth())return;
+    const last=state.local.lastRead;
+    const consecutive=last&&((Date.now()-dt(last).getTime())<48*3600e3);
+    state.local.planDay=(state.local.planDay||0)+1;
+    state.local.streak=consecutive?(state.local.streak||0)+1:1;
+    state.local.lastRead=new Date().toISOString();
+    saveLocal();saveProfile();render();toast('Day complete · '+state.local.streak+' day streak');
+  },
+  'note-verse':function(){state.ui.journeyTab='Journal';closeSheet();go('journey');toast('Add your note below');},
+  'new-prayer':function(){if(!requireAuth())return;openSheet('prayer');},
+  'pr-vis':function(el){state.ui.prVis=el.dataset.v;render();},
+  'submit-prayer':async function(){
+    const t=val('prText');if(!t){toast('Write your request first');return;}
+    const vis=state.ui.prVis||'public',s=state.session;
+    const home=s&&s.homeChurchId?churchById(s.homeChurchId):null;
+    const doc={authorName:vis==='anonymous'?'Anonymous':(s&&s.name)||'A believer',authorId:(s&&s.id)||null,text:t,visibility:vis,
+      churchId:home?home.id:null,churchName:home?home.name:null,prayingCount:0,answered:false,createdAt:new Date().toISOString()};
+    closeSheet();
+    await dbAdd('prayerRequests',doc);
+    state.ui.journeyTab='Prayer';if(state.route!=='live')go('journey');else render();toast('Shared with the prayer chain');
+  },
+  pray:function(el){
+    if(!requireAuth())return;
+    const id=el.dataset.id;
+    if(state.local.prayed.indexOf(id)>-1){toast('You\'re already praying for this');return;}
+    state.local.prayed.push(id);saveLocal();dbBump('prayerRequests',id,'prayingCount',1);
+    const pr=state.data.prayers.find(function(x){return x.id===id;});if(pr)pr.prayingCount=(pr.prayingCount||0)+1;
+    render();toast('\u{1F64F} Amen — they have been told someone is praying');
+  },
+  'add-journal':function(){
+    if(!requireAuth())return;
+    const t=val('jEntry');if(!t){toast('Write something first');return;}
+    state.local.journal.unshift({text:t,date:new Date().toISOString(),answered:false});saveLocal();render();toast('Saved privately');
+  },
+  'mark-answered':function(el){
+    const i=Number(el.dataset.i);state.local.journal[i].answered=true;saveLocal();render();toast('Marked answered — share it if you\'d like');
+  },
+  testify:function(){toast('Testimony ready to post to your church feed');},
+  'add-milestone':function(){if(!requireAuth())return;openSheet('milestone');},
+  'ms-type':function(el){state.ui.msType=el.dataset.v;render();},
+  'submit-milestone':function(){
+    const d=val('msDate')||new Date().toISOString().slice(0,10);
+    state.local.milestones.push({title:state.ui.msType||'Baptism',note:val('msNote'),date:new Date(d).toISOString()});
+    saveLocal();closeSheet();state.ui.journeyTab='Timeline';go('journey');toast('Added to your light-path');
+  },
+  'add-family':function(){if(!requireAuth())return;openSheet('family');},
+  'fm-type':function(el){state.ui.fmType=el.dataset.v;render();},
+  'submit-family':function(){
+    const n=val('fmName');if(!n){toast('Add a name');return;}
+    state.local.family=(state.local.family||[]).concat([{name:n,type:state.ui.fmType||'Child'}]);
+    saveLocal();closeSheet();render();toast(n+' added with parental controls on');
+  },
+  'family-settings':function(){toast('Parental controls: kids content only, no DMs');},
+  'join-group':function(el){toast('Request sent to the '+el.dataset.v+' leader');},
+  'chat-mode':function(el){state.ui.chatMode=el.dataset.v;render();},
+  'clear-chat':function(){state.ui.chat=[];render();},
+  ask:function(el){sendChat(el.dataset.v);},
+  'chat-send':function(){const t=val('chatBox');if(!t)return;sendChat(t);},
+  'ask-pastor':function(){
+    const last=state.ui.chat.filter(function(m){return m.role==='user';}).pop();
+    state.local.care=(state.local.care||[]).concat([{q:last?last.text:'A question',date:new Date().toISOString()}]);
+    saveLocal();toast('Sent to your pastor\'s care queue');
+  },
+  'give-amt':function(el){state.ui.giveAmt=Number(el.dataset.v);render();},
+  'give-custom':function(){openSheet('amount');},
+  'set-amount':function(){const a=Number(val('amtIn'));if(!a||a<1){toast('Enter an amount');return;}state.ui.giveAmt=a;closeSheet();render();},
+  give:async function(el){
+    if(!requireAuth())return;
+    const g=state.data.campaigns.find(function(x){return x.id===el.dataset.id;});if(!g)return;
+    const amt=state.ui.giveAmt||1000;
+    const receipt='BA'+String(Date.now()).slice(-8);
+    state.local.giving.push({campaignId:g.id,campaign:g.title,church:g.churchName,amount:amt,date:new Date().toISOString(),receipt:receipt});
+    saveLocal();
+    dbBump('givingCampaigns',g.id,'raised',amt);
+    g.raised=(g.raised||0)+amt;
+    openSheet('receipt',{id:receipt});
+    toast('Thank you — '+money(amt)+' recorded (prototype)');
+  },
+  'view-receipt':function(el){openSheet('receipt',{id:el.dataset.id});},
+  theme:function(el){state.theme=el.dataset.v;lsSet('theme',state.theme);render();},
+  pref:function(el){const k=el.dataset.k;state.prefs[k]=!state.prefs[k];savePrefs();render();},
+  export:function(){
+    const data={profile:state.session,activity:state.local,preferences:state.prefs};
+    toast('Export ready · '+Math.round(JSON.stringify(data).length/1024*10)/10+' KB of your data');
+  },
+  'delete-account':function(){
+    if(!state.ui.confirmDelete){state.ui.confirmDelete=true;toast('Tap again to permanently delete your account');return;}
+    state.session=null;saveSession();
+    state.local={follows:[],saved:[],rsvps:[],prayed:[],reacted:{},journal:[],planDay:0,streak:0,lastRead:null,giving:[],milestones:[],care:[],seenMoments:[],notifSeen:null,communities:[],reminders:{},family:[]};
+    saveLocal();state.ui.confirmDelete=false;go('welcome');toast('Account and local data deleted');
+  },
+  compose:function(el){state.ui.composeType=el.dataset.v;state.ui.composePhoto=null;state.ui.composePhotoName='';go('console-compose');},
+  'b-priority':function(el){state.ui.bPriority=el.dataset.v;render();},
+  'b-audience':function(el){state.ui.bAudience=el.dataset.v;render();},
+  occasion:function(el){state.ui.occasion=el.dataset.v;render();},
+  publish:async function(el){
+    const s=state.session;if(!s||s.role!=='church'){toast('Church accounts only');return;}
+    const t=el.dataset.v,c=myChurch();
+    const photo=state.ui.composePhoto||null;
+    const base={churchId:s.churchId,churchName:(c&&c.name)||(s.church&&s.church.name)||'Our church',
+      photo:photo,scene:photo?null:(SCENE_FOR_TYPE[t]||null),
+      reactions:{amen:0,bless:0,peace:0,love:0,fire:0},comments:0,createdAt:new Date().toISOString()};
+    const clearPhoto=function(){state.ui.composePhoto=null;state.ui.composePhotoName='';};
+    if(t==='event'){
+      const title=val('fTitle');if(!title){toast('Give the event a title');return;}
+      const d=val('fDate')||new Date().toISOString().slice(0,10),tm=val('fTime')||'18:00';
+      const live=document.getElementById('fLive')&&document.getElementById('fLive').checked;
+      const ev={churchId:base.churchId,churchName:base.churchName,title:title,description:val('fBody'),
+        datetime:new Date(d+'T'+tm).toISOString(),locationType:val('fLoc').indexOf('http')===0?'online':'onsite',
+        location:val('fLoc')||'Main sanctuary',isLive:!!live,rsvpCount:0,capacity:Number(val('fCap'))||0,
+        photo:photo,scene:photo?null:'stage'};
+      const id=await dbAdd('events',ev);
+      await dbAdd('posts',Object.assign({},base,{type:'event',title:title,content:val('fBody')||'A new gathering is on the calendar.',eventId:id}));
+      clearPhoto();go('console-events');toast('Event published');return;
+    }
+    let doc=null;
+    if(t==='story'){
+      const body=val('fBody');if(!body){toast('Write your story first');return;}
+      doc=Object.assign({},base,{type:'story',content:body,verseRef:val('fVerse')||null});
+      await dbAdd('posts',doc);
+      clearPhoto();go('console');toast('Story is up for 24 hours');return;
+    }else if(t==='broadcast'){
+      const body=val('fBody');if(!body){toast('Write your announcement');return;}
+      doc=Object.assign({},base,{type:'broadcast',content:body,priority:state.ui.bPriority||'Normal',audience:state.ui.bAudience||'Everyone',scene:null});
+    }else if(t==='sermon'){
+      const title=val('fTitle');if(!title){toast('Give the sermon a title');return;}
+      doc=Object.assign({},base,{type:'sermon',title:title,speaker:val('fSpeaker')||s.name,duration:'38 min',content:val('fBody')||'Listen to this week\'s message.'});
+    }else if(t==='poll'){
+      const q=val('fBody');if(!q){toast('Write the question');return;}
+      doc=Object.assign({},base,{type:'text',content:q+'\n\nOptions: '+(val('fOpt')||'Yes, No')});
+    }else if(t==='occasion'){
+      const body=val('fBody');if(!body){toast('Share the news');return;}
+      doc=Object.assign({},base,{type:'occasion',occasion:state.ui.occasion||'Baptism',content:body});
+    }else{
+      const body=val('fBody');if(!body){toast('Write your post');return;}
+      doc=Object.assign({},base,{type:'text',content:body});
+    }
+    await dbAdd('posts',doc);
+    clearPhoto();go('console');toast('Published to your followers');
+  },
+  'toggle-live':function(el){
+    const e=state.data.events.find(function(x){return x.id===el.dataset.id;});if(!e)return;
+    e.isLive=!e.isLive;dbUpdate('events',e.id,{isLive:e.isLive});render();toast(e.isLive?'You are live':'Live ended · replay saved to sermons');
+  },
+  'new-campaign':function(){openSheet('campaign');},
+  'gc-cat':function(el){state.ui.gcCat=el.dataset.v;render();},
+  'submit-campaign':async function(){
+    const t=val('gcTitle'),g=Number(val('gcGoal'));
+    if(!t||!g){toast('Add a title and a goal');return;}
+    const s=state.session,c=myChurch();
+    const doc={churchId:s.churchId,churchName:(c&&c.name)||'Our church',title:t,goal:g,raised:0,
+      category:state.ui.gcCat||'Building',description:val('gcDesc')||'',createdAt:new Date().toISOString()};
+    closeSheet();
+    await dbAdd('givingCampaigns',doc);
+    render();toast('Campaign is live');
+  },
+  'approve-member':function(el){toast(el.dataset.v+' approved and added to members');},
+  'open-image':function(el){openSheet('image',{id:el.dataset.id});},
+  'pick-photo':function(){const i=document.getElementById('photoInput');if(i)i.click();},
+  'clear-photo':function(){state.ui.composePhoto=null;state.ui.composePhotoName='';render();},
+  soon:function(el){const v=el.dataset.v;if(SOON[v])go('soon',{v:v,from:state.route});else openSheet('soon',{v:v});},
+  'close-sheet':function(){closeSheet();},
+  noop:function(){}
+};
+function shareText(text,path){
+  const url='https://believersark.app/'+(path||'');
+  const done=function(){toast('Link copied — share it anywhere');};
+  if(navigator.share){navigator.share({title:'believersArk',text:text,url:url}).then(function(){toast('Shared');}).catch(function(){});return;}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text+'\n'+url).then(done,done);return;}
+  done();
+}
+function sendChat(text){
+  state.ui.chat.push({role:'user',text:text});
+  state.ui.chatBusy=true;render();
+  const box=document.getElementById('chatBox');if(box)box.value='';
+  setTimeout(function(){
+    const a=bibleAnswer(text);
+    state.ui.chatBusy=false;
+    state.ui.chat.push({role:'ai',text:a.a,verses:a.v,pastoral:!!a.pastoral});
+    render();
+    const m=document.getElementById('main');if(m)window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  },700+Math.random()*500);
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){
+  const sheetStop=e.target.closest('[data-stop]');
+  const closeEl=e.target.closest('[data-act="close-sheet"]');
+  if(closeEl&&!sheetStop){closeSheet();return;}
+  const goEl=e.target.closest('[data-go]');
+  const actEl=e.target.closest('[data-act]');
+  if(actEl&&actEl.dataset.act==='close-sheet'&&sheetStop)return;
+  if(actEl&&ACTIONS[actEl.dataset.act]){
+    if(actEl.dataset.act!=='delete-account')state.ui.confirmDelete=false;
+    ACTIONS[actEl.dataset.act](actEl);
+    return;
+  }
+  if(goEl){
+    const r=goEl.dataset.go;
+    if(r==='auth'){state.ui.authRole=goEl.dataset.role||'believer';state.ui.authId='';go('auth');return;}
+    if(r==='church-profile'){state.ui.churchTab='Posts';go('church-profile',{id:goEl.dataset.id,from:state.route});return;}
+    if(r==='person-profile'){state.ui.personTab='Posts';go('person-profile',{id:goEl.dataset.id,from:state.route});return;}
+    if(r==='notifications'){go('notifications');setTimeout(function(){state.local.notifSeen=new Date().toISOString();saveLocal();},1500);return;}
+    if(r==='console-thread'){state.local.threadSeen=state.local.threadSeen||{};state.local.threadSeen[goEl.dataset.id]=new Date().toISOString();saveLocal();go(r,{id:goEl.dataset.id});return;}
+    if(r==='community-page'){state.ui.threadSort='Latest';go(r,{id:goEl.dataset.id,from:state.route});return;}
+    if(r==='event'||r==='post'||r==='campaign'||r==='live'){go(r,{id:goEl.dataset.id,from:state.route});return;}
+    go(r);
+  }
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'){
+    if(document.activeElement&&document.activeElement.id==='chatBox'){const t=document.activeElement.value.trim();if(t)sendChat(t);}
+    if(document.activeElement&&document.activeElement.id==='cmtBox'){
+      const btn=document.querySelector('[data-act="comment"]');if(btn)ACTIONS.comment(btn);}
+    if(document.activeElement&&document.activeElement.id==='dirQ'){state.ui.dirFilters.q=document.activeElement.value;render();}
+    if(document.activeElement&&document.activeElement.id==='otpInput')ACTIONS['verify-otp']();
+    if(document.activeElement&&document.activeElement.id==='authId')ACTIONS['send-otp']();
+    if(document.activeElement&&document.activeElement.id==='liveBox')ACTIONS['live-send']();
+    if(document.activeElement&&document.activeElement.id==='threadBox'&&!e.shiftKey){e.preventDefault();const b=document.querySelector('[data-act="c2c-send"]');if(b)ACTIONS['c2c-send'](b);}
+  }
+  if(e.key==='Escape'&&state.ui.sheet)closeSheet();
+});
+document.addEventListener('change',function(e){
+  const t=e.target;
+  if(t.id==='setLang'){state.prefs.lang=t.value;savePrefs();toast('Language set to '+t.value);}
+  if(t.id==='setVis'){state.prefs.visibility=t.value;savePrefs();}
+  if(t.id==='photoInput'&&t.files&&t.files[0]){readPhoto(t.files[0]);t.value='';}
+});
+
+/* ---------- boot ---------- */
+render();
+initDB();
+setTimeout(function(){
+  if(state.route!=='splash')return;
+  const s=state.session;
+  if(s&&s.role==='church')go(s.verified?'console':'pending');
+  else if(s)go('home');
+  else go('welcome');
+},1750);
