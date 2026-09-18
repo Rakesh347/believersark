@@ -490,24 +490,30 @@ async function dbUpdate(col,id,patch){
 }
 
 /* ---------- account sync ---------- */
+/* Profiles are kept in the shared store when one is attached, and always mirrored on this
+   device so a returning user is recognised on a plain web host too. */
 async function saveProfile(){
   const s=state.session;
-  if(!DB||!s||!s.key)return;
+  if(!s||!s.key)return;
   const doc={name:s.name,city:s.city||'',lang:s.lang||'English',denom:s.denom||'',bio:s.bio||'',role:s.role,
     handle:s.handle||'',avatarSeed:s.avatarSeed||s.id,homeChurchId:s.homeChurchId||null,churchId:s.churchId||null,verified:!!s.verified,
     follows:state.local.follows||[],communities:state.local.communities||[],
     planId:s.planId||null,planDay:state.local.planDay||0,streak:state.local.streak||0,lastRead:state.local.lastRead||null,
-    followers:s.followers||0,updatedAt:new Date().toISOString()};
+    followers:s.followers||0,provider:s.provider||'email',photo:s.photo||null,updatedAt:new Date().toISOString()};
+  lsSet('profile.'+s.key,doc);
+  if(!DB)return;
   try{await DB.doc('profiles/'+s.key).set(doc);}catch(e){}
 }
 async function loadProfile(key){
-  if(!DB)return null;
-  try{const snap=await DB.doc('profiles/'+key).get();return snap.exists?snap.data():null;}catch(e){return null;}
+  if(DB){try{const snap=await DB.doc('profiles/'+key).get();if(snap.exists)return snap.data();}catch(e){}}
+  return lsGet('profile.'+key,null);
 }
 function applyProfile(key,p){
+  const meta=state.ui.authMeta||{};
   state.session={id:p.avatarSeed||('u_'+key),key:key,role:p.role||'believer',name:p.name,city:p.city,lang:p.lang,denom:p.denom,
     bio:p.bio||'',handle:p.handle||'',avatarSeed:p.avatarSeed||('u_'+key),email:state.ui.authId,planId:p.planId,
-    homeChurchId:p.homeChurchId||null,churchId:p.churchId||null,verified:!!p.verified,followers:p.followers||0};
+    homeChurchId:p.homeChurchId||null,churchId:p.churchId||null,verified:!!p.verified,followers:p.followers||0,
+    provider:meta.provider||p.provider||'email',photo:meta.photo||p.photo||null};
   state.local.follows=(p.follows||[]).slice();
   state.local.communities=(p.communities||[]).slice();
   state.local.planDay=p.planDay||0;state.local.streak=p.streak||0;state.local.lastRead=p.lastRead||null;
@@ -704,6 +710,32 @@ function viewWelcome(){
 }
 
 /* ---------- auth ---------- */
+/* Social sign-in providers. Marks follow each brand's own colours so the buttons stay recognisable. */
+const SOCIAL={
+  google:{label:'Google',mark:'<svg class="mark" viewBox="0 0 48 48" aria-hidden="true">'
+    +'<path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>'
+    +'<path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>'
+    +'<path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>'
+    +'<path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>'},
+  facebook:{label:'Facebook',mark:'<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#1877F2"/>'
+    +'<path fill="#FFFFFF" d="M13.5 24v-8.4h2.8l.42-3.27H13.5v-2.1c0-.95.26-1.6 1.63-1.6h1.74V5.7a23 23 0 0 0-2.54-.13c-2.51 0-4.23 1.53-4.23 4.35v2.41H7.26v3.27h2.84V24Z"/></svg>'},
+  microsoft:{label:'Microsoft',mark:'<svg class="mark" viewBox="0 0 21 21" aria-hidden="true">'
+    +'<rect x="1" y="1" width="9" height="9" fill="#F25022"/><rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>'
+    +'<rect x="1" y="11" width="9" height="9" fill="#00A4EF"/><rect x="11" y="11" width="9" height="9" fill="#FFB900"/></svg>'},
+  apple:{label:'Apple',mark:'<span class="mark" style="color:var(--text-1)">'+ico('apple',20)+'</span>'}
+};
+function socialProviders(){return ((window.ARK_AUTH_CONFIG||{}).providers||[]).filter(function(p){return SOCIAL[p];});}
+function authConfigured(){const c=(window.ARK_AUTH_CONFIG||{}).firebase||{};return !!(c.apiKey&&c.authDomain&&c.projectId);}
+function socialButtons(){
+  const list=socialProviders();
+  if(!list.length)return '';
+  const on=authConfigured(),busy=state.ui.authBusy;
+  return '<div class="stack gap-10">'+list.map(function(p){
+      return '<button class="btn btn-social" data-act="social-signin" data-p="'+p+'"'+(busy===p?' aria-busy="true"':'')+'>'
+        +SOCIAL[p].mark+(busy===p?'Opening '+SOCIAL[p].label+'…':'Continue with '+SOCIAL[p].label)+'</button>';}).join('')
+    +(on?'':'<p class="cap" style="text-align:center">Social sign-in switches on once the Firebase keys are added. Email works now.</p>')
+    +'</div>';
+}
 function viewAuth(){
   const role=state.ui.authRole,church=role==='church';
   return '<div class="view stack" style="padding-top:min(8vh,60px);padding-bottom:60px;position:relative">'
@@ -713,14 +745,13 @@ function viewAuth(){
     +'<div class="stack gap-8 stagger">'
     +'<span class="eyebrow accent">'+(church?'Church account':'Believer account')+'</span>'
     +'<h1 class="h1">'+(church?'Register your church':'Welcome home')+'</h1>'
-    +'<p class="body">'+(church?'We verify every church before it goes live, so believers can trust what they see.':'Sign in with your email or phone. We\'ll send a one-time code.')+'</p></div>'
+    +'<p class="body">'+(church?'We verify every church before it goes live, so believers can trust what they see.':'Sign in with the account you already use, or with your email.')+'</p></div>'
     +'<div class="glass pad stack gap-16 mt-24 fade-up" style="animation-delay:.1s">'
+    +socialButtons()
+    +(socialProviders().length?'<div class="row gap-12 center"><hr class="divider grow"><span class="cap">or use your email</span><hr class="divider grow"></div>':'')
     +'<div class="field"><label class="label" for="authId">Email or phone</label>'
     +'<input class="input" id="authId" type="text" inputmode="email" autocomplete="username" placeholder="you@example.com  ·  +91 98xxx xxxxx" value="'+esc(state.ui.authId)+'"></div>'
     +'<button class="btn btn-primary btn-block" data-act="send-otp">Send one-time code '+ico('chevR',18)+'</button>'
-    +'<div class="row gap-12 center"><hr class="divider grow"><span class="cap">or continue with</span><hr class="divider grow"></div>'
-    +'<div class="row gap-10"><button class="btn btn-ghost grow" data-act="oauth" data-p="Google"><span style="font-weight:800;font-size:17px">G</span>Google</button>'
-    +'<button class="btn btn-ghost grow" data-act="oauth" data-p="Apple">'+ico('apple',18)+'Apple</button></div>'
     +'</div>'
     +(church?'<div class="glass pad stack gap-12 mt-14" style="border-color:rgba(0,163,225,.3)"><span class="eyebrow accent">Prototype shortcut</span>'
       +'<p class="cap">See the console with a full inbox, connections and history — sign in as a seeded church.</p>'
@@ -1886,9 +1917,10 @@ function viewMe(){
       +'<h3 class="h2">Create your account</h3><p class="body">Follow churches, keep a journey, join the prayer chain and give — all in one place.</p>'
       +'<button class="btn btn-primary btn-block" data-go="welcome">Get started</button></div>'
       :'<div class="glass pad row gap-16 between">'
-      +'<div class="row gap-14" style="min-width:0"><div class="avatar avatar-lg" style="background:'+grad(s.id)+'">'+initials(s.name)+'</div>'
+      +'<div class="row gap-14" style="min-width:0"><div class="avatar avatar-lg" style="position:relative;overflow:hidden;background:'+grad(s.id)+'">'+initials(s.name)
+      +(s.photo?'<img src="'+esc(s.photo)+'" alt="" referrerpolicy="no-referrer" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">':'')+'</div>'
       +'<div class="stack gap-4" style="min-width:0"><span class="h2">'+esc(s.name)+'</span>'
-      +'<span class="cap">'+esc(s.email||'')+'</span>'
+      +'<span class="cap">'+esc(s.email||'')+(s.provider&&SOCIAL[s.provider]?' · via '+SOCIAL[s.provider].label:'')+'</span>'
       +'<span class="row gap-6 wrap mt-4">'+(isChurch?'<span class="badge '+(s.verified?'badge-accent':'badge-ice')+'">'+(s.verified?ico('shield',12)+'Verified church':'Pending')+'</span>'
         :'<span class="badge badge-ice">'+esc(s.lang||'English')+'</span><span class="badge badge-accent">'+(state.local.streak||0)+' day streak</span>')+'</span></div></div></div>')
     +(!guest&&!isChurch?'<div class="row gap-12 mt-14">'
@@ -2520,8 +2552,24 @@ const ACTIONS={
     if(state.ui.authRole==='church'){state.ui.onboard={};go('onboard-church');}
     else{state.ui.onboard={follows:(state.local.follows||[]).slice(),lang:'English'};state.ui.step=0;go('onboard');}
   },
-  oauth:function(el){
-    toast(el.dataset.p+' sign-in needs live keys — use email or phone here');
+  'social-signin':async function(el){
+    const p=el.dataset.p,label=(SOCIAL[p]||{}).label||'That provider';
+    if(state.ui.authBusy)return;
+    if(!authConfigured()){toast(label+' sign-in switches on once the Firebase keys are added');return;}
+    const A=window.ArkAuth;
+    if(!A||!A.ready){toast(A&&A.loadError?'Sign-in could not load. Check your connection and reload.':'Sign-in is still loading. Try again in a moment.');return;}
+    try{sessionStorage.setItem(LS+'authRole',state.ui.authRole||'believer');}catch(e){}
+    state.ui.authBusy=p;render();
+    try{
+      const user=await A.signIn(p);
+      state.ui.authBusy=null;
+      if(user)await completeSocialSignIn(user);
+      else render();
+    }catch(e){
+      state.ui.authBusy=null;render();
+      const msg=authErrorText(e,label);
+      if(msg)toast(msg);
+    }
   },
   'ob-follow':function(el){
     const o=state.ui.onboard;o.follows=o.follows||[];
@@ -2541,9 +2589,11 @@ const ACTIONS={
     }
     if(state.ui.step===1){state.ui.step=2;render();return;}
     const key=accountKey(state.ui.authId);
+    const meta=state.ui.authMeta||{};
     const session={id:'u_'+key,key:key,role:'believer',name:o.name,city:o.city,lang:o.lang,denom:o.denom,bio:'',
       avatarSeed:'u_'+key,followers:0,email:state.ui.authId,planId:o.planId||(state.data.plans[0]||{}).id,
-      homeChurchId:(o.follows||[])[0]||null,createdAt:new Date().toISOString()};
+      homeChurchId:(o.follows||[])[0]||null,createdAt:new Date().toISOString(),
+      provider:meta.provider||'email',photo:meta.photo||null};
     state.session=session;saveSession();
     state.prefs.lang=o.lang||'English';savePrefs();
     state.local.follows=(o.follows||[]).slice();
@@ -2562,7 +2612,9 @@ const ACTIONS={
       languages:val('cLangs')?val('cLangs').split(',').map(function(s){return s.trim();}):['English'],
       pastorName:val('cPastor'),tagline:val('cTag')||'A church family on believersArk',
       about:val('cTag')||'',ministries:['Worship','Prayer','Youth'],followers:0,verified:false,createdAt:new Date().toISOString()};
-    state.session={id:uid('c_'),role:'church',name:val('cPastor')||name,email:state.ui.authId,church:church,verified:false,churchId:null};
+    const meta=state.ui.authMeta||{};
+    state.session={id:uid('c_'),key:accountKey(state.ui.authId),role:'church',name:val('cPastor')||name,email:state.ui.authId,
+      church:church,verified:false,churchId:null,provider:meta.provider||'email',photo:meta.photo||null};
     saveSession();go('pending');
   },
   'approve-church':async function(){
@@ -2578,7 +2630,11 @@ const ACTIONS={
     state.session={id:'c_'+c.id,role:'church',name:c.pastorName||c.name,email:'demo@'+c.id+'.believersark.app',churchId:c.id,verified:true,demo:true,createdAt:new Date().toISOString()};
     saveSession();state.ui.c2cTab='Inbox';go('console');toast('Signed in as '+c.name);
   },
-  signout:function(){state.session=null;saveSession();state.ui.chat=[];state.ui.liveChat=null;go('welcome');toast('Signed out');},
+  signout:function(){
+    const A=window.ArkAuth;
+    if(A&&A.ready&&state.session&&state.session.provider&&state.session.provider!=='email')A.signOut().catch(function(){});
+    state.session=null;saveSession();state.ui.chat=[];state.ui.liveChat=null;state.ui.authMeta=null;go('welcome');toast('Signed out');
+  },
   tab:function(el){state.ui.tab=el.dataset.v;render();},
   'toggle-digest':function(){state.prefs.digest=!state.prefs.digest;savePrefs();render();},
   notifications:function(){openSheet('notifications');},
@@ -2968,6 +3024,47 @@ const ACTIONS={
   'close-sheet':function(){closeSheet();},
   noop:function(){}
 };
+/* ---------- social sign-in ---------- */
+/* Turns a verified provider login into an app session: a returning user goes straight in,
+   a new one goes through onboarding with their name already filled in. */
+async function completeSocialSignIn(user){
+  let role=state.ui.authRole||'believer';
+  try{role=sessionStorage.getItem(LS+'authRole')||role;sessionStorage.removeItem(LS+'authRole');}catch(e){}
+  state.ui.authRole=role;
+  state.ui.authId=user.email||user.uid;
+  state.ui.authMeta={provider:user.provider,photo:user.photoURL||null,uid:user.uid,emailVerified:user.emailVerified};
+  const label=(SOCIAL[user.provider]||{}).label||'your account';
+  const key=accountKey(state.ui.authId);
+  const existing=await loadProfile(key);
+  if(existing&&existing.name){
+    applyProfile(key,existing);saveProfile();
+    if(state.session.role==='church')go(state.session.verified?'console':'pending');
+    else go('home');
+    toast('Welcome back, '+String(existing.name).split(' ')[0]);
+    return;
+  }
+  if(role==='church'){state.ui.onboard={};go('onboard-church');}
+  else{
+    state.ui.onboard={name:user.name||'',follows:(state.local.follows||[]).slice(),lang:'English'};
+    state.ui.step=0;go('onboard');
+  }
+  toast('Signed in with '+label+' — a few details and you\'re in');
+}
+function authErrorText(e,label){
+  const code=(e&&e.code)||'';
+  if(code==='auth/popup-closed-by-user'||code==='auth/cancelled-popup-request'||code==='auth/user-cancelled')return '';
+  if(code==='auth/account-exists-with-different-credential')return 'This email already signs in another way. Use the button you used before.';
+  if(code==='auth/operation-not-allowed')return label+' sign-in isn\'t switched on in Firebase yet';
+  if(code==='auth/unauthorized-domain')return 'This web address isn\'t allowed to sign in yet. Add it in Firebase under Authorized domains.';
+  if(code==='auth/network-request-failed')return 'No connection. Check your internet and try again.';
+  if(code==='auth/user-disabled')return 'This account has been disabled';
+  if(code==='auth/too-many-requests')return 'Too many attempts. Wait a minute and try again.';
+  return 'Sign-in didn\'t finish'+(code?' ('+code.replace('auth/','')+')':'')+'. Try again.';
+}
+window.addEventListener('arkauth:ready',function(){if(state.route==='auth')render();});
+window.addEventListener('arkauth:signedin',function(ev){if(ev.detail)completeSocialSignIn(ev.detail);});
+window.addEventListener('arkauth:error',function(ev){const m=authErrorText(ev.detail,'That provider');if(m)toast(m);});
+
 function shareText(text,path){
   const url='https://believersark.app/'+(path||'');
   const done=function(){toast('Link copied — share it anywhere');};

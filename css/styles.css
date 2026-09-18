@@ -395,3 +395,10 @@ ul{margin:0;padding:0;list-style:none}
 @media(prefers-reduced-motion:reduce){
   *,*::after,*::before{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.05ms!important}
 }
+
+/* social sign-in: sentence case and a neutral surface, so each provider's mark keeps its own colours */
+.btn-social{width:100%;justify-content:center;gap:12px;text-transform:none;letter-spacing:0;font-size:15px;font-weight:600;
+  background:var(--bg-0);border:1px solid var(--border-2);color:var(--text-1)}
+.btn-social:hover{border-color:var(--ink);background:var(--surface)}
+.btn-social[aria-busy="true"]{opacity:.6;pointer-events:none}
+.btn-social .mark{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex:none}

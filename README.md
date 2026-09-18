@@ -34,6 +34,9 @@ On the sign-in screen for churches, the prototype shortcut logs you in as one of
 index.html          page shell
 css/styles.css      design tokens and all styles
 js/app.js           views, actions, seed data and the data layer
+js/auth-config.js   Firebase web config and which sign-in buttons to show
+js/auth.js          social sign-in through Firebase Authentication
+docs/               setup guides
 assets/photos/      feed, church and event photographs
 ```
 
@@ -53,7 +56,8 @@ assets/photos/      feed, church and event photographs
 
 ## Prototype limits
 
-- No real payments, SMS, OTP delivery or Google/Apple sign-in.
+- No real payments, SMS or OTP delivery. The email code is shown on screen.
+- Sign-in with Google, Facebook, Microsoft and Apple is real once Firebase keys are added. See [docs/SIGN_IN_SETUP.md](docs/SIGN_IN_SETUP.md).
 - Live streams, BibleGPT answers and sermon summaries are illustrative.
 - Christian news, worship music and the marketplace are designed "coming soon" screens.
 
