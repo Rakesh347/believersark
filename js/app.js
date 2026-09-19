@@ -372,7 +372,7 @@ const state={
   route:'splash',
   params:{},
   session:lsGet('session',null),
-  local:Object.assign({follows:[],saved:[],rsvps:[],reacted:{},journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]},
+  local:Object.assign({follows:[],saved:[],rsvps:[],reacted:{},amened:[],journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]},
     lsGet('local',{})),
   prefs:lsGet('prefs',{broadcast:true,digest:false,quiet:true,events:true,lang:'English',visibility:'church'}),
   data:{churches:[],posts:[],events:[],plans:[],people:[],comments:[],communities:[],threads:[],connections:[],cmRequests:[],storyReacts:[]},
@@ -1803,7 +1803,7 @@ function mapPanel(list){
       return '<button data-go="church-profile" data-id="'+c.id+'" style="position:absolute;left:'+x+'%;top:'+y+'%;transform:translate(-50%,-100%)" aria-label="'+esc(c.name)+'">'
         +'<span style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;background:rgba(12,17,40,.85);border:1px solid rgba(0,163,225,.4);color:#38BDF1;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4)">'
         +ico('pin',13)+esc(c.name.split(' ')[0])+'</span></button>';}).join('')
-    +'<div style="position:absolute;left:14px;bottom:12px;color:#B4BDCA" class="cap">Prototype map · '+list.length+' churches in view</div></div>';
+    +'<div style="position:absolute;left:14px;bottom:12px;color:#B4BDCA" class="cap">Prototype map · '+list.length+' church'+(list.length===1?'':'es')+' in view</div></div>';
 }
 /* Hovering a church lifts the card and opens its banner with timings, following and connections. */
 function churchCard(c,isLive){
@@ -1817,7 +1817,7 @@ function churchCard(c,isLive){
       +'<div class="cc-img">'+(pic?'<img src="'+esc(pic)+'" alt="" loading="lazy">':coverArt(c.id))+'</div>'
       +'<div class="cc-info">'
         +'<div class="cc-times">'+(c.serviceTimes||[]).slice(0,3).map(function(t){return '<span>'+ico('clock',12)+esc(t)+'</span>';}).join('')+'</div>'
-        +'<div class="cc-stats"><span><b class="num">'+Number((c.followers||0)+(following?1:0)).toLocaleString('en-IN')+'</b> following</span>'
+        +'<div class="cc-stats"><span><b class="num">'+Number(c.followers||0).toLocaleString('en-IN')+'</b> following</span>'
         +'<span><b class="num">'+conns+'</b> connected '+(conns===1?'church':'churches')+'</span>'
         +'<span><b class="num">'+comms+'</b> '+(comms===1?'community':'communities')+'</span></div>'
       +'</div>'
@@ -1923,7 +1923,7 @@ function viewChurchProfile(){
     +(c.handle?'<span class="cap" style="font-size:14px">@'+esc(c.handle)+'</span>':'')
     +'<p class="body">'+esc(c.tagline||'')+'</p>'
     +'<div class="row gap-14 wrap cap">'
-    +'<span class="row gap-6">'+ico('me',14)+'<span class="num">'+Number((c.followers||0)+(following?1:0)).toLocaleString('en-IN')+'</span> following</span>'
+    +'<span class="row gap-6">'+ico('me',14)+'<span class="num">'+Number(c.followers||0).toLocaleString('en-IN')+'</span> following</span>'
     +'<button class="row gap-6 link-count" data-act="show-connections" data-id="'+esc(c.id)+'">'+ico('church',14)+'<span class="num">'+conns.length+'</span> connections</button>'
     +'<span class="row gap-6">'+ico('pin',14)+esc(c.city||'')+'</span>'
     +'<span class="row gap-6">'+ico('globe',14)+esc((c.languages||[]).slice(0,2).join(', '))+'</span></div></div>'
@@ -2001,7 +2001,7 @@ function viewPost(){
         +(isMe(c.authorId)?'<span class="badge badge-ice" style="height:18px;padding:0 7px;font-size:9.5px">You</span>':'')
         +'<span class="cap" style="font-size:11px">'+ago(c.createdAt)+'</span></div>'
         +'<p class="body" style="font-size:14.5px;color:var(--text-1)">'+esc(c.text).replace(/\n/g,'<br>')+'</p>'
-        +'<div class="row gap-12"><button class="cap" data-act="amen-comment" data-id="'+c.id+'">\u{1F64F} Amen'+(c.amens?' · '+c.amens:'')+'</button>'
+        +'<div class="row gap-12"><button class="cap'+((state.local.amened||[]).indexOf(c.id)>-1?' on':'')+'" data-act="amen-comment" data-id="'+c.id+'" aria-pressed="'+((state.local.amened||[]).indexOf(c.id)>-1)+'">\u{1F64F} Amen'+(c.amens?' · '+c.amens:'')+'</button>'
         +'<button class="cap" data-act="reply-comment" data-v="'+esc(c.authorName)+'">Reply</button></div></div></article>';
     }).join('')+'</div>'
       :'<div class="glass pad" style="text-align:center"><p class="cap">No comments yet — be the first to say something kind.</p></div>')
@@ -2500,7 +2500,7 @@ function viewConsoleCommunities(){
     +(mine.length?'<div class="stack gap-12">'+mine.map(function(c){const p=pend.filter(function(r){return r.communityId===c.id;}).length;
       return '<article class="glass press pad row between gap-14" data-go="community-page" data-id="'+c.id+'">'
         +'<div class="row gap-14" style="min-width:0">'+communityIcon(c,44)
-        +'<div class="stack gap-3" style="min-width:0"><span class="h3">'+esc(c.name)+'</span><span class="cap">'+communityMemberCount(c)+' members · '+communityThreads(c.id).length+' conversations</span></div></div>'
+        +'<div class="stack gap-3" style="min-width:0"><span class="h3">'+esc(c.name)+'</span><span class="cap">'+communityMemberCount(c)+' member'+(communityMemberCount(c)===1?'':'s')+' · '+communityThreads(c.id).length+' conversation'+(communityThreads(c.id).length===1?'':'s')+'</span></div></div>'
         +(p?'<span class="badge badge-accent num">'+p+' waiting</span>':ico('chevR',16))+'</article>';}).join('')+'</div>'
       :empty('users','No communities yet','Start one for your choir, youth, parents or prayer team. Only people who follow your church can ask to join.','<button class="btn btn-sm btn-primary" data-act="new-community">Create a community</button>'))
     +'<div style="height:30px"></div></div>';
@@ -2526,6 +2526,7 @@ KB.push(
   {k:['grace','saved','salvation','born again','works'],a:'Grace in the New Testament means a gift that cannot be earned. Paul is plain about it: we are saved by grace through faith, and even that faith is God’s gift, not a reward for effort. Good works follow grace; they never purchase it.',v:['Ephesians 2:8','2 Corinthians 12:9']},
   {k:['creation','genesis','beginning','created','world began'],a:'The Bible opens with God as the source of everything that exists: “In the beginning God created the heaven and the earth.” Genesis is less a science lesson than a declaration of who made the world, that it is good, and that people bear God’s image.',v:['Genesis 1:1','John 1:1']},
   {k:['lord’s prayer','lords prayer',"lord's prayer",'our father','how did jesus pray'],a:'When the disciples asked Jesus to teach them to pray, he gave them a pattern rather than a formula: honour God’s name, seek his kingdom, ask for daily bread, forgiveness and protection. It begins by calling God “Father”.',v:['Matthew 6:9','Philippians 4:6']},
+  {k:['psalm 23','shepherd','valley of the shadow','green pastures','still waters'],a:'Psalm 23 is a shepherd\u2019s psalm written by a shepherd. Its claim is not that the valley is avoided but that it is walked through, with company: \u201cI will fear no evil: for thou art with me.\u201d Rest, provision and being led come first; the table is set in the presence of enemies rather than after they are gone.',v:['Psalm 23:1','Matthew 11:28']},
   {k:['charity','1 corinthians 13','love is patient','what is love'],a:'Paul’s description of love in 1 Corinthians 13 is a list of actions — patient, kind, not envious, not proud. It was written to a divided church, as a picture of how people who disagree can still belong to one another.',v:['1 Corinthians 13:4','John 14:27']}
 );
 /* Words that mark a question as being about the Bible or Christian faith. */
@@ -2811,7 +2812,7 @@ function viewSettings(){
     +'<p class="cap">'+ico('lock',13)+' No ads. Member data is never sold or shared with third parties.</p></div>'
     +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Your data</span>'
     +'<button class="btn btn-ghost btn-block" data-act="export">'+ico('file',17)+'Export my data</button>'
-    +'<button class="btn btn-ghost btn-block" data-act="delete-account" style="color:var(--live)">'+ico('x',17)+'Delete my account</button></div>'
+    +'<button class="btn btn-ghost btn-block" data-act="delete-account" style="color:var(--live-ink)">'+ico('x',17)+'Delete my account</button></div>'
     +'<div class="glass pad stack gap-8"><span class="eyebrow accent">About</span>'
     +'<div class="row gap-10">'+arkGlyph(30)+wordmark(17)+'</div>'
     +'<p class="cap">Prototype build · Data '+(state.ui.dbState==='live'?'syncing live':'local to this device')+'</p></div>'
@@ -3777,7 +3778,11 @@ const ACTIONS={
   'amen-comment':function(el){
     const c=state.data.comments.find(function(x){return x.id===el.dataset.id;});
     if(!c)return;
-    bumpCount('comments',c.id,'amens',1);render();
+    state.local.amened=state.local.amened||[];
+    const i=state.local.amened.indexOf(c.id);
+    if(i>-1){state.local.amened.splice(i,1);bumpCount('comments',c.id,'amens',-1);}
+    else{state.local.amened.push(c.id);bumpCount('comments',c.id,'amens',1);}
+    saveLocal();render();
   },
   'reply-comment':function(el){
     const box=document.getElementById('cmtBox');
@@ -3895,7 +3900,7 @@ const ACTIONS={
   'delete-account':function(){
     if(!state.ui.confirmDelete){state.ui.confirmDelete=true;toast('Tap again to permanently delete your account');return;}
     state.session=null;saveSession();
-    state.local={follows:[],saved:[],rsvps:[],reacted:{},journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]};
+    state.local={follows:[],saved:[],rsvps:[],reacted:{},amened:[],journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]};
     saveLocal();state.ui.confirmDelete=false;go('welcome');toast('Account and local data deleted');
   },
   compose:function(el){state.ui.composeType=el.dataset.v;state.ui.composePhoto=null;state.ui.composePhotoName='';go('console-compose');},
