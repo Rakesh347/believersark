@@ -374,7 +374,7 @@ const state={
   session:lsGet('session',null),
   local:Object.assign({follows:[],saved:[],rsvps:[],reacted:{},amened:[],journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]},
     lsGet('local',{})),
-  prefs:lsGet('prefs',{broadcast:true,digest:false,quiet:true,events:true,lang:'English',visibility:'church'}),
+  prefs:lsGet('prefs',{broadcast:true,digest:false,quiet:true,events:true,gpt:true,lang:'English',visibility:'church'}),
   data:{churches:[],posts:[],events:[],plans:[],people:[],comments:[],communities:[],threads:[],connections:[],cmRequests:[],storyReacts:[]},
   ui:{tab:'All',dir:'list',dirFilters:freshFilters(),journeyTab:'Timeline',churchTab:'Posts',consoleTab:'Dashboard',
       chat:[],chatMode:'Ask',chatBusy:false,otp:null,authRole:'believer',authId:'',onboard:{},step:0,sheet:null,toast:null,ready:false,dbState:'loading',
@@ -786,6 +786,14 @@ function wordmark(size){
 /* Toasts and full-screen overlays live in their own layers, so showing one never re-draws the
    page underneath: typing, scroll position and playing audio or video are all left alone. */
 function layer(id){let el=document.getElementById(id);if(!el){el=document.createElement('div');el.id=id;document.body.appendChild(el);}return el;}
+/* Play the one-shot bloom on the control the person just pressed. The DOM has been rebuilt
+   by the time this runs, so the button is found again by selector. */
+function bloom(sel){
+  const el=document.querySelector(sel);
+  if(!el)return;
+  el.classList.add('bloom');
+  setTimeout(function(){el.classList.remove('bloom');},560);
+}
 function renderToast(){layer('toast-root').innerHTML=state.ui.toast?'<div class="toast" role="status">'+esc(state.ui.toast)+'</div>':'';}
 function toast(msg){state.ui.toast=msg;renderToast();clearTimeout(toast._t);toast._t=setTimeout(function(){state.ui.toast=null;renderToast();},2600);}
 function go(route,params){
@@ -806,6 +814,9 @@ function closeSheet(){state.ui.sheet=null;render();}
 
 const NAV_BELIEVER=[{k:'home',i:'home',l:'Home'},{k:'churches',i:'church',l:'Churches'},{k:'journey',i:'journey',l:'Journey'},{k:'community',i:'community',l:'Community'},{k:'me',i:'me',l:'Me'}];
 const NAV_CHURCH=[{k:'console',i:'grid',l:'Console'},{k:'console-compose',i:'edit',l:'Publish'},{k:'console-c2c',i:'msg',l:'Churches'},{k:'console-events',i:'cal',l:'Events'},{k:'me',i:'me',l:'Me'}];
+/* BibleGPT is a believer's tool, and one they can put away. Both entrances — the phone
+   launcher and the desktop rail — answer to this. */
+function gptEnabled(){return state.prefs.gpt!==false&&!isChurchSession();}
 function navItems(){return (state.session&&state.session.role==='church')?NAV_CHURCH:NAV_BELIEVER;}
 function navRoot(r){
   if(r==='live'||r==='soon'||r==='event'||r==='post')return state.params.from&&state.params.from!==r?navRoot(state.params.from):(isChurchSession()?'console':'home');
@@ -831,11 +842,11 @@ function renderNav(){
     }).join('')
     /* desktop rail foot: BibleGPT and Settings sit apart from the main destinations */
     +'<div class="nav-foot">'
-    +'<button class="nav-item nav-gpt'+(root==='biblegpt'?' on':'')+'" data-go="biblegpt" aria-current="'+(root==='biblegpt'?'page':'false')+'">'+bibleGptMark(22)+'<span>BibleGPT</span></button>'
+    +(gptEnabled()?'<button class="nav-item nav-gpt'+(root==='biblegpt'?' on':'')+'" data-go="biblegpt" aria-current="'+(root==='biblegpt'?'page':'false')+'">'+bibleGptMark(22)+'<span>BibleGPT</span></button>':'')
     +'<button class="nav-item'+(root==='settings'?' on':'')+'" data-go="settings" aria-current="'+(root==='settings'?'page':'false')+'">'+ico('settings',22)+'<span>Settings &amp; privacy</span></button>'
     +'</div></nav>'
     /* phones: BibleGPT opens from a floating chat launcher */
-    +(root!=='biblegpt'&&!isChurchSession()?'<button class="gpt-launcher" data-go="biblegpt" aria-label="Open BibleGPT">'+bibleGptMark(26)+'</button>':'');
+    +(root!=='biblegpt'&&gptEnabled()?'<button class="gpt-launcher" data-act="gpt-open" aria-label="Open BibleGPT — press and hold to hide">'+bibleGptMark(26)+'</button>':'');
 }
 function topbar(title,sub,opts){
   opts=opts||{};
@@ -2799,6 +2810,9 @@ function viewSettings(){
     +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Language</span>'
     +'<select class="select" id="setLang" data-act="lang">'+LANGS.map(function(l){return '<option'+(state.prefs.lang===l?' selected':'')+'>'+l+'</option>';}).join('')+'</select>'
     +'<p class="cap">Sermons and broadcasts are auto-translated into your language where a transcript exists.</p></div>'
+    +'<div class="glass pad stack gap-16"><span class="eyebrow accent">BibleGPT</span>'
+    +prefRow('Show BibleGPT','gpt','The button on your feed and the shortcut in the menu')
+    +'<p class="cap">'+ico('sparkle',13)+' On a phone you can also press and hold the button to hide it.</p></div>'
     +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Notifications</span>'
     +prefRow('Church broadcasts','broadcast','Announcements from churches you follow')
     +'<hr class="divider">'+prefRow('Daily digest instead of feed','digest','One summary a day, no drip')
@@ -3290,6 +3304,15 @@ function renderSheet(){
               +'<span class="cap">'+esc(x.city||'')+'</span></span></span>'+ico('chevR',16)+'</button>';}).join('')+'</div>'
           :'<p class="cap mt-16">No connections yet.</p>')
       +(mine&&c.connectionsPrivate?'<p class="cap mt-12">'+ico('eye',13)+' Only you can see this list.</p>':'');
+  }else if(s.kind==='gpt-hide'){
+    inner='<div class="stack center gap-14" style="text-align:center">'
+      +'<div class="icon-btn" style="width:56px;height:56px;color:var(--brand);border-color:rgba(0,163,225,.35);background:var(--brand-dim)">'+bibleGptMark(26)+'</div>'
+      +'<h2 class="h1">Hide BibleGPT?</h2>'
+      +'<p class="body">The button leaves your screen and the shortcut leaves the menu. Nothing else changes, and you can bring it back whenever you like.</p></div>'
+      +'<div class="stack gap-10 mt-20">'
+      +'<button class="btn btn-primary btn-block" data-act="gpt-hide">'+ico('x',17)+'Hide BibleGPT</button>'
+      +'<button class="btn btn-ghost btn-block" data-act="close-sheet">Keep it</button></div>'
+      +'<p class="cap mt-12" style="text-align:center">Settings &amp; privacy → BibleGPT to turn it back on.</p>';
   }else if(s.kind==='soon'){
     inner='<div class="stack center gap-14" style="text-align:center">'
       +'<div class="icon-btn" style="width:56px;height:56px;color:var(--lavender);border-color:rgba(192,143,208,.35);background:rgba(192,143,208,.1)">'+ico('sparkle',26)+'</div>'
@@ -3315,8 +3338,19 @@ function renderSheet(){
 }
 
 /* ---------- root render ---------- */
+/* Which view is on screen. When this is unchanged between renders, the render is an update
+   rather than a navigation: entrance animations stay still and the scroll position holds. */
+function viewSignature(){
+  const u=state.ui;
+  return [state.route,state.params.id||'',u.tab,u.churchTab,u.personTab,u.journeyTab,u.c2cTab,u.dir,
+    u.sheet?u.sheet.kind:'',u.step].join('|');
+}
+let LAST_VIEW=null;
 function render(){
   document.documentElement.setAttribute('data-app-theme',state.theme);
+  const sig=viewSignature(), sameView=(sig===LAST_VIEW), keepY=window.scrollY;
+  LAST_VIEW=sig;
+  document.documentElement.setAttribute('data-anim',sameView?'off':'on');
   if(state.route==='onboard'&&document.getElementById('obForm'))captureOnboard();
   const r=state.route;
   let html='';
@@ -3343,7 +3377,7 @@ function render(){
     else if(r==='live')body=viewLive();
     else if(r==='soon')body=viewSoon();
     else if(r==='console-thread')body=viewConsoleThread();
-    else if(r==='biblegpt')body=viewBibleGPT();
+    else if(r==='biblegpt')body=gptEnabled()?viewBibleGPT():viewHome();
     else if(r==='me')body=viewMe();
     else if(r==='settings')body=viewSettings();
     else if(r==='family')body=viewFamily();
@@ -3359,6 +3393,9 @@ function render(){
     html='<div class="shell">'+renderNav()+'<main class="main" id="main">'+body+'</main></div>';
   }
   document.getElementById('root').innerHTML=html+renderSheet();
+  /* Replacing the document collapses its height, so the browser clamps the scroll to the top.
+     On an in-place update we put the reader back where they were. */
+  if(sameView&&keepY&&window.scrollY!==keepY)window.scrollTo(0,keepY);
   if(state.ui.sheet&&state.ui.sheet.kind==='crop')applyCrop();
   if(state.route==='churches')restoreDirSearch();
   syncOverlay();syncCalPop();
@@ -3660,11 +3697,13 @@ const ACTIONS={
   summarise:function(el){openSheet('summary',{id:el.dataset.id});},
   react:function(el){
     const id=el.dataset.id,k=el.dataset.k,prev=state.local.reacted[id];
+    const bloomOn=prev!==k;
     if(prev===k){delete state.local.reacted[id];bumpCount('posts',id,'reactions.'+k,-1);}
     else{state.local.reacted[id]=k;bumpCount('posts',id,'reactions.'+k,1);if(prev)bumpCount('posts',id,'reactions.'+prev,-1);}
     saveLocal();
     recordStoryReaction(state.data.posts.find(function(x){return x.id===id;}),prev===k?null:k);
     render();
+    if(bloomOn)bloom('[data-act="react"][data-id="'+id+'"][data-k="'+k+'"]');
   },
   follow:async function(el){
     const id=el.dataset.id,i=state.local.follows.indexOf(id);
@@ -3800,6 +3839,12 @@ const ACTIONS={
     c.connectionsPrivate=!c.connectionsPrivate;
     dbUpdate('churches',c.id,{connectionsPrivate:c.connectionsPrivate});
     render();toast(c.connectionsPrivate?'Your connections are private now':'Your connections are visible again');
+  },
+  'gpt-open':function(){if(GPT_HOLD.fired){GPT_HOLD.fired=false;return;}go('biblegpt');},
+  'gpt-hide':function(){
+    state.prefs.gpt=false;savePrefs();closeSheet();
+    if(state.route==='biblegpt')go('home');else render();
+    toast('BibleGPT hidden — turn it back on in Settings & privacy');
   },
   'church-tab':function(el){state.ui.churchTab=el.dataset.v;render();},
   'dir-view':function(){state.ui.dir=state.ui.dir==='map'?'list':'map';render();},
@@ -4103,7 +4148,21 @@ document.addEventListener('change',function(e){
   if(t.id==='photoInput'&&t.files&&t.files[0]){readPhoto(t.files[0]);t.value='';}
 });
 /* drag to position a photo in the square cropper; a press-and-hold pauses a story */
+/* Press and hold the launcher to put BibleGPT away, the way you would rearrange a home
+   screen. A plain tap still opens it; the hold cancels that tap. */
+const GPT_HOLD={timer:0,fired:false};
+function clearGptHold(){if(GPT_HOLD.timer)clearTimeout(GPT_HOLD.timer);GPT_HOLD.timer=0;}
 document.addEventListener('pointerdown',function(e){
+  const launcher=e.target.closest('.gpt-launcher');
+  if(launcher){
+    GPT_HOLD.fired=false;
+    clearGptHold();
+    GPT_HOLD.timer=setTimeout(function(){
+      GPT_HOLD.fired=true;
+      if(navigator.vibrate)try{navigator.vibrate(12);}catch(err){}
+      openSheet('gpt-hide');
+    },550);
+  }
   const box=e.target.closest('#cropBox');
   if(box){e.preventDefault();box.setPointerCapture(e.pointerId);CROP.drag={x:e.clientX,y:e.clientY,ox:CROP.x,oy:CROP.y};return;}
   if(state.ui.story&&e.target.closest('#storyCard')&&!e.target.closest('button'))STORY.held=true;
@@ -4112,7 +4171,7 @@ document.addEventListener('pointermove',function(e){
   if(!CROP.drag)return;
   CROP.x=CROP.drag.ox+(e.clientX-CROP.drag.x);CROP.y=CROP.drag.oy+(e.clientY-CROP.drag.y);applyCrop();
 });
-['pointerup','pointercancel'].forEach(function(t){document.addEventListener(t,function(){CROP.drag=null;STORY.held=false;});});
+['pointerup','pointercancel','pointerleave'].forEach(function(t){document.addEventListener(t,function(){CROP.drag=null;STORY.held=false;clearGptHold();});});
 document.addEventListener('wheel',function(e){
   if(!e.target.closest('#cropBox'))return;
   e.preventDefault();CROP.zoom=Math.max(1,Math.min(4,CROP.zoom*(e.deltaY<0?1.08:1/1.08)));applyCrop();

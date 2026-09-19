@@ -265,7 +265,7 @@ button.cap.on{color:var(--brand);font-weight:700}
 .react:hover{border-color:var(--border-2)}
 .react:hover .em{transform:scale(1.22)}
 .react.on{background:var(--brand-dim);border-color:rgba(0,163,225,.42);color:var(--brand)}
-.react.on .em{animation:bloom .5s cubic-bezier(.2,1.6,.4,1)}
+.react.bloom .em{animation:bloom .5s cubic-bezier(.2,1.6,.4,1)}
 @keyframes bloom{0%{transform:scale(1)}45%{transform:scale(1.55)}100%{transform:scale(1)}}
 .ring-wrap{position:relative;width:74px;height:74px;flex:none}
 .ring-wrap svg{transform:rotate(-90deg)}
@@ -335,6 +335,10 @@ button.cap.on{color:var(--brand);font-weight:700}
 .ray{position:absolute;width:1.5px;height:min(60vh,420px);background:linear-gradient(180deg,transparent,rgba(0,163,225,.5),transparent);
   transform-origin:center;animation:sweep 5s ease-in-out infinite}
 .fade-up{animation:fadeUp .5s cubic-bezier(.2,.8,.3,1) both}
+/* An in-place update is not an arrival: cards stay put instead of fading in again. */
+:root[data-anim="off"] .stagger>*,
+:root[data-anim="off"] .fade-up,
+:root[data-anim="off"] .joined-church{animation:none!important}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .stagger>*{animation:fadeUp .46s cubic-bezier(.2,.8,.3,1) both}
 .stagger>*:nth-child(1){animation-delay:.02s}.stagger>*:nth-child(2){animation-delay:.06s}
@@ -523,7 +527,8 @@ html.ov-open,html.ov-open body{overflow:hidden}
 .sr{width:44px;height:44px;border-radius:50%;font-size:21px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12);
   transition:transform .22s cubic-bezier(.2,1.6,.4,1),background .2s}
 .sr:hover{transform:scale(1.12);background:rgba(255,255,255,.2)}
-.sr.on{background:rgba(0,163,225,.45);box-shadow:0 0 0 2px #7FD4F5;animation:bloom .5s cubic-bezier(.2,1.6,.4,1)}
+.sr.on{background:rgba(0,163,225,.45);box-shadow:0 0 0 2px #7FD4F5}
+.sr.bloom{animation:bloom .5s cubic-bezier(.2,1.6,.4,1)}
 .story-icon.share{flex:none;width:44px;height:44px}
 .story-arrow{position:relative;z-index:2;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;
   color:#fff;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);margin:0 18px;transition:.2s}
@@ -731,6 +736,9 @@ i.m{background:var(--mint)}
 .gpt-launcher{position:fixed;right:16px;bottom:calc(var(--nav-h) + 30px);z-index:58;width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;
   background:linear-gradient(135deg,#8C4799,#224D98 55%,var(--brand-2));box-shadow:0 12px 30px rgba(34,77,152,.38);transition:transform .2s}
 .gpt-launcher:hover{transform:translateY(-2px)}
+/* the press-and-hold reads as a press, so the gesture is discoverable */
+.gpt-launcher:active{transform:scale(.92)}
+.gpt-launcher{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 @media(min-width:900px){.gpt-launcher{display:none}}
 
 /* decorative glows must never create sideways scrolling */
