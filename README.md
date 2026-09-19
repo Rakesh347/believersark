@@ -41,7 +41,7 @@ Church admins see their own code in the church console and can copy or share it.
 
 ## What is where
 
-- **Home:** stories open in a blurred overlay, with reactions and share but no comments. The feed shows posts from churches you follow, then "Suggested for you" based on what you interact with. On desktop, a right-hand column holds the newsroom (admin articles that open full screen with text, images, audio and video) and a calendar of your events.
+- **Home:** stories open in a blurred overlay, with reactions and share but no comments. The feed shows posts from churches you follow, then "Suggested for you" based on what you interact with. On desktop, a right-hand column holds the newsroom (admin articles that open full screen with text, images, audio and video). The calendar icon in the header pops up your event calendar.
 - **Churches:** search with suggestions, a filter panel (day, time, language, city, ministries, live now, following) and cards that show service times and connections on hover.
 - **Community:** communities belong to a church. Only admins create them, only followers see them, and admins approve every join request.
 - **BibleGPT and Settings & privacy:** at the bottom of the left menu. BibleGPT answers only questions about the Bible.

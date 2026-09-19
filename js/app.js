@@ -723,7 +723,7 @@ function renderToast(){layer('toast-root').innerHTML=state.ui.toast?'<div class=
 function toast(msg){state.ui.toast=msg;renderToast();clearTimeout(toast._t);toast._t=setTimeout(function(){state.ui.toast=null;renderToast();},2600);}
 function go(route,params){
   if(state.ui.story||state.ui.news){state.ui.story=null;state.ui.news=null;stopStory();syncOverlay();}
-  state.route=route;state.params=params||{};state.ui.sheet=null;window.scrollTo({top:0,behavior:'instant'});render();
+  state.route=route;state.params=params||{};state.ui.sheet=null;state.ui.calPop=false;window.scrollTo({top:0,behavior:'instant'});render();
 }
 /* BibleGPT's mark: an open book with a speech tail and a spark of light. */
 function bibleGptMark(size){
@@ -1262,6 +1262,62 @@ function newsById(id){return NEWS.find(function(n){return n.id===id;})||null;}
 function newsImg(key){return PHOTOS[key]||key;}
 function newsMediaIcon(n){return n.media==='audio'?ico('mic',12):n.media==='video'?ico('play',12):'';}
 function newsroomMark(){return '<span class="nr-mark">'+arkGlyph(18)+'<span>believers<b>Ark</b> Newsroom</span></span>';}
+/* ---------- today's reading (right column) ---------- */
+const BIBLE_BOOKS=('Genesis 50,Exodus 40,Leviticus 27,Numbers 36,Deuteronomy 34,Joshua 24,Judges 21,Ruth 4,1 Samuel 31,2 Samuel 24,1 Kings 22,2 Kings 25,'
+  +'1 Chronicles 29,2 Chronicles 36,Ezra 10,Nehemiah 13,Esther 10,Job 42,Psalms 150,Proverbs 31,Ecclesiastes 12,Song of Songs 8,Isaiah 66,Jeremiah 52,'
+  +'Lamentations 5,Ezekiel 48,Daniel 12,Hosea 14,Joel 3,Amos 9,Obadiah 1,Jonah 4,Micah 7,Nahum 3,Habakkuk 3,Zephaniah 3,Haggai 2,Zechariah 14,Malachi 4,'
+  +'Matthew 28,Mark 16,Luke 24,John 21,Acts 28,Romans 16,1 Corinthians 16,2 Corinthians 13,Galatians 6,Ephesians 6,Philippians 4,Colossians 4,'
+  +'1 Thessalonians 5,2 Thessalonians 3,1 Timothy 6,2 Timothy 4,Titus 3,Philemon 1,Hebrews 13,James 5,1 Peter 5,2 Peter 3,1 John 5,2 John 1,3 John 1,Jude 1,Revelation 22')
+  .split(',').map(function(s){const i=s.lastIndexOf(' ');return {b:s.slice(0,i),n:Number(s.slice(i+1))};});
+function chaptersOf(books){const out=[];BIBLE_BOOKS.forEach(function(x){if(!books||books.indexOf(x.b)>-1)for(let c=1;c<=x.n;c++)out.push({b:x.b,c:c});});return out;}
+const PLAN_CHAPTERS={rp1:chaptersOf(),rp2:chaptersOf(['Psalms']),rp3:chaptersOf(['Matthew','Mark','Luke','John'])};
+/* the chapters for day n (1-based) of a plan, written the way people say them: "Luke 5–6", "Psalms 21–25" */
+function planReading(p,n){
+  const all=PLAN_CHAPTERS[p.id];
+  if(!all)return {ref:p.todayRef||'',count:1};
+  const days=p.days||all.length,a=Math.floor((n-1)*all.length/days),b=Math.floor(n*all.length/days);
+  const part=all.slice(a,Math.max(b,a+1));
+  const groups=[];
+  part.forEach(function(x){const g=groups[groups.length-1];if(g&&g.b===x.b)g.to=x.c;else groups.push({b:x.b,from:x.c,to:x.c});});
+  const ref=groups.map(function(g){const name=g.b==='Psalms'&&g.from===g.to?'Psalm':g.b;return name+' '+g.from+(g.to>g.from?'–'+g.to:'');}).join(' · ');
+  return {ref:ref,count:part.length};
+}
+function readingDays(){
+  /* the days of this week that belong to the current streak */
+  const last=state.local.lastRead?dt(state.local.lastRead):null,streak=state.local.streak||0,on={};
+  if(last&&streak&&(Date.now()-last.getTime())<48*3600e3)for(let i=0;i<Math.min(streak,7);i++){const d=new Date(last);d.setDate(d.getDate()-i);on[d.toDateString()]=true;}
+  const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
+  return ['M','T','W','T','F','S','S'].map(function(l,i){const d=new Date(mon);d.setDate(mon.getDate()+i);
+    return {l:l,done:!!on[d.toDateString()],today:d.toDateString()===now.toDateString(),future:d>now};});
+}
+function railReading(){
+  const s=state.session;
+  if(!s||s.role==='church')return '';
+  const p=myPlan()&&s.planId?myPlan():null;
+  if(!p)return '<section class="rail-card rail-read" aria-label="Today\'s reading">'
+    +'<div class="rail-head"><span class="row gap-8">'+ico('book',16,'accent')+'<span class="h3" style="font-size:15px">Today\'s reading</span></span></div>'
+    +'<p class="cap">Pick a plan and read a little each day. We\'ll keep your place and your streak.</p>'
+    +'<div class="stack gap-8 mt-12">'+state.data.plans.map(function(x){
+      return '<button class="rr-plan" data-act="set-plan" data-id="'+x.id+'"><span class="stack gap-2" style="min-width:0"><b>'+esc(x.title)+'</b><span class="cap">'+x.days+' days · '+esc(x.category||'')+'</span></span>'+ico('plus',15)+'</button>';}).join('')+'</div></section>';
+  const doneToday=state.local.lastRead&&isToday(state.local.lastRead);
+  const day=state.local.planDay||0,finished=day>=p.days;
+  const n=Math.min(p.days,doneToday||finished?Math.max(day,1):day+1),r=planReading(p,n),streak=state.local.streak||0,pct=planPct();
+  return '<section class="rail-card rail-read'+(doneToday?' is-done':'')+'" aria-label="Today\'s reading">'
+    +'<div class="rail-head"><span class="row gap-8">'+ico('book',16,'accent')+'<span class="h3" style="font-size:15px">Today\'s reading</span></span>'
+    +'<button class="cap rr-open" data-act="open-plan">'+esc(p.title)+'</button></div>'
+    +'<div class="row gap-14" style="align-items:center">'+ring(pct,62,pct+'%','')
+    +'<div class="stack gap-4" style="min-width:0"><span class="eyebrow accent">'+(finished&&!doneToday?'Plan complete':'Day '+n+' of '+p.days)+'</span>'
+    +'<span class="rr-ref">'+esc(r.ref)+'</span>'
+    +'<span class="cap">About '+Math.max(4,r.count*4)+' minutes</span></div></div>'
+    +'<div class="rr-week" aria-label="This week">'+readingDays().map(function(d){
+      return '<span class="rr-day'+(d.done?' done':'')+(d.today?' today':'')+(d.future?' future':'')+'"><i>'+(d.done?ico('check',11):'')+'</i>'+d.l+'</span>';}).join('')+'</div>'
+    +(doneToday
+      ?'<div class="rr-done">'+ico('check',16)+'<span><b>Read today.</b> '+streak+' day streak. See you tomorrow.</span></div>'
+      :finished?'<button class="btn btn-sm btn-ghost btn-block" data-act="open-plan">Choose your next plan</button>'
+      :'<button class="btn btn-sm btn-primary btn-block" data-act="mark-read">'+ico('check',16)+'Mark as read</button>'
+        +(streak?'<span class="cap rr-streak">'+ico('sparkle',12)+'Keep your '+streak+' day streak going</span>':''))
+    +'</section>';
+}
 function railNews(){
   const list=state.ui.railAll?NEWS:NEWS.slice(0,3),lead=list[0];
   return '<section class="rail-card rail-news" aria-label="News from believersArk">'
@@ -1299,6 +1355,30 @@ function calendarEvents(){
     .sort(function(a,b){return dt(a.e.datetime)-dt(b.e.datetime);});
 }
 function dayKey(d){return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();}
+/* the calendar lives behind an icon in the header and pops up on click */
+function calendarButton(){
+  const soon=calendarEvents().filter(function(x){const d=dt(x.e.datetime);return x.going&&d>=new Date(Date.now()-3*3600e3)&&d<new Date(Date.now()+7*864e5);}).length;
+  const open=!!state.ui.calPop;
+  return '<button class="icon-btn cal-btn'+(open?' on':'')+'" data-act="cal-toggle" aria-label="My calendar" aria-haspopup="dialog" aria-expanded="'+open+'" style="position:relative">'+ico('cal',18)
+    +(soon?'<span class="pill-count num" title="Events you are going to this week">'+soon+'</span>':'')+'</button>';
+}
+/* drawn in its own layer so the header's clipping never cuts it off */
+function syncCalPop(){
+  const root=layer('pop-root');
+  const open=state.ui.calPop&&document.querySelector('.cal-btn');
+  if(!open){if(root.innerHTML)root.innerHTML='';state.ui.calPop=false;return;}
+  const fresh=!root.innerHTML;
+  root.innerHTML='<div class="cal-scrim"></div>'+railCalendar();
+  if(!fresh)root.querySelector('.cal-pop').style.animation='none';
+  placeCalPop();
+}
+function placeCalPop(){
+  const p=document.getElementById('calPop'),b=document.querySelector('.cal-btn');if(!p||!b)return;
+  if(innerWidth<600){p.style.left=p.style.top='';return;}
+  const r=b.getBoundingClientRect(),w=p.offsetWidth;
+  p.style.left=Math.max(12,Math.min(r.right-w,innerWidth-w-12))+'px';
+  p.style.top=(r.bottom+10)+'px';
+}
 function railCalendar(compact){
   const base=state.ui.railMonth?new Date(state.ui.railMonth):new Date();
   const y=base.getFullYear(),m=base.getMonth(),today=new Date();
@@ -1318,8 +1398,8 @@ function railCalendar(compact){
   let heading='Coming up';
   if(sel){const p=sel.split('-').map(Number);agenda=evs.filter(function(x){return dayKey(dt(x.e.datetime))===sel;});heading=fmtDate(new Date(p[0],p[1],p[2]).toISOString());}
   agenda=agenda.slice(0,3);
-  return '<section class="rail-card rail-cal" aria-label="My calendar">'
-    +'<div class="rail-head"><span class="h3" style="font-size:15px">My calendar</span>'
+  return '<section class="rail-card rail-cal cal-pop" id="calPop" role="dialog" aria-label="My calendar">'
+    +'<div class="rail-head"><span class="row gap-8"><button class="mc-nav cal-close" data-act="cal-close" aria-label="Close calendar">'+ico('x',14)+'</button><span class="h3" style="font-size:15px">My calendar</span></span>'
     +'<span class="row gap-4"><button class="mc-nav" data-act="rail-cal" data-v="-1" aria-label="Previous month">'+ico('chevL',14)+'</button>'
     +'<span class="mc-month">'+MONTHS[m]+' '+y+'</span>'
     +'<button class="mc-nav" data-act="rail-cal" data-v="1" aria-label="Next month">'+ico('chevR',14)+'</button></span></div>'
@@ -1387,7 +1467,7 @@ function viewHome(){
   }
   return '<div class="home-grid"><div class="home-main">'
     +topbar(greeting()+', <span class="accent">'+esc(String(name).split(' ')[0])+'</span>',todayLabel(),{
-    actions:'<div class="row gap-8">'
+    actions:'<div class="row gap-8">'+calendarButton()
       +'<button class="icon-btn" data-go="notifications" aria-label="Notifications" style="position:relative">'+ico('bell',18)
       +(unread?'<span class="pill-count num">'+(unread>9?'9+':unread)+'</span>':'')+'</button>'
       +'<button class="icon-btn" data-go="churches" aria-label="Search churches">'+ico('search',18)+'</button>'
@@ -1397,14 +1477,14 @@ function viewHome(){
     +verseCard()
     +newsStrip()
     +priorityStrip()
-    +'<div class="home-inline mt-24">'+railCalendar(true)+'</div>'
+
     +'<div class="sec-title"><span class="eyebrow accent">From your churches</span>'
     +'<button class="chip'+(digest?' on':'')+'" data-act="toggle-digest">'+ico('list',14)+'Digest</button></div>'
     +'<div class="scroll-x" style="margin-bottom:14px">'+filters.map(function(f){
         return '<button class="chip'+(t===f?' on':'')+'" data-act="tab" data-v="'+f+'">'+f+'</button>';}).join('')+'</div>'
     +feed
     +'<div style="height:30px"></div></div></div>'
-    +'<aside class="home-rail">'+railNews()+railCalendar(false)+'</aside>'
+    +'<aside class="home-rail">'+railNews()+railReading()+'</aside>'
     +'</div>';
 }
 /* communities from my churches that I have not joined or asked to join yet */
@@ -2182,7 +2262,7 @@ function journeyPlan(){
     +'<div class="glass pad stack gap-16"><div class="row between gap-16">'
     +'<div class="stack gap-6"><span class="eyebrow accent">'+esc(p.title)+'</span>'
     +'<h2 class="h1">Day '+(day+ (doneToday?0:1))+'</h2>'
-    +'<span class="cap">'+esc(p.todayRef||v.r)+' · about 6 minutes</span></div>'
+    +'<span class="cap">'+esc(planReading(p,Math.min(p.days,Math.max(1,day+(doneToday?0:1)))).ref)+' · about 6 minutes</span></div>'
     +ring(planPct(),78,planPct()+'%','done')+'</div>'
     +'<div class="progress"><i style="width:'+planPct()+'%"></i></div>'
     +'<p class="scripture">“'+esc(v.t)+'”</p><span class="verse-ref">'+esc(v.r)+'</span>'
@@ -3174,7 +3254,7 @@ function render(){
   document.getElementById('root').innerHTML=html+renderSheet();
   if(state.ui.sheet&&state.ui.sheet.kind==='crop')applyCrop();
   if(state.route==='churches')restoreDirSearch();
-  syncOverlay();
+  syncOverlay();syncCalPop();
 }
 
 /* ---------- actions ---------- */
@@ -3525,6 +3605,8 @@ const ACTIONS={
     try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
   },
   'share-news':function(el){const n=newsById(el.dataset.id)||{};shareText(n.title+' — '+(n.dek||''),'news/'+el.dataset.id);},
+  'cal-toggle':function(){state.ui.calPop=!state.ui.calPop;if(!state.ui.calPop){state.ui.railDay=null;state.ui.railMonth=null;}render();},
+  'cal-close':function(){state.ui.calPop=false;state.ui.railDay=null;state.ui.railMonth=null;render();},
   'rail-more':function(){state.ui.railAll=!state.ui.railAll;render();},
   'rail-day':function(el){state.ui.railDay=state.ui.railDay===el.dataset.v?null:el.dataset.v;render();},
   'rail-cal':function(el){const b=state.ui.railMonth?new Date(state.ui.railMonth):new Date();b.setDate(1);b.setMonth(b.getMonth()+Number(el.dataset.v));state.ui.railMonth=b.toISOString();state.ui.railDay=null;render();},
@@ -3637,6 +3719,7 @@ const ACTIONS={
     render();toast('Comment posted');
   },
   'journey-tab':function(el){state.ui.journeyTab=el.dataset.v;render();},
+  'open-plan':function(){state.ui.journeyTab='Plan';go('journey');},
   'browse-plans':function(){state.ui.journeyTab='Plan';render();},
   'set-plan':function(el){
     if(!requireAuth())return;
@@ -3644,6 +3727,7 @@ const ACTIONS={
   },
   'mark-read':function(){
     if(!requireAuth())return;
+    if(state.local.lastRead&&isToday(state.local.lastRead)){toast('Already read today. See you tomorrow.');return;}
     const last=state.local.lastRead;
     const consecutive=last&&((Date.now()-dt(last).getTime())<48*3600e3);
     state.local.planDay=(state.local.planDay||0)+1;
@@ -3850,6 +3934,7 @@ document.addEventListener('click',function(e){
   const sg=e.target.closest('[data-sg]');
   if(sg){e.preventDefault();pickSuggest(Number(sg.dataset.sg));return;}
   if(!e.target.closest('#dirSearch'))hideSuggest();
+  if(state.ui.calPop&&!e.target.closest('.cal-btn,#calPop')){state.ui.calPop=false;state.ui.railDay=null;state.ui.railMonth=null;render();}
   const sheetStop=e.target.closest('[data-stop]');
   const closeEl=e.target.closest('[data-act="close-sheet"]');
   if(closeEl&&!sheetStop){closeSheet();return;}
@@ -3901,6 +3986,7 @@ document.addEventListener('keydown',function(e){
     if(id==='threadBox'&&!e.shiftKey){e.preventDefault();const b=document.querySelector('[data-act="c2c-send"]');if(b)ACTIONS['c2c-send'](b);}
   }
   if(e.key==='Escape'&&state.ui.sheet)closeSheet();
+  else if(e.key==='Escape'&&state.ui.calPop){ACTIONS['cal-close']();const b=document.querySelector('.cal-btn');if(b)b.focus();}
 });
 document.addEventListener('input',function(e){
   const t=e.target;
@@ -3930,7 +4016,8 @@ document.addEventListener('wheel',function(e){
   if(!e.target.closest('#cropBox'))return;
   e.preventDefault();CROP.zoom=Math.max(1,Math.min(4,CROP.zoom*(e.deltaY<0?1.08:1/1.08)));applyCrop();
 },{passive:false});
-window.addEventListener('resize',function(){if(state.ui.sheet&&state.ui.sheet.kind==='crop')applyCrop();});
+window.addEventListener('resize',function(){if(state.ui.sheet&&state.ui.sheet.kind==='crop')applyCrop();placeCalPop();});
+window.addEventListener('scroll',placeCalPop,{passive:true});
 
 /* ---------- boot ---------- */
 render();
