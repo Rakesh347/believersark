@@ -91,8 +91,8 @@ const VERSES=[
   {r:'Romans 8:28',t:'And we know that all things work together for good to them that love God.'}
 ];
 const GRADS=[
-  ['#00A3E1','#7A5CC4'],['#7FD4F5','#3B4C9E'],['#4FCB98','#2A6C8F'],['#E8919A','#8348A8'],
-  ['#C08FD0','#3E4BA6'],['#38BDF1','#B4562F'],['#7FD8E8','#3C5AA6'],['#FF9E7A','#8C3B6E']
+  ['#D9A95E','#8A5E28'],['#C98A5A','#7A4429'],['#B9925C','#63431F'],['#CE9A78','#8A4A3C'],
+  ['#A88FA6','#5A4361'],['#9BA986','#4C5C3A'],['#8FA3B5','#3E5061'],['#D8B074','#96521F']
 ];
 function grad(seed){const g=GRADS[Math.abs(hash(seed))%GRADS.length];return 'linear-gradient(135deg,'+g[0]+','+g[1]+')';}
 /* ---------- church logos ----------
@@ -101,14 +101,14 @@ function grad(seed){const g=GRADS[Math.abs(hash(seed))%GRADS.length];return 'lin
    churches ever look alike. The photographs in PHOTO_OF stay what they were — covers and
    gallery art, not identity. */
 const CHURCH_EMBLEMS=[
-  {k:'arch',c:['#2BB3EA','#0A5C9E'],d:'M12 2.4c-3.7 0-6.7 3-6.7 6.7v10.6c0 .7.5 1.2 1.2 1.2h3.2v-6.1a2.3 2.3 0 0 1 4.6 0v6.1h3.2c.7 0 1.2-.5 1.2-1.2V9.1c0-3.7-3-6.7-6.7-6.7Zm.9 3.1v1.3h1.3v1.7h-1.3v2.4h-1.8V8.5H9.8V6.8h1.3V5.5h1.8Z'},
-  {k:'flame',c:['#F08A3C','#B23A1E'],d:'M12 2.2c.6 3 2 4.6 3.6 6.2 1.6 1.6 2.8 3.3 2.8 5.7A6.4 6.4 0 0 1 5.6 14c0-1.9.8-3.4 2-4.8.2 1.2.7 2 1.6 2.5-.3-3.6.7-6.7 2.8-9.5Zm0 10.1c-1.1 1.3-1.8 2.3-1.8 3.5a1.8 1.8 0 0 0 3.6 0c0-1.2-.7-2.2-1.8-3.5Z'},
-  {k:'cross',c:['#7C5CC4','#3B2C77'],d:'M10.2 2.6h3.6v5.1h5.1v3.6h-5.1v10.1h-3.6V11.3H5.1V7.7h5.1z'},
-  {k:'dove',c:['#28B58C','#136B58'],d:'M20.4 4.9c-2.8.4-4.8 1.9-6.6 3.9-2 2.2-4.2 3.3-7 3.2-.7 0-1.1.7-.7 1.3l1.6 2.4-1.9 2.5c-.4.6 0 1.4.8 1.3 4.9-.6 8.6-2.6 11.2-6.2 1.8-2.4 2.9-5.2 3.4-8.1.1-.2-.4-.4-.8-.3ZM17.9 7a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z'},
-  {k:'anchor',c:['#3C6FD1','#1B3271'],d:'M12 2.3a2.7 2.7 0 0 0-1 5.2v1.7H8.2v2.2H11v6.2a5.3 5.3 0 0 1-3.9-4.1h1.5L5.4 10 2.2 13.5h1.6A8.3 8.3 0 0 0 12 21.7a8.3 8.3 0 0 0 8.2-8.2h1.6L18.6 10l-3.2 3.5h1.5A5.3 5.3 0 0 1 13 17.6v-6.2h2.8V9.2H13V7.5a2.7 2.7 0 0 0-1-5.2Zm0 1.9a.8.8 0 1 1 0 1.6.8.8 0 0 1 0-1.6Z'},
-  {k:'book',c:['#C2524E','#7A2230'],d:'M3.2 5.1c2.7-1 5.4-1.1 8 .1v13.5c-2.6-1.2-5.3-1.1-8-.1V5.1Zm9.6.1c2.6-1.2 5.3-1.1 8-.1v13.5c-2.7-1-5.4-.9-8 .1V5.2Z'},
-  {k:'chalice',c:['#B8872F','#6D4310'],d:'M6.2 3h11.6l-.6 4.6a5.7 5.7 0 0 1-4.3 4.8v4.2h3.4v2.4H7.7v-2.4h3.4v-4.2A5.7 5.7 0 0 1 6.8 7.6L6.2 3Zm2.3 2.4.3 1.9a3.3 3.3 0 0 0 6.4 0l.3-1.9H8.5Z'},
-  {k:'star',c:['#1E9FB8','#0B4F6C'],d:'m12 2.3 2.6 6.4 6.9.5-5.3 4.5 1.7 6.7L12 16.8l-5.9 3.6 1.7-6.7-5.3-4.5 6.9-.5z'}
+  {k:'arch',c:['#D9A95E','#8A5E28'],d:'M12 2.4c-3.7 0-6.7 3-6.7 6.7v10.6c0 .7.5 1.2 1.2 1.2h3.2v-6.1a2.3 2.3 0 0 1 4.6 0v6.1h3.2c.7 0 1.2-.5 1.2-1.2V9.1c0-3.7-3-6.7-6.7-6.7Zm.9 3.1v1.3h1.3v1.7h-1.3v2.4h-1.8V8.5H9.8V6.8h1.3V5.5h1.8Z'},
+  {k:'flame',c:['#E08A44','#A23A22'],d:'M12 2.2c.6 3 2 4.6 3.6 6.2 1.6 1.6 2.8 3.3 2.8 5.7A6.4 6.4 0 0 1 5.6 14c0-1.9.8-3.4 2-4.8.2 1.2.7 2 1.6 2.5-.3-3.6.7-6.7 2.8-9.5Zm0 10.1c-1.1 1.3-1.8 2.3-1.8 3.5a1.8 1.8 0 0 0 3.6 0c0-1.2-.7-2.2-1.8-3.5Z'},
+  {k:'cross',c:['#9C7BA8','#4E3660'],d:'M10.2 2.6h3.6v5.1h5.1v3.6h-5.1v10.1h-3.6V11.3H5.1V7.7h5.1z'},
+  {k:'dove',c:['#8FA87A','#425A35'],d:'M20.4 4.9c-2.8.4-4.8 1.9-6.6 3.9-2 2.2-4.2 3.3-7 3.2-.7 0-1.1.7-.7 1.3l1.6 2.4-1.9 2.5c-.4.6 0 1.4.8 1.3 4.9-.6 8.6-2.6 11.2-6.2 1.8-2.4 2.9-5.2 3.4-8.1.1-.2-.4-.4-.8-.3ZM17.9 7a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z'},
+  {k:'anchor',c:['#7595AE','#33506A'],d:'M12 2.3a2.7 2.7 0 0 0-1 5.2v1.7H8.2v2.2H11v6.2a5.3 5.3 0 0 1-3.9-4.1h1.5L5.4 10 2.2 13.5h1.6A8.3 8.3 0 0 0 12 21.7a8.3 8.3 0 0 0 8.2-8.2h1.6L18.6 10l-3.2 3.5h1.5A5.3 5.3 0 0 1 13 17.6v-6.2h2.8V9.2H13V7.5a2.7 2.7 0 0 0-1-5.2Zm0 1.9a.8.8 0 1 1 0 1.6.8.8 0 0 1 0-1.6Z'},
+  {k:'book',c:['#B5564C','#6E2A2A'],d:'M3.2 5.1c2.7-1 5.4-1.1 8 .1v13.5c-2.6-1.2-5.3-1.1-8-.1V5.1Zm9.6.1c2.6-1.2 5.3-1.1 8-.1v13.5c-2.7-1-5.4-.9-8 .1V5.2Z'},
+  {k:'chalice',c:['#C09340','#6D4310'],d:'M6.2 3h11.6l-.6 4.6a5.7 5.7 0 0 1-4.3 4.8v4.2h3.4v2.4H7.7v-2.4h3.4v-4.2A5.7 5.7 0 0 1 6.8 7.6L6.2 3Zm2.3 2.4.3 1.9a3.3 3.3 0 0 0 6.4 0l.3-1.9H8.5Z'},
+  {k:'star',c:['#5E9A9B','#23565C'],d:'m12 2.3 2.6 6.4 6.9.5-5.3 4.5 1.7 6.7L12 16.8l-5.9 3.6 1.7-6.7-5.3-4.5 6.9-.5z'}
 ];
 /* Seeded churches are pinned so the six in the directory never repeat a mark. */
 const EMBLEM_OF={ch1:0,ch2:1,ch3:2,ch4:3,ch5:4,ch6:5};
@@ -129,12 +129,13 @@ function churchLogo(c,size,style){
 }
 function hash(s){s=String(s);let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0;}return h;}
 function coverArt(seed){
-  const h1=Math.abs(hash(seed))%360, h2=(h1+62)%360, h3=(h1+188)%360;
+  /* hues stay inside the warm quarter so every cover reads as the same light */
+  const h1=18+Math.abs(hash(seed))%46, h2=(h1+22)%360, h3=(h1+330)%360;
   return '<div class="cover-art" style="background:'
     +'radial-gradient(60% 80% at 18% 22%,hsla('+h1+',72%,62%,.55),transparent 62%),'
     +'radial-gradient(52% 70% at 82% 30%,hsla('+h2+',68%,58%,.45),transparent 64%),'
     +'radial-gradient(64% 90% at 60% 96%,hsla('+h3+',62%,50%,.42),transparent 66%),'
-    +'linear-gradient(150deg,#151C42,#0C1230)"></div>'
+    +'linear-gradient(150deg,#3A2A19,#1C130C)"></div>'
     +'<div class="cover-art aurora" style="inset:-30% -10% auto -10%;height:280px"></div>'
     +'<svg class="glasspane" viewBox="0 0 400 150" preserveAspectRatio="none" aria-hidden="true">'
     +'<g opacity=".3"><path d="M0 150 L60 40 L118 150Z" fill="hsla('+h1+',80%,70%,.5)"/>'
@@ -156,7 +157,7 @@ function hsl(h,s,l,a){return 'hsla('+((h%360)+360)%360+','+s+'%,'+l+'%,'+a+')';}
 const SCENES={
   /* arched windows with stained panes and light pooling on the floor */
   arches:function(H,id){
-    let s=sceneBase(id,'#0B1130','#070B1F');
+    let s=sceneBase(id,'#2A1D12','#150E08');
     const xs=[36,170,304];
     s+='<defs>'+xs.map(function(x,i){
       return '<clipPath id="'+id+'c'+i+'"><path d="M'+x+' 186V88a30 30 0 0 1 60 0v98Z"/></clipPath>';}).join('')+'</defs>';
@@ -178,7 +179,7 @@ const SCENES={
   },
   /* volumetric light through a high rose window */
   rays:function(H,id){
-    let s=sceneBase(id,'#0C1234','#06091C');
+    let s=sceneBase(id,'#2E1F12','#160E07');
     s+='<g opacity=".5">'+[0,1,2,3,4].map(function(i){
       return '<polygon points="300,10 320,4 '+(150-i*46)+',225 '+(96-i*46)+',225" fill="'+hsl(46,84,72,.09)+'"/>';}).join('')+'</g>';
     s+='<circle cx="308" cy="52" r="42" fill="'+hsl(H,70,54,.42)+'"/>';
@@ -192,7 +193,7 @@ const SCENES={
   },
   /* still water at first light — baptism in the backwaters */
   water:function(H,id){
-    let s=sceneBase(id,'#101a42','#0a1330');
+    let s=sceneBase(id,'#33230F','#1A1109');
     s+='<circle cx="296" cy="96" r="24" fill="'+hsl(38,88,70,.46)+'"/>';
     s+='<path d="M0 112c34-14 58 6 92-2s52-16 88-8 62 14 106 2 78-16 114-4V112Z" fill="'+hsl(205,46,24,.9)+'"/>';
     s+='<rect y="120" width="400" height="105" fill="'+hsl(212,52,17,.95)+'"/>';
@@ -205,7 +206,7 @@ const SCENES={
   },
   /* the road out to the village congregations */
   road:function(H,id){
-    let s=sceneBase(id,'#1a1636','#0b0f28');
+    let s=sceneBase(id,'#312012','#180F09');
     s+='<circle cx="118" cy="86" r="20" fill="'+hsl(30,84,66,.4)+'"/>';
     s+='<path d="M0 134c56-22 96 10 148-4s94-24 140-6 78 10 112-2v103H0Z" fill="'+hsl(232,40,19,.95)+'"/>';
     s+='<path d="M0 158c62-16 104 12 156 0s96-18 144-4 66 8 100-2v73H0Z" fill="'+hsl(240,44,13,.95)+'"/>';
@@ -217,7 +218,7 @@ const SCENES={
   },
   /* a city that never stops */
   city:function(H,id){
-    let s=sceneBase(id,'#0a1030','#060a1e');
+    let s=sceneBase(id,'#281B10','#130C07');
     s+='<circle cx="332" cy="44" r="15" fill="'+hsl(46,60,82,.5)+'"/>';
     let bars='',wins='';
     const hs=[64,96,48,120,80,140,58,104,74,132,52,88];
@@ -235,7 +236,7 @@ const SCENES={
   },
   /* a congregation that meets under tarpaulin */
   canopy:function(H,id){
-    let s=sceneBase(id,'#0d1436','#070c22');
+    let s=sceneBase(id,'#2C1E13','#150E08');
     s+=[[42,28],[120,16],[210,34],[292,20],[350,40],[78,52],[256,12],[330,58]].map(function(p){
       return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="1.4" fill="rgba(255,255,255,.5)"/>';}).join('');
     s+='<polygon points="20,150 118,86 216,150" fill="'+hsl(H,46,42,.85)+'"/>';
@@ -250,7 +251,7 @@ const SCENES={
   },
   /* stage light for a night of worship */
   stage:function(H,id){
-    let s=sceneBase(id,'#120c30','#06081c');
+    let s=sceneBase(id,'#2A1A14','#140B08');
     s+=[0,1,2,3,4].map(function(i){const x=60+i*70;
       return '<polygon points="'+x+',34 '+(x+12)+',34 '+(x+62)+',210 '+(x-50)+',210" fill="'+hsl(H+i*30,60,62,.14)+'"/>';}).join('');
     s+='<rect y="24" width="400" height="7" fill="rgba(255,255,255,.14)"/>';
@@ -263,7 +264,7 @@ const SCENES={
   },
   /* a lamp unto my feet */
   lamp:function(H,id){
-    let s=sceneBase(id,'#0a0e26','#05081a');
+    let s=sceneBase(id,'#241A10','#110B06');
     s+='<circle cx="200" cy="92" r="76" fill="'+hsl(44,86,70,.12)+'"/>';
     s+='<circle cx="200" cy="92" r="42" fill="'+hsl(44,88,72,.2)+'"/>';
     s+='<path d="M200 0v56" stroke="rgba(255,255,255,.3)" stroke-width="1.3"/>';
@@ -277,7 +278,7 @@ const SCENES={
   },
   /* garlands for a wedding, a baptism, an anniversary */
   festival:function(H,id){
-    let s=sceneBase(id,'#1a1038','#080b22');
+    let s=sceneBase(id,'#301D16','#170D09');
     s+=[26,68].map(function(y,r){
       return '<path d="M-10 '+y+'Q100 '+(y+44)+' 200 '+y+'T410 '+y+'" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1.3"/>';}).join('');
     s+=[0,1,2,3,4,5,6,7].map(function(i){
@@ -295,7 +296,7 @@ const SCENES={
   },
   /* hills at first light */
   hills:function(H,id){
-    let s=sceneBase(id,'#231a44','#0b1029');
+    let s=sceneBase(id,'#382413','#1A1009');
     s+='<circle cx="298" cy="78" r="26" fill="'+hsl(34,86,68,.5)+'"/>';
     s+=[0,1,2].map(function(i){
       return '<rect y="'+(56+i*16)+'" width="400" height="7" fill="'+hsl(34-i*6,80,64,(0.14-i*0.04).toFixed(2))+'"/>';}).join('');
@@ -308,7 +309,7 @@ const SCENES={
   },
   /* a long table and hanging bulbs */
   table:function(H,id){
-    let s=sceneBase(id,'#20142e','#0a0a1e');
+    let s=sceneBase(id,'#2D1C15','#140C08');
     s+='<rect x="30" y="40" width="76" height="66" rx="4" fill="'+hsl(215,46,32,.5)+'" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>';
     s+='<rect x="292" y="40" width="76" height="66" rx="4" fill="'+hsl(215,46,32,.5)+'" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>';
     s+=[128,200,272].map(function(x,i){
@@ -828,18 +829,21 @@ function urgentBroadcasts(){return state.data.posts.filter(function(p){return p.
 function myPlan(){const id=state.session&&state.session.planId;return state.data.plans.find(function(p){return p.id===id;})||state.data.plans[0]||null;}
 function planPct(){const p=myPlan();if(!p)return 0;return Math.min(100,Math.round(((state.local.planDay||0)/(p.days||30))*100));}
 /* ---------- shared chrome ---------- */
+/* The mark: the monogram B in the gold of the logo, a dove crossing its bowls, and the
+   cross of light breaking white through the middle. Drawn once and used from 22px up — the
+   dove and the flare drop away below 30px so the B alone carries the rail. */
+/* The mark itself — the monogram B with the dove through it and the cross of light. The
+   artwork is the logo file, not a redraw, so every place the app signs its name shows the
+   real thing. Small sizes take the lighter file. */
 function arkGlyph(size){
   const s=size||34;
-  return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 40 40" fill="none" aria-hidden="true">'
-    +'<defs><linearGradient id="ag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38BDF1"/><stop offset="1" stop-color="#00A3E1"/></linearGradient></defs>'
-    +'<circle cx="20" cy="20" r="18.4" stroke="rgba(0,163,225,.28)" stroke-width="1.2"/>'
-    +'<path d="M20 6v13" stroke="url(#ag)" stroke-width="1.6" stroke-linecap="round"/>'
-    +'<path d="M14.6 10.6h10.8" stroke="url(#ag)" stroke-width="1.6" stroke-linecap="round"/>'
-    +'<path d="M8.4 22h23.2l-3.4 8.2a3 3 0 0 1-2.8 1.8H14.6a3 3 0 0 1-2.8-1.8L8.4 22Z" stroke="url(#ag)" stroke-width="1.6" stroke-linejoin="round"/>'
-    +'<path d="M12.4 26h15.2" stroke="rgba(127,212,245,.6)" stroke-width="1.1" stroke-linecap="round"/></svg>';
+  const src=s<=64?'assets/brand/logo-160.png':'assets/brand/logo.png';
+  return '<img class="ark-mark" src="'+src+'" width="'+s+'" height="'+s+'" alt="believersArk"'
+    +' style="width:'+s+'px;height:'+s+'px" decoding="async">';
 }
 function wordmark(size){
-  return '<span style="font-family:var(--sans);font-weight:800;letter-spacing:-.02em;font-size:'+(size||18)+'px">believers<span class="accent" style="font-weight:800">Ark</span></span>';
+  const s=size||18;
+  return '<span class="wordmark" style="font-size:'+s+'px"><span class="wordmark-believers">believers</span><span class="wordmark-ark foil-text">Ark</span></span>';
 }
 /* Toasts and full-screen overlays live in their own layers, so showing one never re-draws the
    page underneath: typing, scroll position and playing audio or video are all left alone. */
@@ -936,7 +940,7 @@ function ring(pct,size,label,sub){
   return '<div class="ring-wrap" style="width:'+s+'px;height:'+s+'px">'
     +'<svg width="'+s+'" height="'+s+'"><circle cx="'+s/2+'" cy="'+s/2+'" r="'+r+'" stroke="var(--surface-3)" stroke-width="4" fill="none"/>'
     +'<circle cx="'+s/2+'" cy="'+s/2+'" r="'+r+'" stroke="var(--brand)" stroke-width="4" fill="none" stroke-linecap="round" '
-    +'stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" style="filter:drop-shadow(0 0 6px rgba(0,163,225,.6));transition:stroke-dashoffset .8s cubic-bezier(.2,.8,.3,1)"/></svg>'
+    +'stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" style="filter:drop-shadow(0 0 6px rgba(201,151,74,.6));transition:stroke-dashoffset .8s cubic-bezier(.2,.8,.3,1)"/></svg>'
     +'<div class="ring-val"><span style="font-size:'+(s>60?18:14)+'px;font-weight:800;letter-spacing:-.02em" class="num">'+label+'</span>'
     +(sub?'<span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)">'+sub+'</span>':'')+'</div></div>';
 }
@@ -944,28 +948,39 @@ function verifiedTag(){return '<span class="badge badge-accent">'+ico('shield',1
 
 /* ---------- splash + welcome ---------- */
 function viewSplash(){
-  return '<div class="splash"><div class="splash-glow"></div>'
-    +[0,1,2,3,4].map(function(i){return '<div class="ray" style="animation-delay:'+(i*.4)+'s;transform:rotate('+((i-2)*14)+'deg)"></div>';}).join('')
-    +'<div class="stack center gap-16" style="position:relative;z-index:2">'
-    +'<div class="fade-up">'+arkGlyph(78)+'</div>'
-    +'<div class="stack center gap-8 fade-up" style="animation-delay:.18s">'
-    +'<div style="font-size:34px">'+wordmark(34)+'</div>'
-    +'<p class="cap" style="letter-spacing:.16em;text-transform:uppercase;font-size:11px">One ark · Every church · Every believer</p></div></div></div>';
+  return '<div class="splash" role="status" aria-live="polite"><div class="splash-glow"></div>'
+    +'<div class="splash-cross" aria-hidden="true"></div>'
+    +'<div class="splash-stage" aria-hidden="true"><i class="splash-orbit orbit-a"></i><i class="splash-orbit orbit-b"></i><i class="splash-orbit orbit-c"></i>'
+    +'<span class="splash-node node-church">'+ico('church',15)+'<b>Every church</b></span>'
+    +'<span class="splash-node node-prayer">'+ico('sparkle',15)+'<b>Prayer</b></span>'
+    +'<span class="splash-node node-people">'+ico('community',15)+'<b>Together</b></span></div>'
+    +'<div class="splash-core"><div class="splash-mark">'+arkGlyph(104)+'</div>'
+    +'<div class="splash-copy">'+wordmark(40)
+    +'<p>One ark. Every church. Every believer.</p></div>'
+    +'<div class="splash-progress"><i></i></div><span class="splash-loading">Gathering the church into one place</span></div></div>';
 }
 function viewWelcome(){
-  return '<div style="min-height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden">'
+  return '<div class="welcome-shell">'
     +'<div class="aurora" style="height:60vh;opacity:.9"></div>'
-    +'<div class="view stack" style="position:relative;z-index:2;padding-top:min(11vh,88px);padding-bottom:40px;flex:1">'
-    +'<div class="stack gap-16 stagger">'
-    +'<div class="row gap-10">'+arkGlyph(40)+wordmark(21)+'</div>'
-    +'<h1 class="display">One ark.<br>Every church.<br><span class="accent">Every believer.</span></h1>'
-    +'<p class="body" style="max-width:34ch">The whole life of the church in one calm place — services, sermons, prayer and the people you walk with.</p>'
-    +'</div>'
-    +'<div class="stack gap-12 mt-32 stagger">'
-    +'<button class="glass press pad row between gap-16" data-go="auth" data-role="believer" style="text-align:left">'
+    +'<div class="view stack welcome-inner">'
+    +'<div class="welcome-hero">'
+    +'<div class="stack gap-16 stagger welcome-copy">'
+    +'<div class="welcome-lockup">'+arkGlyph(42)+wordmark(22)+'</div>'
+    +'<span class="welcome-kicker">Faith · fellowship · one home</span>'
+    +'<h1 class="display welcome-title">One ark.<br>Every church.<br><span class="foil-text welcome-serif">Every believer.</span></h1>'
+    +'<p class="body welcome-deck">The whole life of the church in one calm place — services, sermons, prayer and the people you walk with.</p></div>'
+    +'<div class="welcome-visual fade-up" aria-hidden="true">'
+    +'<i class="visual-ring ring-one"></i><i class="visual-ring ring-two"></i><i class="visual-ring ring-three"></i>'
+    +'<div class="visual-logo"><span class="visual-halo"></span>'+arkGlyph(176)+'</div>'
+    +'<div class="signal-card signal-live"><span class="signal-icon">'+ico('radio',18)+'</span><span><b>Worship is live</b><small>148 believers together</small></span><i class="dot-live"></i></div>'
+    +'<div class="signal-card signal-pray"><span class="signal-icon">'+ico('sparkle',18)+'</span><span><b>412 praying now</b><small>Across every church</small></span></div>'
+    +'<div class="signal-card signal-church"><span class="signal-faces"><i>G</i><i>N</i><i>B</i></span><span><b>One shared home</b><small>Churches, people, purpose</small></span></div>'
+    +'</div></div>'
+    +'<div class="stack gap-12 mt-32 stagger welcome-roles">'
+    +'<button class="glass press pad row between gap-16 welcome-role" data-go="auth" data-role="believer" style="text-align:left">'
     +'<span class="stack gap-4"><span class="h2">I\'m a believer</span><span class="cap">Follow churches, keep a journey, pray together</span></span>'
     +'<span class="icon-btn active">'+ico('chevR',20)+'</span></button>'
-    +'<button class="glass press pad row between gap-16" data-go="auth" data-role="church" style="text-align:left">'
+    +'<button class="glass press pad row between gap-16 welcome-role" data-go="auth" data-role="church" style="text-align:left">'
     +'<span class="stack gap-4"><span class="h2">I represent a church</span><span class="cap">Publish, broadcast, host events, connect with churches</span></span>'
     +'<span class="icon-btn">'+ico('chevR',20)+'</span></button>'
     +'</div>'
@@ -1018,7 +1033,7 @@ function viewAuth(){
     +'<input class="input" id="authId" type="text" inputmode="email" autocomplete="username" placeholder="you@example.com  ·  +91 98xxx xxxxx" value="'+esc(state.ui.authId)+'"></div>'
     +'<button class="btn btn-primary btn-block" data-act="send-otp">Send one-time code '+ico('chevR',18)+'</button>'
     +'</div>'
-    +(church?'<div class="glass pad stack gap-12 mt-14" style="border-color:rgba(0,163,225,.3)"><span class="eyebrow accent">Prototype shortcut</span>'
+    +(church?'<div class="glass pad stack gap-12 mt-14" style="border-color:rgba(201,151,74,.3)"><span class="eyebrow accent">Prototype shortcut</span>'
       +'<p class="cap">See the console with a full inbox, connections and history — sign in as a seeded church.</p>'
       +'<div class="stack gap-8">'+state.data.churches.filter(function(c){return /^ch\d$/.test(c.id);}).slice(0,3).map(function(c){
         return '<button class="row between gap-12" data-act="demo-church" data-id="'+c.id+'" style="text-align:left;padding:11px 13px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
@@ -1039,7 +1054,7 @@ function viewOtp(){
     +'<div class="glass pad stack gap-16 mt-24">'
     +'<input class="input otp-input" id="otpInput" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code">'
     +'<button class="btn btn-primary btn-block" data-act="verify-otp">Verify '+ico('check',18)+'</button>'
-    +'<div class="row center gap-8" style="padding:12px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(0,163,225,.26)">'
+    +'<div class="row center gap-8" style="padding:12px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(201,151,74,.26)">'
     +ico('sparkle',16,'accent')+'<span class="cap" style="color:var(--brand)">Prototype code: <b class="num" style="letter-spacing:.12em">'+state.ui.otp+'</b></span></div>'
     +'<button class="cap" data-act="send-otp" style="text-align:center">Didn\'t get it? Resend code</button>'
     +'</div>'
@@ -1366,7 +1381,7 @@ function postCard(p,opts){
       +'<span class="stack gap-2"><span class="h3" style="font-size:14px">'+esc(p.speaker||'Sunday message')+'</span><span class="cap">'+esc(p.duration||'38 min')+' · auto-transcribed</span></span></span>'
       +'<button class="chip" data-act="summarise" data-id="'+p.id+'">'+ico('sparkle',14)+'Summary</button></div>':'')
     +'<p class="body" style="color:var(--text-1)">'+esc(p.content||'').replace(/\n/g,'<br>')+'</p>'
-    +(p.verseRef?'<button class="glass pad-sm stack gap-6" data-act="open-verse" data-r="'+esc(p.verseRef)+'" style="text-align:left;background:var(--brand-dim);border-color:rgba(0,163,225,.24)">'
+    +(p.verseRef?'<button class="glass pad-sm stack gap-6" data-act="open-verse" data-r="'+esc(p.verseRef)+'" style="text-align:left;background:var(--brand-dim);border-color:rgba(201,151,74,.24)">'
       +'<span class="scripture" style="font-size:16px">“'+esc(findVerse(p.verseRef).t)+'”</span><span class="verse-ref">'+esc(p.verseRef)+'</span></button>':'')
     +(p.type==='event'&&p.eventId?'<button class="chip" data-go="event" data-id="'+esc(p.eventId)+'">'+ico('cal',14)+'View event details</button>':'')
     +(total||cmts.length?'<div class="row between gap-10 cap" style="padding-top:2px">'
@@ -1880,16 +1895,16 @@ function filterSheet(){
 }
 function mapPanel(list){
   return '<div class="glass" style="height:210px;overflow:hidden;position:relative;margin-bottom:14px">'
-    +'<div class="cover-art" style="background:radial-gradient(70% 90% at 30% 20%,rgba(127,212,245,.22),transparent 62%),linear-gradient(160deg,#111A3E,#0A0F2A)"></div>'
+    +'<div class="cover-art" style="background:radial-gradient(70% 90% at 30% 20%,rgba(232,200,142,.22),transparent 62%),linear-gradient(160deg,#111A3E,#0A0F2A)"></div>'
     +'<svg viewBox="0 0 400 210" style="position:absolute;inset:0;width:100%;height:100%" aria-hidden="true">'
-    +'<g stroke="rgba(127,212,245,.16)" stroke-width="1">'
+    +'<g stroke="rgba(232,200,142,.16)" stroke-width="1">'
     +[40,80,120,160].map(function(y){return '<path d="M0 '+y+'h400"/>';}).join('')
     +[70,150,230,310].map(function(x){return '<path d="M'+x+' 0v210"/>';}).join('')+'</g>'
-    +'<path d="M0 150 C80 120 120 60 200 52 S340 30 400 10" stroke="rgba(0,163,225,.28)" stroke-width="1.4" fill="none"/></svg>'
+    +'<path d="M0 150 C80 120 120 60 200 52 S340 30 400 10" stroke="rgba(201,151,74,.28)" stroke-width="1.4" fill="none"/></svg>'
     +list.slice(0,6).map(function(c,i){
       const x=14+((Math.abs(hash(c.id))%78)),y=16+((Math.abs(hash(c.name))%62));
       return '<button data-go="church-profile" data-id="'+c.id+'" style="position:absolute;left:'+x+'%;top:'+y+'%;transform:translate(-50%,-100%)" aria-label="'+esc(c.name)+'">'
-        +'<span style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;background:rgba(12,17,40,.85);border:1px solid rgba(0,163,225,.4);color:#38BDF1;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4)">'
+        +'<span style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;background:rgba(34,22,12,.85);border:1px solid rgba(201,151,74,.4);color:var(--gold-lift);font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4)">'
         +ico('pin',13)+esc(c.name.split(' ')[0])+'</span></button>';}).join('')
     +'<div style="position:absolute;left:14px;bottom:12px;color:#B4BDCA" class="cap">Prototype map · '+list.length+' church'+(list.length===1?'':'es')+' in view</div></div>';
 }
@@ -2001,10 +2016,10 @@ function viewChurchProfile(){
       +'';
   return '<div class="view-wide" style="padding-top:14px">'
     +'<button class="row gap-6 cap mt-8" data-go="'+(church?'console-c2c':'churches')+'" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+(church?'Churches':'Directory')+'</button>'
-    +'<div class="cover" style="height:190px">'+((c.banner||photoFor(c.id))?'<img src="'+esc(c.banner||photoFor(c.id))+'" alt="'+esc(c.name)+'" style="width:100%;height:100%;object-fit:cover;display:block">':coverArt(c.id))+'</div>'
-    +'<div class="view" style="padding:0;margin-top:-38px;position:relative;max-width:none">'
-    +'<div class="glass pad stack gap-16">'
-    +'<div class="row between gap-12" style="margin-top:-46px">'
+    +'<div class="cover church-profile-cover">'+((c.banner||photoFor(c.id))?'<img src="'+esc(c.banner||photoFor(c.id))+'" alt="'+esc(c.name)+'" style="width:100%;height:100%;object-fit:cover;display:block">':coverArt(c.id))+'</div>'
+    +'<div class="view church-profile-wrap">'
+    +'<div class="glass church-profile-panel pad stack gap-16">'
+    +'<div class="row between gap-12 church-profile-avatar-row">'
     +''+churchLogo(c,84,'border:3px solid var(--bg-1)')+''
     +(live?'<button class="badge badge-live" data-go="event" data-id="'+live.id+'" style="height:30px;padding:0 12px"><i class="dot-live"></i>Live now</button>':'')+'</div>'
     +'<div class="stack gap-8"><div class="row gap-8 wrap"><h1 class="h1">'+esc(c.name)+'</h1>'+(c.verified!==false?verifiedTag():'<span class="badge badge-ice">Pending</span>')+'</div>'
@@ -2053,7 +2068,7 @@ function viewEvent(){
     +'<button class="row gap-6 cap mt-8" data-go="'+(state.params.from||'home')+'" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+'Back</button>'
     +'<div class="cover" style="height:'+(e.isLive?'220px':'160px')+'">'+(hasMedia(e)?mediaInner(e):coverArt(e.id))
     +(e.isLive?'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">'
-      +'<button class="icon-btn active" data-act="join-live" data-id="'+e.id+'" style="width:66px;height:66px;background:rgba(12,17,40,.7);box-shadow:0 0 30px rgba(0,163,225,.35)">'+ico('play',26)+'</button>'
+      +'<button class="icon-btn active" data-act="join-live" data-id="'+e.id+'" style="width:66px;height:66px;background:rgba(34,22,12,.7);box-shadow:0 0 30px rgba(201,151,74,.35)">'+ico('play',26)+'</button>'
       +'<span class="badge badge-live"><i class="dot-live"></i>Live now · <span class="num">'+(e.rsvpCount||0)+'</span> here</span></div>':'')
     +'</div>'
     +'<div class="glass pad stack gap-16 mt-16">'
@@ -2318,12 +2333,12 @@ function viewNotifications(){
     +'<div class="view stack gap-10">'
     +(items.length?items.map(function(n){
       const unread=!state.local.notifSeen||dt(n.t)>dt(state.local.notifSeen);
-      return '<button class="glass press pad-sm row gap-12 between" data-go="'+n.go+'" data-id="'+esc(n.id)+'" style="text-align:left'+(unread?';border-color:rgba(0,163,225,.28)':'')+'">'
+      return '<button class="glass press pad-sm row gap-12 between" data-go="'+n.go+'" data-id="'+esc(n.id)+'" style="text-align:left'+(unread?';border-color:rgba(201,151,74,.28)':'')+'">'
         +'<span class="row gap-12" style="min-width:0"><span class="icon-btn" style="flex:none;color:'+tones[n.tone]+'">'+ico(n.icon,17)+'</span>'
         +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+n.title+'</span>'
         +'<span class="cap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+n.sub+'</span>'
         +'<span class="cap" style="font-size:11px">'+ago(n.t)+'</span></span></span>'
-        +(unread?'<span style="width:8px;height:8px;border-radius:50%;background:var(--brand);flex:none;box-shadow:0 0 10px rgba(0,163,225,.6)"></span>':ico('chevR',16))
+        +(unread?'<span style="width:8px;height:8px;border-radius:50%;background:var(--brand);flex:none;box-shadow:0 0 10px rgba(201,151,74,.6)"></span>':ico('chevR',16))
         +'</button>';}).join('')
       :empty('bell','Nothing new','Follow churches and believers and their news lands here.','<button class="btn btn-sm btn-primary" data-go="churches">Find people to follow</button>'))
     +'<div style="height:30px"></div></div>';
@@ -2444,7 +2459,7 @@ function journeyPlan(){
     +'<button class="icon-btn" data-act="note-verse" aria-label="Add note">'+ico('edit',17)+'</button></div></div>'
     +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Switch plan</span>'
     +state.data.plans.map(function(x){const on=x.id===p.id;
-      return '<button class="row between gap-12" data-act="set-plan" data-id="'+x.id+'" style="padding:13px 14px;border-radius:var(--r-md);background:'+(on?'var(--brand-dim)':'var(--surface)')+';border:1px solid '+(on?'rgba(0,163,225,.35)':'var(--border)')+';text-align:left">'
+      return '<button class="row between gap-12" data-act="set-plan" data-id="'+x.id+'" style="padding:13px 14px;border-radius:var(--r-md);background:'+(on?'var(--brand-dim)':'var(--surface)')+';border:1px solid '+(on?'rgba(201,151,74,.35)':'var(--border)')+';text-align:left">'
         +'<span class="stack gap-2"><span class="h3">'+esc(x.title)+'</span><span class="cap">'+x.days+' days · '+esc(x.category||'Scripture')+'</span></span>'
         +(on?'<span class="accent">'+ico('check',18)+'</span>':ico('chevR',16))+'</button>';}).join('')+'</div>'
     +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Reminders</span>'
@@ -2694,7 +2709,7 @@ function viewLive(){
     +'<div style="position:absolute;top:14px;left:14px;right:14px" class="row between gap-10">'
     +'<span class="badge badge-live"><i class="dot-live"></i>Live · <span class="num">'+(e.rsvpCount||0)+'</span> watching</span>'
     +'<span class="badge badge-accent">'+ico('globe',12)+esc(state.prefs.lang)+' captions</span></div>'
-    +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span class="icon-btn active" style="width:70px;height:70px;background:rgba(12,17,40,.6);box-shadow:0 0 34px rgba(0,163,225,.4)">'+ico('play',28)+'</span></div>'
+    +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span class="icon-btn active" style="width:70px;height:70px;background:rgba(34,22,12,.6);box-shadow:0 0 34px rgba(201,151,74,.4)">'+ico('play',28)+'</span></div>'
     +'<div style="position:absolute;left:16px;right:90px;bottom:16px" class="stack gap-4"><span class="h2" style="font-size:20px;color:#F2F4FF">'+esc(e.title)+'</span><span class="cap" style="color:#B6BEE0">'+esc(e.churchName||'')+' · '+esc(e.location||'Online')+'</span></div>'
     +'<div class="live-float" aria-hidden="true"></div></div>'
     +'<div class="row gap-8 mt-12 wrap">'+REACTIONS.map(function(r){return '<button class="react" data-act="live-react" data-e="'+r.e+'" aria-label="'+r.l+'"><span class="em">'+r.e+'</span>'+r.l+'</button>';}).join('')+'</div>'
@@ -2731,7 +2746,7 @@ function stainedGlass(h){
     +'<path d="M250 230 L330 70 L400 230Z" fill="hsla('+h3+',70%,66%,.26)"/>'
     +'<path d="M0 130 L60 0 L130 130Z" fill="hsla('+h2+',70%,72%,.12)"/>'
     +'<path d="M300 0 L400 0 L400 120Z" fill="hsla('+h+',70%,66%,.14)"/>'
-    +'<circle cx="200" cy="78" r="36" fill="rgba(0,163,225,.16)"/><circle cx="200" cy="78" r="18" fill="rgba(245,208,131,.22)"/></g></svg>';
+    +'<circle cx="200" cy="78" r="36" fill="rgba(201,151,74,.16)"/><circle cx="200" cy="78" r="18" fill="rgba(255,246,226,.22)"/></g></svg>';
 }
 function viewSoon(){
   const key=state.params.v,m=SOON[key]||{i:'sparkle',eye:'Coming soon',lead:'This module is specified and designed, and lands in the next build phase.',pts:[],hue:260};
@@ -2739,7 +2754,7 @@ function viewSoon(){
   return '<div class="view" style="padding-top:14px">'
     +'<button class="row gap-6 cap mt-8" data-go="'+esc(back)+'" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+'Back</button>'
     +'<div class="soon-hero">'+stainedGlass(m.hue)
-    +'<div class="stack gap-8" style="position:relative;z-index:2"><span class="row gap-8"><span class="badge badge-lav">Next phase</span><span class="eyebrow" style="color:#38BDF1">'+esc(m.eye)+'</span></span>'
+    +'<div class="stack gap-8" style="position:relative;z-index:2"><span class="row gap-8"><span class="badge badge-lav">Next phase</span><span class="eyebrow" style="color:var(--brand)">'+esc(m.eye)+'</span></span>'
     +'<h1 class="display" style="font-size:34px;color:#F2F4FF">'+esc(key||'Coming soon')+'</h1></div></div>'
     +'<div class="glass pad stack gap-16 mt-16"><p class="body" style="font-size:16.5px;color:var(--text-1)">'+esc(m.lead)+'</p>'
     +(m.pts.length?'<div class="stack gap-10">'+m.pts.map(function(p){return '<div class="row gap-12" style="align-items:flex-start"><span class="accent" style="flex:none;margin-top:3px">'+ico('check',16)+'</span><span class="body">'+esc(p)+'</span></div>';}).join('')+'</div>':'')
@@ -2852,12 +2867,12 @@ function viewSettings(){
     +'<div class="view stack gap-14">'
     +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Appearance</span>'
     +'<div class="row gap-10">'
-    +'<button class="glass press pad-sm stack gap-8 grow" data-act="theme" data-v="dark" style="'+(dark?'border-color:rgba(0,163,225,.45)':'')+'">'
+    +'<button class="glass press pad-sm stack gap-8 grow" data-act="theme" data-v="dark" style="'+(dark?'border-color:rgba(201,151,74,.45)':'')+'">'
     +'<span class="row between">'+ico('moon',18,dark?'accent':'')+(dark?'<span class="accent">'+ico('check',16)+'</span>':'')+'</span>'
-    +'<span class="h3">Charcoal</span><span class="cap">Dark ground, same blue</span></button>'
-    +'<button class="glass press pad-sm stack gap-8 grow" data-act="theme" data-v="light" style="'+(!dark?'border-color:rgba(0,163,225,.45)':'')+'">'
+    +'<span class="h3">Espresso</span><span class="cap">Deep brown, softly lit gold</span></button>'
+    +'<button class="glass press pad-sm stack gap-8 grow" data-act="theme" data-v="light" style="'+(!dark?'border-color:rgba(201,151,74,.45)':'')+'">'
     +'<span class="row between">'+ico('sun',18,!dark?'accent':'')+(!dark?'<span class="accent">'+ico('check',16)+'</span>':'')+'</span>'
-    +'<span class="h3">Daylight</span><span class="cap">White ground, charcoal ink</span></button></div></div>'
+    +'<span class="h3">Ivory</span><span class="cap">Warm light, bronze accents</span></button></div></div>'
     +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Notifications</span>'
     +prefRow('Church-to-church messages','broadcast','New messages and connection requests')
     +'<hr class="divider">'+prefRow('Quiet hours','quiet','Nothing between 10pm and 6am')+'</div>'
@@ -2882,12 +2897,12 @@ function viewSettings(){
     +'<div class="view stack gap-14">'
     +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Appearance</span>'
     +'<div class="row gap-10">'
-    +'<button class="glass press pad-sm stack gap-8 grow" data-act="theme" data-v="dark" style="'+(dark?'border-color:rgba(0,163,225,.45)':'')+'">'
+    +'<button class="glass press pad-sm stack gap-8 grow" data-act="theme" data-v="dark" style="'+(dark?'border-color:rgba(201,151,74,.45)':'')+'">'
     +'<span class="row between">'+ico('moon',18,dark?'accent':'')+(dark?'<span class="accent">'+ico('check',16)+'</span>':'')+'</span>'
-    +'<span class="h3">Charcoal</span><span class="cap">Dark ground, same blue</span></button>'
-    +'<button class="glass press pad-sm stack gap-8 grow" data-act="theme" data-v="light" style="'+(!dark?'border-color:rgba(0,163,225,.45)':'')+'">'
+    +'<span class="h3">Espresso</span><span class="cap">Deep brown, softly lit gold</span></button>'
+    +'<button class="glass press pad-sm stack gap-8 grow" data-act="theme" data-v="light" style="'+(!dark?'border-color:rgba(201,151,74,.45)':'')+'">'
     +'<span class="row between">'+ico('sun',18,!dark?'accent':'')+(!dark?'<span class="accent">'+ico('check',16)+'</span>':'')+'</span>'
-    +'<span class="h3">Daylight</span><span class="cap">White ground, charcoal ink</span></button></div></div>'
+    +'<span class="h3">Ivory</span><span class="cap">Warm light, bronze accents</span></button></div></div>'
     +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Language</span>'
     +'<select class="select" id="setLang" data-act="lang">'+LANGS.map(function(l){return '<option'+(state.prefs.lang===l?' selected':'')+'>'+l+'</option>';}).join('')+'</select>'
     +'<p class="cap">Sermons and broadcasts are auto-translated into your language where a transcript exists.</p></div>'
@@ -3226,7 +3241,7 @@ function viewConsoleCompose(){
   const types=[['post','Post','edit'],['story','Story','sparkle'],['sermon','Sermon','mic'],['event','Event','cal'],['broadcast','Broadcast','radio'],['occasion','Occasion','star'],['poll','Poll','list']];
   let form='';
   if(t==='story'){
-    form='<div class="row gap-10 cap" style="padding:12px 14px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(0,163,225,.26);color:var(--brand)">'
+    form='<div class="row gap-10 cap" style="padding:12px 14px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(201,151,74,.26);color:var(--brand)">'
       +ico('clock',15)+'Stories sit at the top of every follower\'s home for 24 hours, then fade.</div>'
       +'<div class="field"><label class="label" for="fBody">What is happening right now?</label><textarea class="textarea" id="fBody" placeholder="Choir warm-up done. Doors open at 6:30…" style="min-height:110px">'+esc(draftVal('fBody'))+'</textarea></div>'
       +'<div class="field"><label class="label" for="fVerse">Attach a verse (optional)</label><select class="select" id="fVerse"><option value="">No verse</option>'
@@ -3247,7 +3262,7 @@ function viewConsoleCompose(){
       +'<div class="field"><label class="label">Audience</label><div class="row gap-8 wrap">'
       +['Everyone','Youth','Worship team','Small groups','Members only'].map(function(a){return '<button class="chip'+((state.ui.bAudience||'Everyone')===a?' on':'')+'" data-act="b-audience" data-v="'+esc(a)+'">'+esc(a)+'</button>';}).join('')+'</div></div>'
       +'<div class="field"><label class="label" for="fBody">Announcement</label><textarea class="textarea" id="fBody" placeholder="Read-only announcement to your people…">'+esc(draftVal('fBody'))+'</textarea></div>'
-      +'<div class="row gap-10 cap" style="padding:12px 14px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(0,163,225,.26);color:var(--brand)">'
+      +'<div class="row gap-10 cap" style="padding:12px 14px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(201,151,74,.26);color:var(--brand)">'
       +ico('clock',15)+'Quiet hours respected — urgent bypasses them.</div>';
   }else if(t==='sermon'){
     form='<div class="field"><label class="label" for="fTitle">Sermon title</label><input class="input" id="fTitle" placeholder="The God who stays" value="'+esc(draftVal('fTitle'))+'"></div>'
@@ -3331,12 +3346,12 @@ function viewConsoleC2C(){
     body=(threads.length?'<div class="stack gap-10 stagger">'+threads.map(function(t){
       const other=(t.churchIds||[]).filter(function(x){return x!==me;})[0],c=churchById(other),m=lastMsg(t);
       const unread=m.from&&m.from!==me&&(!seen[t.id]||dt(m.at)>dt(seen[t.id]));
-      return '<button class="glass press pad-sm row between gap-12" data-go="console-thread" data-id="'+t.id+'" style="text-align:left'+(unread?';border-color:rgba(0,163,225,.32)':'')+'">'
+      return '<button class="glass press pad-sm row between gap-12" data-go="console-thread" data-id="'+t.id+'" style="text-align:left'+(unread?';border-color:rgba(201,151,74,.32)':'')+'">'
         +'<span class="row gap-12" style="min-width:0">'+churchLogo({id:other,name:(c&&c.name)||(t.names||{})[other]||'?'},44)+''
         +'<span class="stack gap-2" style="min-width:0"><span class="row gap-6"><span class="h3" style="font-size:15px">'+esc((c&&c.name)||(t.names||{})[other]||'Church')+'</span>'+ico('shield',13,'accent')+'</span>'
         +'<span class="cap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'+(unread?'color:var(--text-1);font-weight:600':'')+'">'+(m.from===me?'You: ':'')+esc(m.text)+'</span>'
         +'<span class="cap" style="font-size:11px">'+esc(t.topic||'')+(t.topic?' · ':'')+ago(m.at)+'</span></span></span>'
-        +(unread?'<span style="width:9px;height:9px;border-radius:50%;background:var(--brand);flex:none;box-shadow:0 0 10px rgba(0,163,225,.6)"></span>':ico('chevR',16))+'</button>';}).join('')+'</div>'
+        +(unread?'<span style="width:9px;height:9px;border-radius:50%;background:var(--brand);flex:none;box-shadow:0 0 10px rgba(201,151,74,.6)"></span>':ico('chevR',16))+'</button>';}).join('')+'</div>'
       :empty('msg','No conversations yet','Connect with a church, then open a conversation from its profile or the Connections tab.','<button class="btn btn-sm btn-primary" data-act="c2c-tab" data-v="Discover">Find churches</button>'));
   }else if(tab==='Connections'){
     body=(incoming.length?'<div class="glass pad stack gap-12"><span class="eyebrow accent">Requests · '+incoming.length+'</span>'
@@ -3367,7 +3382,7 @@ function viewConsoleC2C(){
       const n=t==='Inbox'?unreadThreads(me):t==='Connections'?incoming.length:0;
       return '<button class="tab'+(tab===t?' on':'')+'" data-act="c2c-tab" data-v="'+t+'">'+t+(n?' <span class="num" style="color:var(--brand)">'+n+'</span>':'')+'</button>';}).join('')+'</div>'})
     +'<div class="view stack">'
-    +'<div class="row gap-10 cap" style="padding:12px 14px;border-radius:var(--r-md);background:rgba(127,212,245,.08);border:1px solid rgba(127,212,245,.24);margin-bottom:14px">'
+    +'<div class="row gap-10 cap" style="padding:12px 14px;border-radius:var(--r-md);background:rgba(232,200,142,.08);border:1px solid rgba(232,200,142,.24);margin-bottom:14px">'
     +ico('shield',15,'ice')+'<span>Messages here travel only between verified churches. Believers never see them.</span></div>'
     +body+'<div style="height:30px"></div></div>';
 }
@@ -3630,7 +3645,7 @@ function renderSheet(){
       +(mine&&c.connectionsPrivate?'<p class="cap mt-12">'+ico('eye',13)+' Only you can see this list.</p>':'');
   }else if(s.kind==='gpt-hide'){
     inner='<div class="stack center gap-14" style="text-align:center">'
-      +'<div class="icon-btn" style="width:56px;height:56px;color:var(--brand);border-color:rgba(0,163,225,.35);background:var(--brand-dim)">'+bibleGptMark(26)+'</div>'
+      +'<div class="icon-btn" style="width:56px;height:56px;color:var(--brand);border-color:rgba(201,151,74,.35);background:var(--brand-dim)">'+bibleGptMark(26)+'</div>'
       +'<h2 class="h1">Hide BibleGPT?</h2>'
       +'<p class="body">The button leaves your screen and the shortcut leaves the menu. Nothing else changes, and you can bring it back whenever you like.</p></div>'
       +'<div class="stack gap-10 mt-20">'
