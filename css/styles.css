@@ -340,10 +340,21 @@ button.cap.on{color:var(--brand);font-weight:700}
 .nav-brand{display:none;align-items:center;gap:10px;padding:4px 12px 22px}
 
 @media(max-width:520px){
-  .topbar-inner>.row{display:grid;grid-template-columns:minmax(0,1fr);align-items:start}
-  .topbar-inner>.row>.row{justify-content:flex-start;margin-top:10px}
+  .topbar{overflow:visible;z-index:40}
+  .topbar-inner>.row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start}
   .topbar .h1{font-size:30px}
 }
+.mobile-head-menu{display:none;position:relative;z-index:45}
+.mobile-menu-trigger{position:relative;list-style:none}
+.mobile-menu-trigger::-webkit-details-marker{display:none}
+.mobile-head-panel{position:absolute;right:0;top:calc(100% + 9px);width:224px;padding:7px;border-radius:18px;background:var(--bg-0);border:1px solid var(--border-2);box-shadow:0 20px 48px rgba(61,39,18,.2);animation:menuDrop .18s cubic-bezier(.2,.8,.3,1);overflow:hidden}
+.mobile-menu-item{display:flex;align-items:center;gap:11px;width:100%;min-height:46px;padding:0 12px;border-radius:12px;text-align:left;color:var(--text-2);font-size:14px;font-weight:700}
+.mobile-menu-item:hover,.mobile-menu-item:focus-visible{background:var(--brand-dim);color:var(--text-1)}
+.mobile-menu-item svg{flex:none;color:var(--brand)}
+.mobile-menu-item span{flex:1}.mobile-menu-count{min-width:22px;height:22px;padding:0 6px;border-radius:11px;display:grid;place-items:center;background:var(--brand-dim);color:var(--brand);font-size:11px}
+@keyframes menuDrop{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+@media(max-width:520px){.desktop-head-actions{display:none}.mobile-head-menu{display:block}}
+[data-app-theme="dark"] .mobile-head-panel{box-shadow:0 20px 50px rgba(0,0,0,.46)}
 
 /* ---------- cards & feed ---------- */
 .cover{position:relative;overflow:hidden;border-radius:var(--r-lg);height:150px;border:1px solid var(--border)}
@@ -812,6 +823,12 @@ i.m{background:var(--mint)}
 
 /* churches: hover banner */
 .church-card{padding:0;overflow:hidden}
+.church-follow-btn{position:relative;z-index:4;min-width:96px;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+@media(max-width:560px){
+  .church-card .church-follow-btn{height:44px;min-width:112px;padding:0 18px}
+  .church-card .pad>.row:last-child{align-items:flex-start;flex-wrap:wrap}
+  .church-card .pad>.row:last-child>.cap{flex:1;min-width:160px;padding-top:11px}
+}
 .cc-banner{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.2,.8,.3,1)}
 .cc-banner-in{position:relative;min-height:0;overflow:hidden}
 .cc-img{position:relative;height:168px;overflow:hidden}

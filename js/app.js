@@ -42,6 +42,7 @@ const ICONS={
   radio:'<circle cx="12" cy="12" r="2.4"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 16.2a6 6 0 0 0 0-8.4M4.8 4.8a10 10 0 0 0 0 14.4M19.2 19.2a10 10 0 0 0 0-14.4"/>',
   grid:'<rect x="4" y="4" width="7" height="7" rx="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.6"/><rect x="13" y="13" width="7" height="7" rx="1.6"/>',
   list:'<path d="M8.4 6.4h11.2M8.4 12h11.2M8.4 17.6h11.2M4.4 6.4h.02M4.4 12h.02M4.4 17.6h.02"/>',
+  menu:'<path d="M4.2 6.5h15.6M4.2 12h15.6M4.2 17.5h15.6"/>',
   trend:'<path d="m3.8 15.6 5-5 3.4 3.4 6.4-6.8"/><path d="M14.8 7.2h4.2v4.2"/>',
   file:'<path d="M13.4 3.8H6.6v16.4h10.8V7.8l-4-4Z"/><path d="M13.4 3.8v4h4M9.2 12.6h5.6M9.2 15.8h5.6"/>',
   hands:'<path d="M9.6 12.4V6.2a1.6 1.6 0 0 1 3.2 0v5.4"/><path d="M12.8 11.6V7.6a1.6 1.6 0 0 1 3.2 0v6.8c0 3.2-2 5.6-5.2 5.6s-5.2-2.2-5.2-5.4V9.4a1.5 1.5 0 0 1 3 0v3"/>',
@@ -1555,6 +1556,18 @@ function calendarButton(){
   return '<button class="icon-btn cal-btn'+(open?' on':'')+'" data-act="cal-toggle" aria-label="My calendar" aria-haspopup="dialog" aria-expanded="'+open+'" style="position:relative">'+ico('cal',18)
     +(soon?'<span class="pill-count num" title="Events you are going to this week">'+soon+'</span>':'')+'</button>';
 }
+function mobileHeaderMenu(unread){
+  const soon=calendarEvents().filter(function(x){const d=dt(x.e.datetime);return x.going&&d>=new Date(Date.now()-3*3600e3)&&d<new Date(Date.now()+7*864e5);}).length;
+  return '<details class="mobile-head-menu">'
+    +'<summary class="icon-btn mobile-menu-trigger" aria-label="Open quick menu">'+ico('menu',20)
+    +(unread?'<span class="pill-count num">'+(unread>9?'9+':unread)+'</span>':'')+'</summary>'
+    +'<div class="mobile-head-panel">'
+    +'<button class="mobile-menu-item cal-btn" data-act="cal-toggle">'+ico('cal',18)+'<span>Calendar</span>'+(soon?'<b class="mobile-menu-count num">'+soon+'</b>':'')+'</button>'
+    +'<button class="mobile-menu-item" data-go="notifications">'+ico('bell',18)+'<span>Notifications</span>'+(unread?'<b class="mobile-menu-count num">'+(unread>9?'9+':unread)+'</b>':'')+'</button>'
+    +'<button class="mobile-menu-item" data-go="churches">'+ico('search',18)+'<span>Search churches</span></button>'
+    +'<button class="mobile-menu-item" data-go="settings">'+ico('settings',18)+'<span>Settings</span></button>'
+    +'</div></details>';
+}
 /* drawn in its own layer so the header's clipping never cuts it off */
 function syncCalPop(){
   const root=layer('pop-root');
@@ -1659,11 +1672,11 @@ function viewHome(){
   }
   return '<div class="home-grid"><div class="home-main">'
     +topbar(greeting()+', <span class="accent">'+esc(String(name).split(' ')[0])+'</span>',todayLabel(),{
-    actions:'<div class="row gap-8">'+calendarButton()
+    actions:'<div class="row gap-8 desktop-head-actions">'+calendarButton()
       +'<button class="icon-btn" data-go="notifications" aria-label="Notifications" style="position:relative">'+ico('bell',18)
       +(unread?'<span class="pill-count num">'+(unread>9?'9+':unread)+'</span>':'')+'</button>'
       +'<button class="icon-btn" data-go="churches" aria-label="Search churches">'+ico('search',18)+'</button>'
-      +'<button class="icon-btn mobile-only" data-go="settings" aria-label="Settings and privacy">'+ico('settings',18)+'</button></div>',
+      +'</div>'+mobileHeaderMenu(unread),
     extra:'<div class="mt-16">'+momentsStrip()+'</div>'})
     +'<div class="view stack">'
     +verseCard()
@@ -1939,7 +1952,7 @@ function churchCard(c,isLive){
     +'<p class="body" style="font-size:14.5px">'+esc(c.tagline||'')+'</p>'
     +'<div class="row between gap-12">'
     +'<span class="cap row gap-6">'+ico('clock',14)+esc(next)+'</span>'
-    +'<button class="btn btn-xs '+(following?'btn-ghost':'btn-outline')+'" data-act="follow" data-id="'+c.id+'">'+(following?ico('check',14)+'Following':ico('plus',14)+'Follow')+'</button>'
+    +'<button class="btn btn-xs church-follow-btn '+(following?'btn-ghost':'btn-outline')+'" data-act="follow" data-id="'+c.id+'">'+(following?ico('check',14)+'Following':ico('plus',14)+'Follow')+'</button>'
     +'</div></div></article>';
 }
 /* the same card seen through a church account: connect / message instead of follow */
@@ -2034,7 +2047,7 @@ function viewChurchProfile(){
       ?'<div class="row gap-10 wrap">'+(mine?'<button class="btn btn-sm btn-primary grow" data-go="console">'+ico('grid',16)+'Open console</button>':c2cButtons(c,'btn-sm grow'))
         +'<button class="icon-btn" data-act="share-church" data-id="'+c.id+'" aria-label="Share">'+ico('share',17)+'</button></div>'
       :'<div class="row gap-10 wrap">'
-        +'<button class="btn btn-sm '+(following?'btn-ghost':'btn-primary')+' grow" data-act="follow" data-id="'+c.id+'">'+(following?ico('check',16)+'Following':ico('plus',16)+'Follow')+'</button>'
+        +'<button class="btn btn-sm church-follow-btn '+(following?'btn-ghost':'btn-primary')+' grow" data-act="follow" data-id="'+c.id+'">'+(following?ico('check',16)+'Following':ico('plus',16)+'Follow')+'</button>'
         +(homeChurchLocked()
           ?(home?'<span class="btn btn-sm btn-ghost" style="pointer-events:none;opacity:.75">'+ico('lock',15)+'Home church</span>':'')
           :'<button class="btn btn-sm btn-ghost" data-act="home-church" data-id="'+c.id+'">'+ico(home?'check':'star',16)+(home?'Home church':'Set as home')+'</button>')
@@ -4601,6 +4614,8 @@ function sendChat(text){
 
 /* ---------- events ---------- */
 document.addEventListener('click',function(e){
+  const quick=document.querySelector('.mobile-head-menu[open]');
+  if(quick&&!e.target.closest('.mobile-head-menu'))quick.removeAttribute('open');
   const sg=e.target.closest('[data-sg]');
   if(sg){e.preventDefault();pickSuggest(Number(sg.dataset.sg));return;}
   if(!e.target.closest('#dirSearch'))hideSuggest();
@@ -4612,6 +4627,7 @@ document.addEventListener('click',function(e){
   const actEl=e.target.closest('[data-act]');
   if(actEl&&actEl.dataset.act==='close-sheet'&&sheetStop)return;
   if(actEl&&ACTIONS[actEl.dataset.act]){
+    if(actEl.dataset.act==='follow'){e.preventDefault();e.stopPropagation();}
     if(actEl.dataset.act!=='delete-account')state.ui.confirmDelete=false;
     ACTIONS[actEl.dataset.act](actEl);
     return;
