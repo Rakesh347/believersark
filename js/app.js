@@ -476,6 +476,8 @@ function hydrate(o){
   if('denomination' in o)delete o.denomination;
   if(INVITE_CODES[o.id]&&!o.inviteCode)o.inviteCode=INVITE_CODES[o.id];
   if(o.serviceTimes&&!o.handle&&o.name)o.handle=suggestHandle(o.name);
+  if(Array.isArray(o.messages))o.messages=o.messages.map(function(m,i){
+    return m&&m.id?m:Object.assign({},m,{id:(o.id||'t')+'_m'+i});});
   if(o.id==='rp3'){o.days=50;o.title='The Gospels in 50 Days';o.description='Matthew, Mark, Luke and John end to end, at an unhurried pace. A good first plan if you are new, or returning after a long time away.';}
   const now=Date.now();
   if(o.ageHours!=null&&o.ageHours!=='')o.createdAt=new Date(now-Number(o.ageHours)*3600e3).toISOString();
@@ -487,17 +489,52 @@ function hydrate(o){
   return o;
 }
 /* A post shows a real uploaded photograph when it has one, otherwise its scene illustration. */
-function hasMedia(p){return !!(p.photo||p.scene);}
-function mediaInner(p){
-  return p.photo
-    ?'<img src="'+esc(p.photo)+'" alt="'+esc(p.photoAlt||('Photo from '+(p.churchName||p.authorName||'a church')))+'" loading="lazy">'
-    :sceneArt(p.scene,p.id);
+/* A post's pictures, however many were attached. The older single-photo field still counts. */
+function photosOf(p){
+  if(p.photos&&p.photos.length)return p.photos.slice(0,5);
+  return p.photo?[p.photo]:[];
+}
+function hasMedia(p){return !!(photosOf(p).length||p.video||p.audio||p.scene);}
+function mediaInner(p,i){
+  const ph=photosOf(p);
+  if(ph.length)return '<img src="'+esc(ph[Math.min(i||0,ph.length-1)])+'" alt="'+esc(p.photoAlt||('Photo from '+(p.churchName||p.authorName||'a church')))+'" loading="lazy">';
+  return sceneArt(p.scene,p.id);
+}
+/* Video sits in a frame of its own rather than being cropped to the card: the whole picture
+   is visible, letterboxed the way Instagram shows a portrait clip. */
+function videoBlock(p){
+  const v=p.video;
+  return '<div class="post-video'+(v.portrait?' portrait':'')+'">'
+    +'<video src="'+esc(v.src)+'" controls playsinline preload="metadata"'+(v.poster?' poster="'+esc(v.poster)+'"':'')+'></video>'
+    +(v.session?'<span class="badge media-tag">'+ico('clock',11)+'This session</span>':'')+'</div>';
+}
+function audioBlock(p){
+  return '<div class="post-audio"><span class="art-audio-ico">'+ico('music',20)+'</span>'
+    +'<span class="stack gap-4" style="min-width:0"><span class="h3" style="font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p.audio.name||'Audio')+'</span>'
+    +'<audio src="'+esc(p.audio.src)+'" controls preload="metadata" style="width:100%"></audio></span></div>';
+}
+/* Up to five pictures, laid as bricks with the first one given the room. */
+function photoBricks(p,ph){
+  const n=Math.min(ph.length,5);
+  const cell=function(i,cls){
+    return '<button class="brick-cell '+(cls||'')+'" data-act="open-image" data-id="'+esc(p.id)+'" data-i="'+i+'" aria-label="Open picture '+(i+1)+' of '+n+'">'
+      +'<img src="'+esc(ph[i])+'" alt="" loading="lazy">'
+      +(i===n-1&&ph.length>5?'<span class="brick-more">+'+(ph.length-5)+'</span>':'')+'</button>';
+  };
+  if(n===1)return '<div class="brick brick-1">'+cell(0)+'</div>';
+  if(n===2)return '<div class="brick brick-2">'+cell(0)+cell(1)+'</div>';
+  let rest='';
+  for(let i=1;i<n;i++)rest+=cell(i);
+  return '<div class="brick brick-lead" style="--rest:'+(n-1)+'">'+cell(0,'lead')+'<div class="brick-rest">'+rest+'</div></div>';
 }
 function postMedia(p){
   if(!hasMedia(p))return '';
-  return '<button class="post-media" data-act="open-image" data-id="'+esc(p.id)+'" aria-label="Open picture">'
-    +mediaInner(p)
-    +(p.photo?'':'<span class="badge media-tag">'+ico('sparkle',11)+'Artwork</span>')+'</button>';
+  if(p.video)return videoBlock(p);
+  if(p.audio)return audioBlock(p);
+  const ph=photosOf(p);
+  if(ph.length)return photoBricks(p,ph);
+  return '<button class="post-media" data-act="open-image" data-id="'+esc(p.id)+'" data-i="0" aria-label="Open picture">'
+    +mediaInner(p)+'<span class="badge media-tag">'+ico('sparkle',11)+'Artwork</span></button>';
 }
 
 /* ---------- db layer ---------- */
@@ -554,18 +591,25 @@ function storyReactKey(){
   const s=state.session;
   return s?(s.key||s.id):('guest:'+(lsGet('guestId',null)||(function(){const g=uid('g_');lsSet('guestId',g);return g;})()));
 }
-function recordStoryReaction(post,k){
-  if(!post||post.type!=='story')return;
+/* One row per person per thing reacted to — a post, a story, or a comment. Changing your
+   reaction rewrites your row; taking it back removes it. */
+function recordReaction(kind,item,k,extra){
+  if(!item)return;
   const who=storyReactKey(), s=state.session;
   const rows=state.data.storyReacts;
-  const i=rows.findIndex(function(r){return r.postId===post.id&&r.userKey===who;});
+  const i=rows.findIndex(function(r){return r.postId===item.id&&r.userKey===who;});
   if(!k){ if(i>-1)rows.splice(i,1); }
   else{
-    const row={id:i>-1?rows[i].id:uid('sr_'),postId:post.id,churchId:post.churchId||null,userKey:who,
-      userName:(s&&s.name)||'A guest',userHandle:(s&&s.handle)||'',reaction:k,at:new Date().toISOString()};
+    const row=Object.assign({id:i>-1?rows[i].id:uid('sr_'),kind:kind,postId:item.id,
+      churchId:item.churchId||null,userKey:who,
+      userName:(s&&s.name)||'A guest',userHandle:(s&&s.handle)||'',reaction:k,at:new Date().toISOString()},extra||{});
     if(i>-1)rows[i]=row; else rows.push(row);
   }
   lsSet('storyReacts',state.data.storyReacts);
+}
+function recordStoryReaction(post,k){
+  if(!post)return;
+  recordReaction(post.type==='story'?'story':'post',post,k);
 }
 function bumpCount(col,id,field,delta){
   if(DB&&!LOCAL_ONLY[col]){
@@ -643,7 +687,12 @@ function applyProfile(key,p){
 /* ---------- selectors ---------- */
 function churchById(id){return state.data.churches.find(function(c){return c.id===id;})||null;}
 function personById(id){return state.data.people.find(function(p){return p.id===id;})||null;}
-function myChurchIds(){return state.local.follows||[];}
+function myChurchIds(){
+  const f=(state.local.follows||[]).slice();
+  const own=believerMode()&&state.session.churchId;
+  if(own&&f.indexOf(own)<0)f.unshift(own);
+  return f;
+}
 function communityById(id){return state.data.communities.find(function(c){return c.id===id;})||null;}
 /* community membership: a request per (community, person); the latest one decides */
 function myKey(){return state.session&&(state.session.key||state.session.id)||null;}
@@ -659,7 +708,16 @@ function pendingCommunityRequests(churchId){return state.data.cmRequests.filter(
 function communityMemberCount(c){return (c.members||0)+state.data.cmRequests.filter(function(r){return r.communityId===c.id&&r.status==='approved'&&!/^cr\d+$/.test(r.id);}).length;}
 function isMemberOf(churchId){const s=state.session;return !!(s&&(s.memberOf||[]).indexOf(churchId)>-1);}
 function isMe(id){return !!(state.session&&(state.session.id===id||state.session.key===id));}
-function isChurchSession(){return !!(state.session&&state.session.role==='church');}
+/* The account is a church; whether the church side is showing is a separate question. */
+function isChurchAdmin(){return !!(state.session&&state.session.role==='church');}
+function believerMode(){return isChurchAdmin()&&state.session.mode==='believer';}
+function isChurchSession(){return isChurchAdmin()&&!believerMode();}
+/* A pastor walking the app follows their own church and cannot un-choose it as home. */
+function homeChurchLocked(){return believerMode();}
+function myHomeChurchId(){
+  const s=state.session;if(!s)return null;
+  return believerMode()?s.churchId:(s.homeChurchId||null);
+}
 function authorOf(p){
   if(p.authorType==='person'){
     const per=personById(p.authorId);
@@ -817,7 +875,7 @@ const NAV_CHURCH=[{k:'console',i:'grid',l:'Console'},{k:'console-compose',i:'edi
 /* BibleGPT is a believer's tool, and one they can put away. Both entrances — the phone
    launcher and the desktop rail — answer to this. */
 function gptEnabled(){return state.prefs.gpt!==false&&!isChurchSession();}
-function navItems(){return (state.session&&state.session.role==='church')?NAV_CHURCH:NAV_BELIEVER;}
+function navItems(){return isChurchSession()?NAV_CHURCH:NAV_BELIEVER;}
 function navRoot(r){
   if(r==='live'||r==='soon'||r==='event'||r==='post')return state.params.from&&state.params.from!==r?navRoot(state.params.from):(isChurchSession()?'console':'home');
   if(r.indexOf('church-profile')===0||r==='person-profile')return isChurchSession()?'console-c2c':'churches';
@@ -830,6 +888,15 @@ function navRoot(r){
   if(r==='family')return 'me';
   if(r==='plan'||r==='prayer-new')return 'journey';
   return r;
+}
+function adminBar(){
+  if(!believerMode())return '';
+  const c=myChurch();
+  return '<button class="admin-bar" data-act="mode-admin">'
+    +'<span class="row gap-10" style="min-width:0">'+(c?churchLogo(c,26):ico('grid',18))
+    +'<span class="stack gap-2" style="min-width:0;text-align:left"><span class="ab-t">Browsing as a believer</span>'
+    +'<span class="ab-s">'+esc((c&&c.name)||'Your church')+' · tap for the console</span></span></span>'
+    +'<span class="ab-go">'+ico('grid',15)+'Admin</span></button>';
 }
 function renderNav(){
   const items=navItems(),root=navRoot(state.route);
@@ -1029,6 +1096,16 @@ function freeHandle(name,taken){
   for(let i=2;i<200;i++){const t=(base+'.'+i).slice(0,24);if(!taken[norm(t)])return t;}
   return (base+'.'+Math.floor(Math.random()*9999)).slice(0,24);
 }
+/* Anything typed in the composer survives a re-render — attaching a picture, switching the
+   attachment kind, dropping one — so a half-written post is never lost to a tap. */
+const COMPOSE_FIELDS=['fBody','fTitle','fSpeaker','fVerse','fDate','fTime','fLoc','fCap','fOpt'];
+function captureCompose(){
+  const d=state.ui.composeDraft=state.ui.composeDraft||{};
+  COMPOSE_FIELDS.forEach(function(id){const el=document.getElementById(id);if(el)d[id]=el.value;});
+  const live=document.getElementById('fLive');if(live)d.fLive=live.checked;
+}
+function draftVal(id){const d=state.ui.composeDraft||{};return d[id]==null?'':d[id];}
+function clearCompose(){state.ui.composeDraft={};}
 /* Anything typed on an onboarding step survives re-renders (chip taps, photo upload, terms). */
 function captureOnboard(){
   const o=state.ui.onboard,g=function(id){const el=document.getElementById(id);return el?el.value:undefined;};
@@ -1393,7 +1470,7 @@ function readingDays(){
 }
 function railReading(){
   const s=state.session;
-  if(!s||s.role==='church')return '';
+  if(!s||isChurchSession())return '';
   const p=myPlan()&&s.planId?myPlan():null;
   if(!p)return '<section class="rail-card rail-read" aria-label="Today\'s reading">'
     +'<div class="rail-head"><span class="row gap-8">'+ico('book',16,'accent')+'<span class="h3" style="font-size:15px">Today\'s reading</span></span></div>'
@@ -1881,7 +1958,7 @@ function viewChurchProfile(){
   const c=churchById(state.params.id);
   if(!c)return '<div class="view screen-pad">'+empty('church','Church not found','This profile may still be syncing.','<button class="btn btn-sm btn-ghost" data-go="churches">Back to directory</button>')+'</div>';
   const following=myChurchIds().indexOf(c.id)>-1;
-  const home=state.session&&state.session.homeChurchId===c.id;
+  const home=myHomeChurchId()===c.id;
   const church=isChurchSession(),mine=church&&state.session.churchId===c.id;
   const tab=state.ui.churchTab;
   const posts=churchPosts().filter(function(p){return p.churchId===c.id;}).sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);});
@@ -1924,7 +2001,7 @@ function viewChurchProfile(){
       +'';
   return '<div class="view-wide" style="padding-top:14px">'
     +'<button class="row gap-6 cap mt-8" data-go="'+(church?'console-c2c':'churches')+'" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+(church?'Churches':'Directory')+'</button>'
-    +'<div class="cover" style="height:190px">'+(photoFor(c.id)?'<img src="'+esc(photoFor(c.id))+'" alt="'+esc(c.name)+'" style="width:100%;height:100%;object-fit:cover;display:block">':coverArt(c.id))+'</div>'
+    +'<div class="cover" style="height:190px">'+((c.banner||photoFor(c.id))?'<img src="'+esc(c.banner||photoFor(c.id))+'" alt="'+esc(c.name)+'" style="width:100%;height:100%;object-fit:cover;display:block">':coverArt(c.id))+'</div>'
     +'<div class="view" style="padding:0;margin-top:-38px;position:relative;max-width:none">'
     +'<div class="glass pad stack gap-16">'
     +'<div class="row between gap-12" style="margin-top:-46px">'
@@ -1943,7 +2020,9 @@ function viewChurchProfile(){
         +'<button class="icon-btn" data-act="share-church" data-id="'+c.id+'" aria-label="Share">'+ico('share',17)+'</button></div>'
       :'<div class="row gap-10 wrap">'
         +'<button class="btn btn-sm '+(following?'btn-ghost':'btn-primary')+' grow" data-act="follow" data-id="'+c.id+'">'+(following?ico('check',16)+'Following':ico('plus',16)+'Follow')+'</button>'
-        +'<button class="btn btn-sm btn-ghost" data-act="home-church" data-id="'+c.id+'">'+ico(home?'check':'star',16)+(home?'Home church':'Set as home')+'</button>'
+        +(homeChurchLocked()
+          ?(home?'<span class="btn btn-sm btn-ghost" style="pointer-events:none;opacity:.75">'+ico('lock',15)+'Home church</span>':'')
+          :'<button class="btn btn-sm btn-ghost" data-act="home-church" data-id="'+c.id+'">'+ico(home?'check':'star',16)+(home?'Home church':'Set as home')+'</button>')
         +'<button class="icon-btn" data-act="share-church" data-id="'+c.id+'" aria-label="Share">'+ico('share',17)+'</button></div>')
     +'</div>'
     +'<div class="tabs mt-16">'+(['Posts','Events','Sermons'].concat(following||church?['Communities']:[]).concat(['About'])).map(function(t){
@@ -2688,21 +2767,8 @@ function viewMe(){
     +'<div class="view stack"><div class="glass pad stack gap-14"><span class="eyebrow accent">You\'re browsing as a guest</span>'
     +'<h3 class="h2">Create your account</h3><p class="body">Join your church with its invite code, keep a journey, pray together and take part in your church\'s communities.</p>'
     +'<button class="btn btn-primary btn-block" data-go="welcome">Get started</button></div></div>';
-  if(s.role==='church')return topbar(esc(s.name||'You'),'Church account',{})
-    +'<div class="view stack">'
-    +'<div class="glass pad row gap-16"><div class="row gap-14" style="min-width:0">'+avatarHTML(s,'avatar-lg')
-    +'<div class="stack gap-4" style="min-width:0"><span class="h2">'+esc(s.name)+'</span><span class="cap">'+esc(s.email||'')+'</span>'
-    +'<span class="row gap-6 wrap mt-4"><span class="badge '+(s.verified?'badge-accent':'badge-ice')+'">'+(s.verified?ico('shield',12)+'Verified church':'Pending')+'</span></span></div></div></div>'
-    +'<div class="glass pad stack gap-12 mt-14"><span class="eyebrow accent">Church tools</span>'
-    +'<button class="btn btn-primary btn-block" data-go="console">'+ico('grid',17)+'Open church console</button>'
-    +(s.churchId?'<button class="btn btn-ghost btn-block" data-go="church-profile" data-id="'+esc(s.churchId)+'">'+ico('eye',17)+'View public profile</button>':'')
-    +'<button class="btn btn-ghost btn-block" data-go="console-communities">'+ico('users',17)+'Communities &amp; join requests</button>'
-    +'<button class="btn btn-ghost btn-block" data-go="console-c2c">'+ico('msg',17)+'Church-to-church inbox</button></div>'
-    +'<div class="stack gap-10 mt-24"><button class="glass press pad-sm row between gap-12" data-act="signout" style="text-align:left"><span class="row gap-12">'
-    +'<span class="icon-btn" style="flex:none">'+ico('logout',18)+'</span><span class="h3">Sign out</span></span>'+ico('chevR',16)+'</button></div>'
-    +'<div style="height:30px"></div></div>';
-
-  const follows=myChurchIds(),home=s.homeChurchId?churchById(s.homeChurchId):null;
+  const admin=isChurchAdmin();
+  const follows=myChurchIds(),home=myHomeChurchId()?churchById(myHomeChurchId()):null;
   const posts=communityThreads().filter(function(x){return isMe(x.authorId);});
   const joined=myCommunityIds().map(communityById).filter(Boolean);
   const tab=state.ui.personTab||'Posts';
@@ -2729,12 +2795,20 @@ function viewMe(){
     +(s.handle?'<span class="cap" style="font-size:14px">@'+esc(s.handle)+'</span>':'')
     +'<p class="body mt-4">'+esc(s.bio||'A believer on the journey.')+'</p>'
     +'<div class="row gap-14 wrap cap mt-4"><span class="row gap-6">'+ico('pin',14)+esc([s.city,s.country].filter(Boolean).join(', '))+'</span>'
-    +(home?'<button class="row gap-6 ice" data-go="church-profile" data-id="'+home.id+'">'+ico('church',14)+esc(home.name)+'</button>':'')+'</div></div>'
+    +(home?'<button class="row gap-6 ice" data-go="church-profile" data-id="'+home.id+'">'+ico('church',14)+esc(home.name)+(homeChurchLocked()?' '+ico('lock',12):'')+'</button>':'')+'</div></div>'
     +'<div class="me-stats">'
     +'<span><b class="num">'+follows.length+'</b>Churches</span><span><b class="num">'+joined.length+'</b>Communities</span>'
     +'<span><b class="num">'+(state.local.rsvps||[]).length+'</b>Events</span></div>'
     +'<div class="row gap-10 wrap"><button class="btn btn-sm btn-ghost grow" data-act="edit-profile">'+ico('edit',16)+'Edit profile</button>'
-    +'<button class="btn btn-sm btn-primary grow" data-act="join-church">'+ico('plus',16)+'Join another church</button></div>'
+    +(admin?'':'<button class="btn btn-sm btn-primary grow" data-act="join-church">'+ico('plus',16)+'Join another church</button>')+'</div>'
+    /* the two sides of a church account, from the one place a person looks for themselves */
+    +(admin?'<div class="mode-card">'
+        +'<span class="stack gap-3" style="min-width:0"><span class="h3" style="font-size:15px">'+(believerMode()?'You are browsing as a believer':'You are in church admin mode')+'</span>'
+        +'<span class="cap">'+(believerMode()?'Your home church is '+esc((myChurch()||{}).name||'your church')+' and cannot be changed here.':'Switch over to see the ark the way your people do.')+'</span></span>'
+        +(believerMode()
+          ?'<button class="btn btn-sm btn-primary" data-act="mode-admin" style="flex:none">'+ico('grid',15)+'Church admin</button>'
+          :'<button class="btn btn-sm btn-ghost" data-act="mode-believer" style="flex:none">'+ico('me',15)+'Use as a believer</button>')
+      +'</div>':'')
     +'<div class="private-box"><span class="row gap-6 eyebrow">'+ico('lock',12)+'Only you and your church admins see this</span>'
     +'<div class="row gap-14 wrap cap"><span class="row gap-6">'+ico('mail',14)+esc(s.email||'—')+(s.provider&&SOCIAL[s.provider]?' · via '+SOCIAL[s.provider].label:'')+'</span>'
     +'<span class="row gap-6">'+ico('phone',14)+esc(s.phone||'Add a number in Edit profile')+'</span></div></div>'
@@ -2752,6 +2826,13 @@ function viewMe(){
       :empty('church','No churches yet','Join your church with its invite code.','<button class="btn btn-sm btn-primary" data-act="join-church">Enter an invite code</button>'))
     +(joined.length?'<div class="sec-title"><span class="eyebrow accent">My communities</span><button class="cap" data-go="community">See all</button></div>'
       +'<div class="row gap-8 wrap">'+joined.map(function(c){return '<button class="chip" data-go="community-page" data-id="'+c.id+'">'+ico(c.icon||'users',13)+esc(c.name)+'</button>';}).join('')+'</div>':'')
+    +(admin&&!believerMode()?'<div class="sec-title"><span class="eyebrow accent">Church tools</span></div>'
+      +'<div class="stack gap-10">'
+      +meRow('grid','Church console','Publish, followers, connections, reactions','console')
+      +meRow('edit','Edit church profile','Banner, mark, service times and more','console-profile')
+      +(s.churchId?meRow('eye','Public profile','What believers see','church-profile',s.churchId):'')
+      +meRow('msg','Church-to-church inbox','Messages between verified churches','console-c2c')
+      +'</div>':'')
     +'<div class="stack gap-10 mt-24">'
     +meRow('star','Saved posts',(state.local.saved||[]).length+' saved','saved')
     +meRow('users','Family','Child and youth profiles','family')
@@ -2759,8 +2840,8 @@ function viewMe(){
     +'<span class="icon-btn" style="flex:none">'+ico('logout',18)+'</span><span class="h3">Sign out</span></span>'+ico('chevR',16)+'</button>'
     +'</div><div style="height:30px"></div></div>';
 }
-function meRow(icon,title,sub,route){
-  return '<button class="glass press pad-sm row between gap-12" data-go="'+route+'" style="text-align:left">'
+function meRow(icon,title,sub,route,id){
+  return '<button class="glass press pad-sm row between gap-12" data-go="'+route+'"'+(id?' data-id="'+esc(id)+'"':'')+' style="text-align:left">'
     +'<span class="row gap-12" style="min-width:0"><span class="icon-btn" style="flex:none">'+ico(icon,18)+'</span>'
     +'<span class="stack gap-2" style="min-width:0"><span class="h3">'+esc(title)+'</span><span class="cap">'+esc(sub)+'</span></span></span>'
     +ico('chevR',16)+'</button>';
@@ -2856,8 +2937,7 @@ function viewConsole(){
   return topbar(esc((c&&c.name)||(state.session&&state.session.church&&state.session.church.name)||'Your church'),'Church console',{
     actions:'<div class="row gap-8">'+(state.session&&state.session.verified?verifiedTag():'')+'</div>',
     extra:'<div class="row gap-10 mt-16 wrap">'
-      +'<button class="btn btn-sm btn-primary" data-go="console-compose">'+ico('edit',16)+'Publish</button>'
-      +'<button class="btn btn-sm btn-ghost" data-act="compose" data-v="broadcast">'+ico('radio',16)+'Broadcast</button>'
+      +'<button class="btn btn-sm btn-ghost" data-go="console-profile">'+ico('edit',16)+'Edit profile</button>'
       +(c?'<button class="btn btn-sm btn-ghost" data-go="church-profile" data-id="'+c.id+'">'+ico('eye',16)+'Public view</button>':'')+'</div>'})
     +'<div class="view-wide stack">'
     +(c&&c.inviteCode?'<div class="invite-card"><div class="stack gap-4" style="min-width:0"><span class="eyebrow accent">Member invite code</span>'
@@ -2865,18 +2945,21 @@ function viewConsole(){
       +'<span class="row gap-8" style="flex:none"><button class="btn btn-sm btn-ghost" data-act="copy-invite" data-v="'+esc(c.inviteCode)+'">'+ico('file',15)+'Copy</button>'
       +'<button class="btn btn-sm btn-primary" data-act="share-invite" data-v="'+esc(c.inviteCode)+'">'+ico('share',15)+'Share</button></span></div>':'')
     +'<div class="row gap-12 wrap">'
-    +[['Followers',Number((c&&c.followers)||0).toLocaleString('en-IN'),'accent'],['Reach this week',Number(reach).toLocaleString('en-IN'),'ice'],['Upcoming events',evs.filter(function(e){return dt(e.datetime)>=new Date();}).length,'mint'],['Communities',myComms.length,'accent']]
-      .map(function(s){return '<div class="stat" style="flex:1;min-width:150px"><div class="v '+s[2]+' num">'+s[1]+'</div><div class="cap mt-4">'+s[0]+'</div></div>';}).join('')+'</div>'
+    +[['Followers',Number((c&&c.followers)||0).toLocaleString('en-IN'),'accent','console-followers'],
+      ['Connections',myConnections(cid).length,'ice','console-connections'],
+      ['Reach this week',Number(reach).toLocaleString('en-IN'),'mint',''],
+      ['Upcoming events',evs.filter(function(e){return dt(e.datetime)>=new Date();}).length,'accent','']]
+      .map(function(s){
+        const inner='<div class="v '+s[2]+' num">'+s[1]+'</div><div class="cap mt-4">'+s[0]+(s[3]?' '+ico('chevR',12):'')+'</div>';
+        return s[3]?'<button class="stat stat-link" data-go="'+s[3]+'" style="flex:1;min-width:150px;text-align:left">'+inner+'</button>'
+                   :'<div class="stat" style="flex:1;min-width:150px">'+inner+'</div>';}).join('')+'</div>'
     +'<div class="sec-title"><span class="eyebrow accent">Needs you</span></div>'
     +'<div class="stack gap-10">'
-    +consoleRow('hands','Pastoral care queue','2 visitation asks · questions from BibleGPT','console-care','badge-rose',3)
-    +consoleRow('msg','Church-to-church',(function(){const id=state.session&&state.session.churchId;const u=id?unreadThreads(id):0,p=id?pendingFor(id).length:0;
-        return (u?u+' unread message'+(u>1?'s':''):'Inbox is clear')+' · '+(p?p+' connection request'+(p>1?'s':''):'no new requests');})(),'console-c2c','badge-ice',
-        (state.session&&state.session.churchId)?unreadThreads(state.session.churchId)+pendingFor(state.session.churchId).length:0)
     +consoleRow('users','Community requests',cmPend?cmPend+' believer'+(cmPend>1?'s':'')+' asking to join your communities':'No one waiting · create and manage communities','console-communities','badge-accent',cmPend)
     +consoleRow('users','Membership requests','4 members waiting for approval','console-members','badge-accent',4)
-    +consoleRow('sparkle','Story reactions',(function(){const n=myStories().reduce(function(a,p){return a+storyReactsFor(p.id).length;},0);
-        return n?n+' reaction'+(n>1?'s':'')+' · see who reacted to what':'See who reacts to your stories';})(),'console-stories','badge-accent',0)
+    +consoleRow('sparkle','Reactions',(function(){const cid=state.session&&state.session.churchId;
+        const n=state.data.storyReacts.filter(function(r){return r.churchId===cid;}).length;
+        return n?n+' reaction'+(n>1?'s':'')+' · see who responded to what':'See who reacts to your posts, stories and comments';})(),'console-stories','badge-accent',0)
     +'</div>'
     +'<div class="sec-title"><span class="eyebrow accent">Recent posts</span><button class="cap" data-go="console-compose">New post</button></div>'
     +(posts.length?'<div class="stack gap-12">'+posts.slice(0,4).map(function(p){
@@ -2893,11 +2976,161 @@ function viewConsole(){
     +consoleRow('cal','Volunteer rosters','Sunday teams, QR attendance check-in','console-members','',0)
     +'</div><div style="height:30px"></div></div>';
 }
+/* Who follows this church. The believers are the ones this church actually reaches, so the
+   number on the dashboard opens the names behind it. */
+function followersOf(cid){
+  const out=[];
+  /* believers seeded with this church as home, plus anyone signed in on this device who
+     follows it — the prototype has no server-side follower table. */
+  state.data.people.forEach(function(p){
+    if(p.homeChurchId===cid)out.push({key:p.id,name:p.name,city:p.city||'',bio:p.bio||'',member:true});
+  });
+  const s=state.session;
+  if(s&&s.role!=='church'&&(state.local.follows||[]).indexOf(cid)>-1&&!out.some(function(x){return x.key===(s.key||s.id);}))
+    out.push({key:s.key||s.id,name:s.name,city:s.city||'',bio:s.bio||'',member:isMemberOf(cid)});
+  return out;
+}
+function viewConsoleFollowers(){
+  const cid=state.session&&state.session.churchId, c=myChurch()||{};
+  const list=followersOf(cid);
+  const total=Number(c.followers||0);
+  return topbar('Followers',total.toLocaleString('en-IN')+' believer'+(total===1?'':'s')+' follow '+esc(c.name||'your church'),{back:'console'})
+    +'<div class="view stack gap-14">'
+    +(list.length?'<div class="glass pad stack gap-12"><span class="eyebrow accent">On this device · '+list.length+'</span>'
+      +list.map(function(u){
+        return '<div class="row between gap-12"><span class="row gap-10" style="min-width:0">'
+          +'<span class="avatar avatar-sm" style="background:'+grad(u.key)+'">'+initials(u.name)+'</span>'
+          +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(u.name)+'</span>'
+          +'<span class="cap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(u.city||'')+(u.bio?' · '+esc(u.bio):'')+'</span></span></span>'
+          +(u.member?'<span class="badge badge-mint" style="flex:none">'+ico('check',11)+'Member</span>':'<span class="badge badge-ice" style="flex:none">Following</span>')+'</div>';}).join('')
+      +'</div>':empty('me','No named followers yet','Share your invite code and believers will appear here as they join.'))
+    +'<p class="cap">'+ico('lock',13)+' The full count includes believers on other devices. This prototype lists the ones it can see.</p>'
+    +'<div style="height:30px"></div></div>';
+}
+function viewConsoleConnections(){
+  const cid=state.session&&state.session.churchId, c=myChurch()||{};
+  const list=myConnections(cid).map(churchById).filter(Boolean);
+  const pend=pendingFor(cid);
+  return topbar('Connections',list.length+' verified church'+(list.length===1?'':'es'),{back:'console'})
+    +'<div class="view stack gap-14">'
+    +(pend.length?'<div class="glass pad stack gap-12"><span class="eyebrow accent">Waiting on you · '+pend.length+'</span>'
+      +pend.map(function(x){const o=churchById(x.from)||{name:'A church'};
+        return '<div class="row between gap-12"><button class="row gap-10" data-go="church-profile" data-id="'+esc(x.from)+'" style="text-align:left;min-width:0">'
+          +churchLogo(o,34)+'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(o.name)+'</span>'
+          +'<span class="cap">'+esc(o.city||'')+' · '+ago(x.createdAt)+'</span></span></button>'
+          +'<span class="row gap-6" style="flex:none"><button class="btn btn-xs btn-primary" data-act="c2c-accept" data-id="'+esc(x.id)+'">Accept</button>'
+          +'<button class="icon-btn" data-act="c2c-decline" data-id="'+esc(x.id)+'" aria-label="Decline" style="width:32px;height:32px">'+ico('x',14)+'</button></span></div>';}).join('')
+      +'</div>':'')
+    +(list.length?'<div class="glass pad stack gap-12"><span class="eyebrow accent">Connected · '+list.length+'</span>'
+      +list.map(function(x){
+        return '<div class="row between gap-12"><button class="row gap-10" data-go="church-profile" data-id="'+esc(x.id)+'" style="text-align:left;min-width:0">'
+          +churchLogo(x,34)+'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(x.name)+'</span>'
+          +'<span class="cap">'+esc(x.city||'')+'</span></span></button>'
+          +'<button class="chip" data-act="c2c-message" data-id="'+esc(x.id)+'" style="flex:none">'+ico('msg',14)+'Message</button></div>';}).join('')
+      +'</div>':empty('church','No connections yet','Find churches in the directory and send a connection request.',
+        '<button class="btn btn-sm btn-primary" data-go="console-c2c">Find churches</button>'))
+    +(c.connectionsPrivate?'<p class="cap">'+ico('lock',13)+' Your connections are private — believers see the number only.</p>':'')
+    +'<div style="height:30px"></div></div>';
+}
+/* A church edits everything a believer sees of it — its mark, its banner and every line on
+   its profile — without leaving the console. */
+function viewConsoleProfile(){
+  const c=myChurch();
+  if(!c)return topbar('Church profile','Verification first',{back:'console'})
+    +'<div class="view">'+empty('shield','Not verified yet','Your profile opens for editing once the church is verified.',
+      '<button class="btn btn-sm btn-ghost" data-go="pending">See status</button>')+'</div>';
+  const e=state.ui.chpErrors||{};
+  const field=function(id,label,value,ph,err,hint){
+    return '<div class="field'+(err?' has-error':'')+'"><label class="label" for="'+id+'">'+label+'</label>'
+      +'<input class="input" id="'+id+'" placeholder="'+esc(ph||'')+'" value="'+esc(value||'')+'">'
+      +(err?'<span class="field-error" role="alert">'+ico('x',12)+esc(err)+'</span>':hint?'<span class="field-hint">'+esc(hint)+'</span>':'')+'</div>';
+  };
+  return topbar('Church profile','What believers see',{back:'console',
+      actions:'<button class="btn btn-sm btn-ghost" data-go="church-profile" data-id="'+esc(c.id)+'">'+ico('eye',15)+'Preview</button>'})
+    +'<div class="view stack gap-14">'
+    /* banner + mark, edited where they appear */
+    +'<div class="glass pad stack gap-14"><span class="eyebrow accent">Banner &amp; mark</span>'
+    +'<div class="cover chp-cover" style="height:150px">'
+      +(c.banner?'<img src="'+esc(c.banner)+'" alt="" style="width:100%;height:100%;object-fit:cover;display:block">'
+        :photoFor(c.id)?'<img src="'+esc(photoFor(c.id))+'" alt="" style="width:100%;height:100%;object-fit:cover;display:block">':coverArt(c.id))
+      +'<button class="chp-cover-edit" data-act="pick-banner">'+ico('upload',15)+'Change banner</button></div>'
+    +'<div class="row between gap-12" style="margin-top:-34px;position:relative;align-items:flex-end">'
+      +'<button class="me-avatar" data-act="pick-logo" aria-label="Change the church mark">'
+      +churchLogo(c,72,'border:3px solid var(--bg-0)')+'<span class="ob-avatar-edit">'+ico('edit',13)+'</span></button>'
+      +'<span class="row gap-8" style="flex:none">'
+      +(c.logo?'<button class="chip" data-act="clear-logo">'+ico('x',13)+'Use the emblem</button>':'')
+      +(c.banner?'<button class="chip" data-act="clear-banner">'+ico('x',13)+'Clear banner</button>':'')+'</span></div>'
+    +'<p class="cap">Square images read best as a mark. With none, your church keeps its emblem.</p></div>'
+    /* the written profile */
+    +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Identity</span>'
+    +field('chpName','Church name',c.name,'Grace Cathedral',e.name)
+    +'<div class="field'+(e.handle?' has-error':'')+'"><label class="label" for="chpHandle">Username</label>'
+      +'<div class="input-group"><span class="ig-pre">@</span><input class="input" id="chpHandle" autocapitalize="none" spellcheck="false" maxlength="24" value="'+esc(c.handle||'')+'"></div>'
+      +(e.handle?'<span class="field-error" role="alert">'+ico('x',12)+esc(e.handle)+'</span>':'<span class="field-hint">No two churches share one.</span>')+'</div>'
+    +field('chpTagline','Tagline',c.tagline,'A family finding grace in the heart of the city')
+    +'<div class="field"><label class="label" for="chpAbout">About</label>'
+      +'<textarea class="textarea" id="chpAbout" placeholder="Your story, in a paragraph or two…" style="min-height:120px">'+esc(c.about||'')+'</textarea></div></div>'
+    +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Where &amp; when</span>'
+    +field('chpCity','City',c.city,'Chennai',e.city)
+    +field('chpAddress','Address',c.address,'12 Anna Salai, Teynampet')
+    +field('chpPastor','Pastor / leader',c.pastorName,'Rev. Daniel Selvam')
+    +field('chpTimes','Service times',(c.serviceTimes||[]).join(' · '),'Sun 7:00am Tamil · Sun 9:30am English',null,'Separate each with ·')
+    +field('chpLangs','Languages',(c.languages||[]).join(', '),'Tamil, English',null,'Separate with commas')
+    +field('chpMinistries','Ministries',(c.ministries||[]).join(', '),'Choir, Youth, Outreach',null,'Separate with commas')+'</div>'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Privacy</span>'
+    +'<button class="row between gap-12" data-act="ch-connections-private" style="text-align:left;width:100%">'
+      +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:15px">Hide who we are connected with</span>'
+      +'<span class="cap">The number stays public, the churches do not</span></span>'
+      +'<span class="switch'+(c.connectionsPrivate?' on':'')+'" role="switch" aria-checked="'+!!c.connectionsPrivate+'"></span></button></div>'
+    +'<button class="btn btn-primary btn-block" data-act="save-church-profile">'+ico('check',18)+'Save profile</button>'
+    +'<div style="height:30px"></div></div>';
+}
 function consoleRow(icon,title,sub,route,badge,count){
   return '<button class="glass press pad-sm row between gap-12" data-go="'+route+'" style="text-align:left">'
     +'<span class="row gap-12" style="min-width:0"><span class="icon-btn" style="flex:none">'+ico(icon,18)+'</span>'
     +'<span class="stack gap-2" style="min-width:0"><span class="h3">'+esc(title)+'</span><span class="cap">'+esc(sub)+'</span></span></span>'
     +(count?'<span class="badge '+(badge||'badge-accent')+' num">'+count+'</span>':ico('chevR',16))+'</button>';
+}
+/* What a post carries besides words. Stories take pictures and video but not audio —
+   a story is watched, not listened to. */
+function mediaField(kinds){
+  const k=state.ui.composeKind||'none';
+  const kind=kinds.indexOf(k)>-1?k:'none';
+  const photos=state.ui.composePhotos||[],video=state.ui.composeVideo,audio=state.ui.composeAudio;
+  const labels={none:['Text only','edit'],photos:['Photos','grid'],video:['Video','play'],audio:['Audio','music']};
+  let body='';
+  if(kind==='photos'){
+    body=(photos.length?'<div class="cm-grid">'+photos.map(function(src,i){
+        return '<div class="cm-thumb'+(i===0?' first':'')+'"><img src="'+esc(src)+'" alt="">'
+          +(i===0?'<span class="cm-first">First</span>':'')
+          +'<button class="cm-drop" data-act="drop-photo" data-i="'+i+'" aria-label="Remove picture '+(i+1)+'">'+ico('x',13)+'</button></div>';}).join('')
+        +(photos.length<MAX_PHOTOS?'<button class="cm-add" data-act="pick-photos" aria-label="Add a picture">'+ico('plus',22)+'</button>':'')+'</div>'
+      :'<button class="photo-slot" data-act="pick-photos"><span class="slot-hint">'+ico('upload',24,'accent')
+        +'<span class="h3">Add up to five pictures</span><span class="cap">Any size · the first one leads the post</span></span></button>')
+      +'<p class="cap mt-8">'+ico('sparkle',12)+' The first picture is the one people see biggest.</p>';
+  }else if(kind==='video'){
+    body=(video?'<div class="post-video'+(video.portrait?' portrait':'')+'"><video src="'+esc(video.src)+'" controls playsinline preload="metadata"></video></div>'
+        +'<div class="row between gap-10 mt-8"><span class="cap" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
+          +esc(video.name||'Video')+(video.w?' · '+video.w+'×'+video.h:'')+(video.session?' · this session only':'')+'</span>'
+        +'<span class="row gap-6" style="flex:none"><button class="chip" data-act="pick-video">Replace</button>'
+        +'<button class="chip" data-act="clear-video">'+ico('x',13)+'Remove</button></span></div>'
+      :'<button class="photo-slot" data-act="pick-video"><span class="slot-hint">'+ico('play',24,'accent')
+        +'<span class="h3">Add a video</span><span class="cap">Any resolution · shown up to 1080p, never cropped</span></span></button>');
+  }else if(kind==='audio'){
+    body=(audio?'<div class="post-audio"><span class="art-audio-ico">'+ico('music',20)+'</span>'
+        +'<span class="stack gap-4" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(audio.name)+'</span>'
+        +'<audio src="'+esc(audio.src)+'" controls style="width:100%"></audio></span></div>'
+        +'<div class="row gap-6 mt-8"><button class="chip" data-act="pick-audio">Replace</button>'
+        +'<button class="chip" data-act="clear-audio">'+ico('x',13)+'Remove</button></div>'
+      :'<button class="photo-slot" data-act="pick-audio"><span class="slot-hint">'+ico('music',24,'accent')
+        +'<span class="h3">Add audio</span><span class="cap">A recording, a song, a short word</span></span></button>');
+  }else{
+    body='<p class="cap">'+ico('sparkle',12)+' With nothing attached, the post carries a scene illustration from the design system.</p>';
+  }
+  return '<div class="field"><label class="label">Attachment</label>'
+    +'<div class="scroll-x" style="gap:8px;margin-bottom:12px">'+kinds.map(function(x){
+        return '<button class="chip'+(kind===x?' on':'')+'" data-act="cm-kind" data-v="'+x+'">'+ico(labels[x][1],14)+labels[x][0]+'</button>';}).join('')+'</div>'
+    +body+'</div>';
 }
 function photoField(){
   const p=state.ui.composePhoto;
@@ -2910,6 +3143,60 @@ function photoField(){
       :'<button class="photo-slot" data-act="pick-photo"><span class="slot-hint">'+ico('upload',24,'accent')
         +'<span class="h3">Add a photo</span><span class="cap">From this device · resized before it is saved</span></span></button>')
     +'<p class="cap mt-8">'+ico('sparkle',12)+' With no photo, the post carries a scene illustration from the design system.</p></div>';
+}
+/* Read an image file, scale its longest edge down to max, and hand back a JPEG data URL.
+   Everything the app stores goes through here, so nothing oversized reaches localStorage. */
+function readImage(file,max,quality,cb){
+  if(!file||!/^image\//.test(file.type||'')){toast('That file is not an image');return;}
+  const fr=new FileReader();
+  fr.onerror=function(){toast('Could not read that file');};
+  fr.onload=function(){
+    const img=new Image();
+    img.onerror=function(){toast('Could not read that image');};
+    img.onload=function(){
+      const sc=Math.min(1,max/Math.max(img.width,img.height));
+      const w=Math.max(1,Math.round(img.width*sc)),h=Math.max(1,Math.round(img.height*sc));
+      const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      let out='';
+      try{
+        out=cv.toDataURL('image/jpeg',quality);
+        if(out.length>620000)out=cv.toDataURL('image/jpeg',0.55);
+        if(out.length>620000)out=cv.toDataURL('image/jpeg',0.4);
+      }catch(err){toast('Could not process that image');return;}
+      cb(out,w,h);
+    };
+    img.src=fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+const MAX_PHOTOS=5;
+/* Video is kept whole — no re-encoding in the browser — so only a small clip can be stored
+   for good. Anything larger plays from a blob for this session and says so on the card. */
+const VIDEO_KEEP=2.2*1024*1024;
+function readVideo(file,cb){
+  if(!file||!/^video\//.test(file.type||'')){toast('That file is not a video');return;}
+  const url=URL.createObjectURL(file);
+  const probe=document.createElement('video');
+  probe.preload='metadata';
+  probe.onloadedmetadata=function(){
+    const w=probe.videoWidth||0,h=probe.videoHeight||0,portrait=h>w;
+    const finish=function(src,session){cb({src:src,w:w,h:h,portrait:portrait,name:file.name,session:!!session});};
+    if(file.size<=VIDEO_KEEP){
+      const fr=new FileReader();
+      fr.onerror=function(){finish(url,true);};
+      fr.onload=function(){finish(String(fr.result),false);};
+      fr.readAsDataURL(file);
+    }else finish(url,true);
+  };
+  probe.onerror=function(){toast('Could not read that video');};
+  probe.src=url;
+}
+function pickFile(accept,cb){
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept=accept;
+  inp.onchange=function(){if(inp.files&&inp.files[0])cb(inp.files[0]);};
+  inp.click();
 }
 function readPhoto(file){
   if(!file||!/^image\//.test(file.type||'')){toast('That file is not an image');return;}
@@ -2941,16 +3228,16 @@ function viewConsoleCompose(){
   if(t==='story'){
     form='<div class="row gap-10 cap" style="padding:12px 14px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(0,163,225,.26);color:var(--brand)">'
       +ico('clock',15)+'Stories sit at the top of every follower\'s home for 24 hours, then fade.</div>'
-      +'<div class="field"><label class="label" for="fBody">What is happening right now?</label><textarea class="textarea" id="fBody" placeholder="Choir warm-up done. Doors open at 6:30…" style="min-height:110px"></textarea></div>'
+      +'<div class="field"><label class="label" for="fBody">What is happening right now?</label><textarea class="textarea" id="fBody" placeholder="Choir warm-up done. Doors open at 6:30…" style="min-height:110px">'+esc(draftVal('fBody'))+'</textarea></div>'
       +'<div class="field"><label class="label" for="fVerse">Attach a verse (optional)</label><select class="select" id="fVerse"><option value="">No verse</option>'
-      +VERSES.map(function(v){return '<option value="'+esc(v.r)+'">'+esc(v.r)+'</option>';}).join('')+'</select></div>';
+      +VERSES.map(function(v){return '<option value="'+esc(v.r)+'"'+(draftVal('fVerse')===v.r?' selected':'')+'>'+esc(v.r)+'</option>';}).join('')+'</select></div>';
   }else if(t==='event'){
-    form='<div class="field"><label class="label" for="fTitle">Event title</label><input class="input" id="fTitle" placeholder="Night of worship"></div>'
-      +'<div class="row gap-10"><div class="field grow"><label class="label" for="fDate">Date</label><input class="input" id="fDate" type="date"></div>'
-      +'<div class="field grow"><label class="label" for="fTime">Time</label><input class="input" id="fTime" type="time" value="18:00"></div></div>'
-      +'<div class="field"><label class="label" for="fLoc">Location</label><input class="input" id="fLoc" placeholder="Main sanctuary, or a stream link"></div>'
-      +'<div class="field"><label class="label" for="fCap">Capacity</label><input class="input" id="fCap" type="number" inputmode="numeric" placeholder="250"></div>'
-      +'<div class="field"><label class="label" for="fBody">Description</label><textarea class="textarea" id="fBody" placeholder="What should people expect?"></textarea></div>'
+    form='<div class="field"><label class="label" for="fTitle">Event title</label><input class="input" id="fTitle" placeholder="Night of worship" value="'+esc(draftVal('fTitle'))+'"></div>'
+      +'<div class="row gap-10"><div class="field grow"><label class="label" for="fDate">Date</label><input class="input" id="fDate" type="date" value="'+esc(draftVal('fDate'))+'"></div>'
+      +'<div class="field grow"><label class="label" for="fTime">Time</label><input class="input" id="fTime" type="time" value="'+esc(draftVal('fTime')||'18:00')+'"></div></div>'
+      +'<div class="field"><label class="label" for="fLoc">Location</label><input class="input" id="fLoc" placeholder="Main sanctuary, or a stream link" value="'+esc(draftVal('fLoc'))+'"></div>'
+      +'<div class="field"><label class="label" for="fCap">Capacity</label><input class="input" id="fCap" type="number" inputmode="numeric" placeholder="250" value="'+esc(draftVal('fCap'))+'"></div>'
+      +'<div class="field"><label class="label" for="fBody">Description</label><textarea class="textarea" id="fBody" placeholder="What should people expect?">'+esc(draftVal('fBody'))+'</textarea></div>'
       +'<label class="row between gap-12" style="padding:14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
       +'<span class="stack gap-2"><span class="h3" style="font-size:15px">Stream this live</span><span class="cap">Adds a live player and chat overlay</span></span>'
       +'<input type="checkbox" id="fLive" style="width:20px;height:20px;accent-color:var(--brand)"></label>';
@@ -2959,28 +3246,30 @@ function viewConsoleCompose(){
       +['Normal','Important','Urgent'].map(function(p,i){return '<button class="chip'+(( state.ui.bPriority||'Normal')===p?' on':'')+'" data-act="b-priority" data-v="'+p+'">'+p+'</button>';}).join('')+'</div></div>'
       +'<div class="field"><label class="label">Audience</label><div class="row gap-8 wrap">'
       +['Everyone','Youth','Worship team','Small groups','Members only'].map(function(a){return '<button class="chip'+((state.ui.bAudience||'Everyone')===a?' on':'')+'" data-act="b-audience" data-v="'+esc(a)+'">'+esc(a)+'</button>';}).join('')+'</div></div>'
-      +'<div class="field"><label class="label" for="fBody">Announcement</label><textarea class="textarea" id="fBody" placeholder="Read-only announcement to your people…"></textarea></div>'
+      +'<div class="field"><label class="label" for="fBody">Announcement</label><textarea class="textarea" id="fBody" placeholder="Read-only announcement to your people…">'+esc(draftVal('fBody'))+'</textarea></div>'
       +'<div class="row gap-10 cap" style="padding:12px 14px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(0,163,225,.26);color:var(--brand)">'
       +ico('clock',15)+'Quiet hours respected — urgent bypasses them.</div>';
   }else if(t==='sermon'){
-    form='<div class="field"><label class="label" for="fTitle">Sermon title</label><input class="input" id="fTitle" placeholder="The God who stays"></div>'
-      +'<div class="field"><label class="label" for="fSpeaker">Speaker</label><input class="input" id="fSpeaker" placeholder="Pr. Daniel Selvam"></div>'
+    form='<div class="field"><label class="label" for="fTitle">Sermon title</label><input class="input" id="fTitle" placeholder="The God who stays" value="'+esc(draftVal('fTitle'))+'"></div>'
+      +'<div class="field"><label class="label" for="fSpeaker">Speaker</label><input class="input" id="fSpeaker" placeholder="Pr. Daniel Selvam" value="'+esc(draftVal('fSpeaker'))+'"></div>'
       +'<button class="glass press pad-sm row between gap-12" data-act="mock-upload-audio" style="text-align:left;border-style:dashed">'
       +'<span class="row gap-12">'+ico('upload',20,'accent')+'<span class="stack gap-2"><span class="h3">Upload audio or video</span>'
       +'<span class="cap">'+(state.ui.audioUp?'sunday-message.mp3 · transcript ready':'Auto transcript, summary and translation follow')+'</span></span></span>'
       +(state.ui.audioUp?'<span class="badge badge-mint">'+ico('check',12)+'Ready</span>':'<span class="icon-btn">'+ico('plus',18)+'</span>')+'</button>'
-      +'<div class="field"><label class="label" for="fBody">Notes for your people</label><textarea class="textarea" id="fBody" placeholder="Key points, passage, application…"></textarea></div>';
+      +'<div class="field"><label class="label" for="fBody">Notes for your people</label><textarea class="textarea" id="fBody" placeholder="Key points, passage, application…">'+esc(draftVal('fBody'))+'</textarea></div>';
   }else if(t==='poll'){
-    form='<div class="field"><label class="label" for="fBody">Question</label><input class="input" id="fBody" placeholder="Which night suits the prayer meeting?"></div>'
-      +'<div class="field"><label class="label" for="fOpt">Options (comma separated)</label><input class="input" id="fOpt" placeholder="Tuesday, Thursday, Saturday"></div>';
+    form='<div class="field"><label class="label" for="fBody">Question</label><input class="input" id="fBody" placeholder="Which night suits the prayer meeting?" value="'+esc(draftVal('fBody'))+'"></div>'
+      +'<div class="field"><label class="label" for="fOpt">Options (comma separated)</label><input class="input" id="fOpt" placeholder="Tuesday, Thursday, Saturday" value="'+esc(draftVal('fOpt'))+'"></div>';
   }else if(t==='occasion'){
     form='<div class="field"><label class="label">Occasion</label><div class="row gap-8 wrap">'
       +['Baptism','Wedding','Dedication','Anniversary','Ordination'].map(function(o){return '<button class="chip'+((state.ui.occasion||'Baptism')===o?' on':'')+'" data-act="occasion" data-v="'+o+'">'+o+'</button>';}).join('')+'</div></div>'
-      +'<div class="field"><label class="label" for="fBody">Share the joy</label><textarea class="textarea" id="fBody" placeholder="Twelve believers were baptised this morning…"></textarea></div>';
+      +'<div class="field"><label class="label" for="fBody">Share the joy</label><textarea class="textarea" id="fBody" placeholder="Twelve believers were baptised this morning…">'+esc(draftVal('fBody'))+'</textarea></div>';
   }else{
-    form='<div class="field"><label class="label" for="fBody">What do you want to say?</label><textarea class="textarea" id="fBody" placeholder="Speak to your church…" style="min-height:150px"></textarea></div>';
+    form='<div class="field"><label class="label" for="fBody">What do you want to say?</label><textarea class="textarea" id="fBody" placeholder="Speak to your church…" style="min-height:150px">'+esc(draftVal('fBody'))+'</textarea></div>';
   }
-  if(['post','story','sermon','event','occasion'].indexOf(t)>-1)form+=photoField();
+  if(t==='story')form+=mediaField(['photos','video','none']);
+  else if(['post','occasion'].indexOf(t)>-1)form+=mediaField(['none','photos','video','audio']);
+  else if(['sermon','event'].indexOf(t)>-1)form+=mediaField(['none','photos','video']);
   return topbar('Publish','Composer',{back:'console',
     extra:'<div class="scroll-x mt-16">'+types.map(function(x){
       return '<button class="chip'+(t===x[0]?' on':'')+'" data-act="compose" data-v="'+x[0]+'">'+ico(x[2],14)+x[1]+'</button>';}).join('')+'</div>'})
@@ -2988,7 +3277,7 @@ function viewConsoleCompose(){
     +'<div class="glass pad stack gap-16">'+form+'</div>'
     +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Schedule</span>'
     +'<div class="row gap-8"><button class="chip on" data-act="noop">Publish now</button><button class="chip" data-act="soon" data-v="Scheduling">Schedule</button></div></div>'
-    +'<button class="btn btn-primary btn-block" data-act="publish" data-v="'+t+'">'+ico('send',18)+'Publish to '+(( myChurch()&&myChurch().followers)||0)+' followers</button>'
+    +'<button class="btn btn-primary btn-block" data-act="publish" data-v="'+t+'">'+ico('send',18)+'Publish</button>'
     +'<div style="height:30px"></div></div>';
 }
 function viewConsoleEvents(){
@@ -3089,20 +3378,39 @@ function viewConsoleThread(){
   const other=(t.churchIds||[]).filter(function(x){return x!==me;})[0],c=churchById(other)||{name:(t.names||{})[other]||'Church'};
   const mineName=(churchById(me)||{}).name||(state.session.church&&state.session.church.name)||'Your church';
   const msgs=(t.messages||[]).slice().sort(function(a,b){return dt(a.at)-dt(b.at);});
+  const editing=state.ui.editMsg&&state.ui.editMsg.threadId===t.id?state.ui.editMsg.id:null;
+  const draftPhoto=state.ui.msgPhoto||null;
   return '<div class="view" style="padding-top:14px;display:flex;flex-direction:column;min-height:calc(100dvh - 40px)">'
     +'<div class="row between gap-12 mt-8" style="margin-bottom:14px">'
-    +'<button class="row gap-6 cap" data-go="console-c2c" style="color:var(--text-3)">'+ico('arrowL',16)+'Inbox</button>'
-    +'<button class="chip" data-go="church-profile" data-id="'+esc(other)+'">'+ico('eye',14)+'Profile</button></div>'
-    +'<div class="glass pad-sm row gap-12" style="margin-bottom:14px">'+churchLogo(c,44)+''
+    +'<button class="row gap-6 cap" data-go="console-c2c" style="color:var(--text-3)">'+ico('arrowL',16)+'Inbox</button></div>'
+    /* the whole header is the way to their profile, as it is in any messenger */
+    +'<button class="glass press pad-sm row between gap-12" data-go="church-profile" data-id="'+esc(other)+'" style="margin-bottom:14px;text-align:left">'
+    +'<span class="row gap-12" style="min-width:0">'+churchLogo(c,44)
     +'<span class="stack gap-2" style="min-width:0"><span class="row gap-6"><span class="h3">'+esc(c.name)+'</span>'+ico('shield',14,'accent')+'</span>'
-    +'<span class="cap">'+esc(c.city||'')+(c.pastorName?' · '+esc(c.pastorName):'')+(t.topic?' · '+esc(t.topic):'')+'</span></span></div>'
+    +'<span class="cap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.city||'')+(c.pastorName?' · '+esc(c.pastorName):'')+(t.topic?' · '+esc(t.topic):'')+'</span></span></span>'
+    +ico('chevR',16)+'</button>'
     +'<div class="stack gap-10" style="flex:1" id="threadBody">'
-    +(msgs.length?msgs.map(function(m){const out=m.from===me;
-      return '<div class="thread-msg '+(out?'out':'in')+'"><span class="who">'+esc(out?mineName:c.name)+'</span>'+esc(m.text).replace(/\n/g,'<br>')+'<span class="when">'+fmtDate(m.at)+' · '+fmtTime(m.at)+'</span></div>';}).join('')
+    +(msgs.length?msgs.map(function(m){
+      const out=m.from===me;
+      if(m.deleted)return '<div class="thread-msg '+(out?'out':'in')+' gone"><span class="who">'+esc(out?mineName:c.name)+'</span>'
+        +ico('x',13)+' This message was deleted<span class="when">'+fmtTime(m.at)+'</span></div>';
+      return '<div class="thread-msg '+(out?'out':'in')+(editing===m.id?' editing':'')+'">'
+        +'<span class="row between gap-8"><span class="who">'+esc(out?mineName:c.name)+'</span>'
+        +(out?'<span class="msg-tools"><button data-act="msg-edit" data-t="'+esc(t.id)+'" data-id="'+esc(m.id||'')+'" aria-label="Edit message">'+ico('edit',13)+'</button>'
+             +'<button data-act="msg-delete" data-t="'+esc(t.id)+'" data-id="'+esc(m.id||'')+'" aria-label="Delete message">'+ico('x',13)+'</button></span>':'')
+        +'</span>'
+        +(m.photo?'<button class="msg-photo" data-act="open-msg-photo" data-t="'+esc(t.id)+'" data-id="'+esc(m.id||'')+'"><img src="'+esc(m.photo)+'" alt="Attachment"></button>':'')
+        +(m.text?'<span class="msg-text">'+esc(m.text).replace(/\n/g,'<br>')+'</span>':'')
+        +'<span class="when">'+fmtDate(m.at)+' · '+fmtTime(m.at)+(m.editedAt?' · edited':'')+'</span></div>';}).join('')
       :'<p class="cap" style="text-align:center;padding:20px">Say hello — this is the start of your conversation with '+esc(c.name)+'.</p>')+'</div>'
-    +'<div class="glass row gap-10 mt-16" style="padding:8px 8px 8px 16px;border-radius:26px;position:sticky;bottom:calc(var(--nav-h) + 14px);z-index:10;align-items:flex-end">'
-    +'<textarea class="grow" id="threadBox" placeholder="Write to '+esc(c.name)+'…" rows="1" style="background:none;border:0;outline:none;min-height:42px;max-height:120px;resize:none;padding:10px 0;min-width:0;line-height:1.4"></textarea>'
-    +'<button class="btn btn-primary" data-act="c2c-send" data-id="'+t.id+'" style="height:42px;width:42px;padding:0;border-radius:50%;flex:none">'+ico('send',17)+'</button></div>'
+    +(editing?'<div class="row between gap-10 cap msg-editing"><span class="row gap-6">'+ico('edit',13)+'Editing a message</span>'
+        +'<button class="chip" data-act="msg-edit-cancel">Cancel</button></div>':'')
+    +(draftPhoto?'<div class="msg-draft"><img src="'+esc(draftPhoto)+'" alt="">'
+        +'<button class="cm-drop" data-act="msg-drop-photo" aria-label="Remove attachment">'+ico('x',13)+'</button></div>':'')
+    +'<div class="glass row gap-8 mt-16" style="padding:8px 8px 8px 12px;border-radius:26px;position:sticky;bottom:calc(var(--nav-h) + 14px);z-index:10;align-items:flex-end">'
+    +'<button class="icon-btn" data-act="msg-attach" aria-label="Attach a picture" style="width:38px;height:38px;flex:none">'+ico('plus',18)+'</button>'
+    +'<textarea class="grow" id="threadBox" placeholder="'+(editing?'Edit your message…':'Write to '+esc(c.name)+'…')+'" rows="1" style="background:none;border:0;outline:none;min-height:42px;max-height:120px;resize:none;padding:10px 0;min-width:0;line-height:1.4">'+esc(state.ui.msgDraft||'')+'</textarea>'
+    +'<button class="btn btn-primary" data-act="'+(editing?'msg-edit-save':'c2c-send')+'" data-id="'+t.id+'" style="height:42px;width:42px;padding:0;border-radius:50%;flex:none">'+ico(editing?'check':'send',17)+'</button></div>'
     +'<div style="height:24px"></div></div>';
 }
 /* What a story did. Per story: how many of each reaction, and the believers behind them —
@@ -3120,57 +3428,73 @@ function storyLabel(p){
   const cut=t.slice(0,52);
   return cut.slice(0,Math.max(cut.lastIndexOf(' '),30)).replace(/[,;:.]$/,'')+'…';
 }
-function storyReactsFor(postId){
-  return state.data.storyReacts.filter(function(r){return r.postId===postId;})
-    .sort(function(a,b){return dt(b.at)-dt(a.at);});
+function reactRows(kind){
+  const cid=state.session&&state.session.churchId;
+  return state.data.storyReacts.filter(function(r){
+    return r.churchId===cid&&((r.kind||'story')===kind);
+  }).sort(function(a,b){return dt(b.at)-dt(a.at);});
 }
+function reactorLine(r){
+  const meta=REACTIONS.filter(function(x){return x.k===r.reaction;})[0]||{e:'',l:r.reaction};
+  return '<div class="row between gap-12"><span class="row gap-10" style="min-width:0">'
+    +'<span class="avatar avatar-sm" style="background:'+grad(r.userKey)+'">'+initials(r.userName)+'</span>'
+    +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14px">'+esc(r.userName)+'</span>'
+    +'<span class="cap">'+(r.userHandle?'@'+esc(r.userHandle)+' · ':'')+ago(r.at)+'</span></span></span>'
+    +'<span class="row gap-6 cap" style="flex:none"><span style="font-size:15px">'+meta.e+'</span>'+esc(meta.l)+'</span></div>';
+}
+function reactionCard(title,sub,rows,openId){
+  const byKind={};rows.forEach(function(r){byKind[r.reaction]=(byKind[r.reaction]||0)+1;});
+  return '<div class="glass pad stack gap-12">'
+    +'<div class="row between gap-12"><span class="stack gap-2" style="min-width:0">'
+    +'<span class="h3" style="font-size:15px">'+esc(title)+'</span>'
+    +'<span class="cap">'+esc(sub)+' · <span class="num">'+rows.length+'</span> reaction'+(rows.length===1?'':'s')+'</span></span>'
+    +(openId?'<button class="chip" data-go="post" data-id="'+esc(openId)+'">View</button>':'')+'</div>'
+    +'<div class="row gap-8 wrap">'+REACTIONS.map(function(r){
+        const n=byKind[r.k]||0;
+        return '<span class="chip static'+(n?'':' muted')+'"><span class="em">'+r.e+'</span> '+r.l+' <b class="num">'+n+'</b></span>';}).join('')+'</div>'
+    +(rows.length?'<hr class="divider"><div class="stack gap-10">'+rows.map(reactorLine).join('')+'</div>'
+      :'<p class="cap">No reactions yet.</p>')+'</div>';
+}
+/* Who reacted to what. Numbers alone do not tell a church which of its people were moved,
+   so every reaction is listed with the believer behind it. */
 function viewConsoleStories(){
+  const cid=state.session&&state.session.churchId;
+  const tab=state.ui.reactTab||'Posts';
+  const posts=myPosts().filter(function(p){return p.type!=='story';});
   const stories=myStories();
-  const total=stories.reduce(function(a,p){return a+storyReactsFor(p.id).length;},0);
-  return topbar('Story reactions',total+' reaction'+(total===1?'':'s')+' across '+stories.length+' stor'+(stories.length===1?'y':'ies'),{back:'console'})
-    +'<div class="view stack gap-14">'
-    +(stories.length?stories.map(function(p){
-      const rows=storyReactsFor(p.id);
-      const byKind={};rows.forEach(function(r){byKind[r.reaction]=(byKind[r.reaction]||0)+1;});
-      return '<div class="glass pad stack gap-12">'
-        +'<div class="row between gap-12"><span class="stack gap-2" style="min-width:0">'
-        +'<span class="h3" style="font-size:15px">'+esc(storyLabel(p))+'</span>'
-        +'<span class="cap">'+ago(p.createdAt)+' · <span class="num">'+rows.length+'</span> reaction'+(rows.length===1?'':'s')+'</span></span>'
-        +'<button class="chip" data-go="post" data-id="'+esc(p.id)+'">View</button></div>'
-        +'<div class="row gap-8 wrap">'+REACTIONS.map(function(r){
-            const n=byKind[r.k]||0;
-            return '<span class="chip static'+(n?'':' muted')+'"><span class="em">'+r.e+'</span> '+r.l+' <b class="num">'+n+'</b></span>';}).join('')+'</div>'
-        +(rows.length?'<hr class="divider"><div class="stack gap-10">'+rows.map(function(r){
-            const meta=REACTIONS.filter(function(x){return x.k===r.reaction;})[0]||{e:'',l:r.reaction};
-            return '<div class="row between gap-12"><span class="row gap-10" style="min-width:0">'
-              +'<span class="avatar avatar-sm" style="background:'+grad(r.userKey)+'">'+initials(r.userName)+'</span>'
-              +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14px">'+esc(r.userName)+'</span>'
-              +'<span class="cap">'+(r.userHandle?'@'+esc(r.userHandle)+' · ':'')+ago(r.at)+'</span></span></span>'
-              +'<span class="row gap-6 cap" style="flex:none"><span style="font-size:15px">'+meta.e+'</span>'+esc(meta.l)+'</span></div>';}).join('')+'</div>'
-          :'<p class="cap">No reactions yet.</p>')
-        +'</div>';}).join('')
+  const commentRows=reactRows('comment');
+  const totals={Posts:reactRows('post').length,Stories:reactRows('story').length,Comments:commentRows.length};
+  let body='';
+  if(tab==='Posts'){
+    const withAny=posts.filter(function(p){return reactRows('post').some(function(r){return r.postId===p.id;});});
+    const list=withAny.length?withAny:posts.slice(0,6);
+    body=list.length?list.map(function(p){
+      return reactionCard(p.title||storyLabel(p),esc(p.type)+' · '+ago(p.createdAt),
+        reactRows('post').filter(function(r){return r.postId===p.id;}),p.id);}).join('')
+      :empty('edit','Nothing published yet','Publish a post and the reactions land here.',
+        '<button class="btn btn-sm btn-primary" data-go="console-compose">Write a post</button>');
+  }else if(tab==='Stories'){
+    body=stories.length?stories.map(function(p){
+      return reactionCard(storyLabel(p),ago(p.createdAt),
+        reactRows('story').filter(function(r){return r.postId===p.id;}),p.id);}).join('')
       :empty('sparkle','No stories in the last day','Stories live for 24 hours. Publish one and the reactions land here.',
-        '<button class="btn btn-sm btn-primary" data-go="console-compose">Publish a story</button>'))
-    +'<div style="height:30px"></div></div>';
+        '<button class="btn btn-sm btn-primary" data-go="console-compose">Publish a story</button>');
+  }else{
+    const byComment={};
+    commentRows.forEach(function(r){(byComment[r.postId]=byComment[r.postId]||[]).push(r);});
+    const ids=Object.keys(byComment);
+    body=ids.length?ids.map(function(id){
+      const rows=byComment[id],first=rows[0];
+      return reactionCard('“'+(first.commentText||'A comment')+'”',
+        (first.commentAuthor?esc(first.commentAuthor)+' · ':'')+'comment',rows,null);}).join('')
+      :empty('msg','No comment reactions yet','When a believer amens a comment on your posts, it appears here.');
+  }
+  return topbar('Reactions','Who responded to what',{back:'console',
+    extra:'<div class="tabs mt-16">'+['Posts','Stories','Comments'].map(function(t){
+      return '<button class="tab'+(tab===t?' on':'')+'" data-act="react-tab" data-v="'+t+'">'+t
+        +(totals[t]?' <span class="num" style="color:var(--brand)">'+totals[t]+'</span>':'')+'</button>';}).join('')+'</div>'})
+    +'<div class="view stack gap-14">'+body+'<div style="height:30px"></div></div>';
 }
-function viewConsoleCare(){
-  return topbar('Pastoral care','Private queue · pastors only',{back:'console'})
-    +'<div class="view stack gap-14">'
-    +'<div class="row gap-10 cap" style="padding:13px 15px;border-radius:var(--r-md);background:rgba(232,145,154,.1);border:1px solid rgba(232,145,154,.28);color:var(--rose)">'
-    +ico('lock',15)+'This queue is visible only to pastors of this church.</div>'
-    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Visitation & counselling</span>'
-    +[['Hospital visit · Mrs. Mary','Requested 2 days ago','Urgent'],['Marriage counselling','Requested yesterday','Normal'],['Home dedication','This Saturday','Normal']].map(function(r){
-      return '<div class="row between gap-12"><span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(r[0])+'</span><span class="cap">'+esc(r[1])+'</span></span>'
-        +'<span class="badge '+(r[2]==='Urgent'?'badge-rose':'badge-ice')+'">'+r[2]+'</span></div>';}).join('')+'</div>'
-    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">From BibleGPT</span>'
-    +'<p class="body">Questions the assistant handed to a pastor appear here.</p>'
-    +((state.local.care||[]).length?(state.local.care||[]).map(function(q){
-      return '<div class="row between gap-12" style="padding:12px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
-        +'<span class="body" style="font-size:14.5px">'+esc(q.q)+'</span><span class="badge badge-lav">Waiting</span></div>';}).join('')
-      :'<p class="cap">Nothing waiting right now.</p>')+'</div>'
-    +'<div style="height:30px"></div></div>';
-}
-/* ---------- sheets ---------- */
 function renderSheet(){
   const s=state.ui.sheet;if(!s)return '';
   let inner='';
@@ -3313,6 +3637,19 @@ function renderSheet(){
       +'<button class="btn btn-primary btn-block" data-act="gpt-hide">'+ico('x',17)+'Hide BibleGPT</button>'
       +'<button class="btn btn-ghost btn-block" data-act="close-sheet">Keep it</button></div>'
       +'<p class="cap mt-12" style="text-align:center">Settings &amp; privacy → BibleGPT to turn it back on.</p>';
+  }else if(s.kind==='msg-delete'){
+    inner='<div class="stack center gap-14" style="text-align:center">'
+      +'<div class="icon-btn" style="width:54px;height:54px;color:var(--live-ink);border-color:rgba(227,27,72,.3);background:rgba(227,27,72,.1)">'+ico('x',24)+'</div>'
+      +'<h2 class="h1">Delete this message?</h2>'
+      +'<p class="body">The other church will see that a message was deleted. This cannot be undone.</p></div>'
+      +'<div class="stack gap-10 mt-20">'
+      +'<button class="btn btn-primary btn-block" data-act="msg-delete-confirm" data-t="'+esc(s.params.t)+'" data-id="'+esc(s.params.id)+'" style="background:var(--live);border-color:var(--live)">Delete</button>'
+      +'<button class="btn btn-ghost btn-block" data-act="close-sheet">Keep it</button></div>';
+  }else if(s.kind==='msg-photo'){
+    return '<div class="lightbox" data-act="close-sheet">'
+      +'<div class="row between gap-12" style="padding:14px 16px"><span class="cap">Attachment</span>'
+      +'<button class="icon-btn" data-act="close-sheet" aria-label="Close">'+ico('x',18)+'</button></div>'
+      +'<div class="lightbox-stage" data-stop="1"><div class="lightbox-frame"><img src="'+esc(s.params.src)+'" alt="Attachment"></div></div></div>';
   }else if(s.kind==='soon'){
     inner='<div class="stack center gap-14" style="text-align:center">'
       +'<div class="icon-btn" style="width:56px;height:56px;color:var(--lavender);border-color:rgba(192,143,208,.35);background:rgba(192,143,208,.1)">'+ico('sparkle',26)+'</div>'
@@ -3323,14 +3660,21 @@ function renderSheet(){
   if(s.kind==='image'){
     const p=state.data.posts.find(function(x){return x.id===s.params.id;})
       ||state.data.events.find(function(x){return x.id===s.params.id;})||{};
+    const ph=photosOf(p), n=ph.length;
+    const i=Math.max(0,Math.min(Number(s.params.i)||0,Math.max(0,n-1)));
     const caption=String(p.title||p.content||p.description||'').slice(0,200);
     return '<div class="lightbox" data-act="close-sheet">'
       +'<div class="row between gap-12" style="padding:14px 16px">'
-      +'<span class="row gap-10" style="min-width:0"><span class="avatar avatar-sm" style="background:'+grad(p.churchId||p.authorId||p.id)+'">'+initials(p.churchName||p.authorName||'?')+'</span>'
+      +'<span class="row gap-10" style="min-width:0">'+(p.churchId?churchLogo({id:p.churchId,name:p.churchName},34):'<span class="avatar avatar-sm" style="background:'+grad(p.authorId||p.id)+'">'+initials(p.authorName||'?')+'</span>')
       +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14px;color:#F2F4FF">'+esc(p.churchName||p.authorName||'believersArk')+'</span>'
-      +'<span class="cap">'+(p.photo?'Photograph':'Scene artwork')+'</span></span></span>'
+      +'<span class="cap">'+(n?(n>1?'Picture '+(i+1)+' of '+n:'Photograph'):'Scene artwork')+'</span></span></span>'
       +'<button class="icon-btn" data-act="close-sheet" aria-label="Close">'+ico('x',18)+'</button></div>'
-      +'<div class="lightbox-stage" data-stop="1"><div class="lightbox-frame">'+mediaInner(p)+'</div></div>'
+      +'<div class="lightbox-stage" data-stop="1" style="position:relative">'
+      +(n>1?'<button class="lb-nav prev" data-act="lb-step" data-v="-1" aria-label="Previous picture"'+(i===0?' disabled':'')+'>'+ico('chevL',20)+'</button>':'')
+      +'<div class="lightbox-frame">'+mediaInner(p,i)+'</div>'
+      +(n>1?'<button class="lb-nav next" data-act="lb-step" data-v="1" aria-label="Next picture"'+(i>=n-1?' disabled':'')+'>'+ico('chevR',20)+'</button>':'')
+      +'</div>'
+      +(n>1?'<div class="lb-dots" data-stop="1">'+ph.map(function(_,k){return '<i class="'+(k===i?'on':'')+'"></i>';}).join('')+'</div>':'')
       +(caption?'<p class="body" style="padding:0 20px 26px;max-width:820px;margin:0 auto;text-align:center">'+esc(caption)+'</p>':'')
       +'</div>';
   }
@@ -3352,6 +3696,8 @@ function render(){
   LAST_VIEW=sig;
   document.documentElement.setAttribute('data-anim',sameView?'off':'on');
   if(state.route==='onboard'&&document.getElementById('obForm'))captureOnboard();
+  if(state.route==='console-compose'&&document.getElementById('fBody'))captureCompose();
+  if(state.route==='console-thread'){const tb=document.getElementById('threadBox');if(tb)state.ui.msgDraft=tb.value;}
   const r=state.route;
   let html='';
   if(r==='splash')html=viewSplash();
@@ -3387,10 +3733,12 @@ function render(){
     else if(r==='console-communities')body=viewConsoleCommunities();
     else if(r==='console-members')body=viewConsoleMembers();
     else if(r==='console-c2c')body=viewConsoleC2C();
-    else if(r==='console-care')body=viewConsoleCare();
     else if(r==='console-stories')body=viewConsoleStories();
+    else if(r==='console-followers')body=viewConsoleFollowers();
+    else if(r==='console-connections')body=viewConsoleConnections();
+    else if(r==='console-profile')body=viewConsoleProfile();
     else body=viewHome();
-    html='<div class="shell">'+renderNav()+'<main class="main" id="main">'+body+'</main></div>';
+    html='<div class="shell">'+renderNav()+'<main class="main" id="main">'+adminBar()+body+'</main></div>';
   }
   document.getElementById('root').innerHTML=html+renderSheet();
   /* Replacing the document collapses its height, so the browser clamps the scroll to the top.
@@ -3686,13 +4034,60 @@ const ACTIONS={
   'c2c-send':function(el){
     const me=state.session&&state.session.churchId;if(!me)return;
     const box=document.getElementById('threadBox'),text=box?String(box.value||'').trim():'';
-    if(!text){toast('Write something first');return;}
+    const photo=state.ui.msgPhoto||null;
+    if(!text&&!photo){toast('Write something, or attach a picture');return;}
     const t=state.data.threads.find(function(x){return x.id===el.dataset.id;});if(!t)return;
-    const msgs=(t.messages||[]).concat([{from:me,text:text,at:new Date().toISOString()}]);
+    const msgs=(t.messages||[]).concat([{id:uid('m_'),from:me,text:text,photo:photo,at:new Date().toISOString()}]);
     dbUpdate('churchThreads',t.id,{messages:msgs,updatedAt:new Date().toISOString()});
     state.local.threadSeen=state.local.threadSeen||{};state.local.threadSeen[t.id]=new Date().toISOString();saveLocal();
+    state.ui.msgPhoto=null;state.ui.msgDraft='';
     render();
     const b=document.getElementById('threadBody');if(b)window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  },
+  /* a message can be corrected or taken back, but only by the church that sent it */
+  'msg-attach':function(){
+    pickFile('image/*',function(f){readImage(f,1200,0.78,function(data){
+      state.ui.msgPhoto=data;render();});});
+  },
+  'msg-drop-photo':function(){state.ui.msgPhoto=null;render();},
+  'msg-edit':function(el){
+    const t=state.data.threads.find(function(x){return x.id===el.dataset.t;});if(!t)return;
+    const m=(t.messages||[]).find(function(x){return x.id===el.dataset.id;});if(!m)return;
+    if(m.from!==(state.session&&state.session.churchId)){toast('You can only edit your own messages');return;}
+    state.ui.editMsg={threadId:t.id,id:m.id};state.ui.msgDraft=m.text||'';
+    render();
+    const box=document.getElementById('threadBox');if(box){box.focus();box.setSelectionRange(box.value.length,box.value.length);}
+  },
+  'msg-edit-cancel':function(){state.ui.editMsg=null;state.ui.msgDraft='';render();},
+  'msg-edit-save':function(el){
+    const t=state.data.threads.find(function(x){return x.id===el.dataset.id;});
+    const ed=state.ui.editMsg;if(!t||!ed)return;
+    const box=document.getElementById('threadBox'),text=box?String(box.value||'').trim():'';
+    const msgs=(t.messages||[]).map(function(m){
+      if(m.id!==ed.id)return m;
+      return Object.assign({},m,{text:text,editedAt:new Date().toISOString()});});
+    if(!text&&!(msgs.find(function(m){return m.id===ed.id;})||{}).photo){toast('A message cannot be empty');return;}
+    dbUpdate('churchThreads',t.id,{messages:msgs,updatedAt:new Date().toISOString()});
+    state.ui.editMsg=null;state.ui.msgDraft='';render();toast('Message edited');
+  },
+  'msg-delete':function(el){
+    const t=state.data.threads.find(function(x){return x.id===el.dataset.t;});if(!t)return;
+    const m=(t.messages||[]).find(function(x){return x.id===el.dataset.id;});if(!m)return;
+    if(m.from!==(state.session&&state.session.churchId)){toast('You can only delete your own messages');return;}
+    openSheet('msg-delete',{t:t.id,id:m.id});
+  },
+  'msg-delete-confirm':function(el){
+    const t=state.data.threads.find(function(x){return x.id===el.dataset.t;});if(!t)return;
+    const msgs=(t.messages||[]).map(function(m){
+      return m.id===el.dataset.id?Object.assign({},m,{deleted:true,text:'',photo:null}):m;});
+    dbUpdate('churchThreads',t.id,{messages:msgs,updatedAt:new Date().toISOString()});
+    if(state.ui.editMsg&&state.ui.editMsg.id===el.dataset.id)state.ui.editMsg=null;
+    closeSheet();toast('Message deleted');
+  },
+  'open-msg-photo':function(el){
+    const t=state.data.threads.find(function(x){return x.id===el.dataset.t;});if(!t)return;
+    const m=(t.messages||[]).find(function(x){return x.id===el.dataset.id;});if(!m||!m.photo)return;
+    openSheet('msg-photo',{src:m.photo});
   },
   summarise:function(el){openSheet('summary',{id:el.dataset.id});},
   react:function(el){
@@ -3821,6 +4216,9 @@ const ACTIONS={
     const i=state.local.amened.indexOf(c.id);
     if(i>-1){state.local.amened.splice(i,1);bumpCount('comments',c.id,'amens',-1);}
     else{state.local.amened.push(c.id);bumpCount('comments',c.id,'amens',1);}
+    const host=state.data.posts.find(function(x){return x.id===c.postId;});
+    recordReaction('comment',c,i>-1?null:'amen',{churchId:(host&&host.churchId)||null,
+      commentText:String(c.text||'').slice(0,90),commentAuthor:c.authorName||''});
     saveLocal();render();
   },
   'reply-comment':function(el){
@@ -3829,6 +4227,7 @@ const ACTIONS={
   },
   'home-church':function(el){
     if(!requireAuth())return;
+    if(homeChurchLocked()){toast('Your home church is the one you lead — switch to admin mode to change the church itself');return;}
     state.session.homeChurchId=state.session.homeChurchId===el.dataset.id?null:el.dataset.id;
     if(state.session.homeChurchId&&state.local.follows.indexOf(el.dataset.id)<0)state.local.follows.push(el.dataset.id);
     saveSession();saveLocal();saveProfile();render();toast(state.session.homeChurchId?'Set as your home church':'Home church cleared');
@@ -3845,6 +4244,54 @@ const ACTIONS={
     state.prefs.gpt=false;savePrefs();closeSheet();
     if(state.route==='biblegpt')go('home');else render();
     toast('BibleGPT hidden — turn it back on in Settings & privacy');
+  },
+  'pick-banner':function(){
+    pickFile('image/*',function(f){readImage(f,1600,0.78,function(data){
+      const c=myChurch();if(!c)return;
+      c.banner=data;dbUpdate('churches',c.id,{banner:data});render();toast('Banner updated');});});
+  },
+  'clear-banner':function(){const c=myChurch();if(!c)return;c.banner=null;dbUpdate('churches',c.id,{banner:null});render();toast('Banner cleared');},
+  'pick-logo':function(){
+    pickFile('image/*',function(f){readImage(f,512,0.86,function(data){
+      const c=myChurch();if(!c)return;
+      c.logo=data;dbUpdate('churches',c.id,{logo:data});render();toast('Church mark updated');});});
+  },
+  'clear-logo':function(){const c=myChurch();if(!c)return;c.logo=null;dbUpdate('churches',c.id,{logo:null});render();toast('Back to your emblem');},
+  'save-church-profile':function(){
+    const c=myChurch();if(!c)return;
+    const err={},name=val('chpName'),handle=norm(val('chpHandle'));
+    if(!name)err.name='Your church needs a name';
+    if(!/^[a-z0-9._]{3,24}$/.test(handle))err.handle='Use 3 to 24 letters, numbers, dots or underscores';
+    else if(takenChurchHandles(c.id)[handle])err.handle='@'+handle+' is taken by another church';
+    if(!val('chpCity'))err.city='Enter your city';
+    state.ui.chpErrors=err;
+    if(Object.keys(err).length){render();toast('Please check the highlighted fields');return;}
+    const list=function(id,sep){return val(id).split(sep).map(function(x){return x.trim();}).filter(Boolean);};
+    const patch={name:name,handle:handle,tagline:val('chpTagline'),about:val('chpAbout'),
+      city:val('chpCity'),address:val('chpAddress'),pastorName:val('chpPastor'),
+      serviceTimes:list('chpTimes','·'),languages:list('chpLangs',','),ministries:list('chpMinistries',',')};
+    Object.assign(c,patch);
+    dbUpdate('churches',c.id,patch);
+    if(state.session&&state.session.church)Object.assign(state.session.church,patch),saveSession();
+    state.ui.chpErrors={};render();toast('Profile saved');
+  },
+  'lb-step':function(el){
+    const s=state.ui.sheet;if(!s||s.kind!=='image')return;
+    const p=state.data.posts.find(function(x){return x.id===s.params.id;})||{};
+    const n=photosOf(p).length;
+    s.params.i=Math.max(0,Math.min((Number(s.params.i)||0)+Number(el.dataset.v),n-1));
+    render();
+  },
+  'react-tab':function(el){state.ui.reactTab=el.dataset.v;render();},
+  'mode-believer':function(){
+    const s=state.session;if(!s||s.role!=='church')return;
+    s.mode='believer';saveSession();
+    state.ui.personTab='Posts';go('home');
+    toast('Browsing as a believer — your church console is one tap away');
+  },
+  'mode-admin':function(){
+    const s=state.session;if(!s||s.role!=='church')return;
+    s.mode='admin';saveSession();go('console');toast('Back in the church console');
   },
   'church-tab':function(el){state.ui.churchTab=el.dataset.v;render();},
   'dir-view':function(){state.ui.dir=state.ui.dir==='map'?'list':'map';render();},
@@ -3948,18 +4395,28 @@ const ACTIONS={
     state.local={follows:[],saved:[],rsvps:[],reacted:{},amened:[],journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]};
     saveLocal();state.ui.confirmDelete=false;go('welcome');toast('Account and local data deleted');
   },
-  compose:function(el){state.ui.composeType=el.dataset.v;state.ui.composePhoto=null;state.ui.composePhotoName='';go('console-compose');},
+  compose:function(el){
+    if(state.ui.composeType!==el.dataset.v){clearCompose();state.ui.composeKind='none';
+      state.ui.composePhotos=[];state.ui.composeVideo=null;state.ui.composeAudio=null;}state.ui.composeType=el.dataset.v;state.ui.composePhoto=null;state.ui.composePhotoName='';go('console-compose');},
   'b-priority':function(el){state.ui.bPriority=el.dataset.v;render();},
   'b-audience':function(el){state.ui.bAudience=el.dataset.v;render();},
   occasion:function(el){state.ui.occasion=el.dataset.v;render();},
   publish:async function(el){
     const s=state.session;if(!s||s.role!=='church'){toast('Church accounts only');return;}
     const t=el.dataset.v,c=myChurch();
-    const photo=state.ui.composePhoto||null;
+    const photos=(state.ui.composePhotos||[]).slice(0,MAX_PHOTOS);
+    const video=state.ui.composeVideo||null, audio=state.ui.composeAudio||null;
+    const photo=photos[0]||state.ui.composePhoto||null;
+    const carriesMedia=!!(photos.length||video||audio||photo);
     const base={churchId:s.churchId,churchName:(c&&c.name)||(s.church&&s.church.name)||'Our church',
-      photo:photo,scene:photo?null:(SCENE_FOR_TYPE[t]||null),
+      photo:photo,photos:photos.length?photos:(photo?[photo]:null),video:video,audio:audio,
+      scene:carriesMedia?null:(SCENE_FOR_TYPE[t]||null),
       reactions:{amen:0,bless:0,peace:0,love:0,fire:0},comments:0,createdAt:new Date().toISOString()};
-    const clearPhoto=function(){state.ui.composePhoto=null;state.ui.composePhotoName='';};
+    const clearPhoto=function(){
+      state.ui.composePhoto=null;state.ui.composePhotoName='';
+      state.ui.composePhotos=[];state.ui.composeVideo=null;state.ui.composeAudio=null;state.ui.composeKind='none';
+      clearCompose();
+    };
     if(t==='event'){
       const title=val('fTitle');if(!title){toast('Give the event a title');return;}
       const d=val('fDate')||new Date().toISOString().slice(0,10),tm=val('fTime')||'18:00';
@@ -3974,7 +4431,8 @@ const ACTIONS={
     }
     let doc=null;
     if(t==='story'){
-      const body=val('fBody');if(!body){toast('Write your story first');return;}
+      const body=val('fBody');
+      if(!body&&!carriesMedia){toast('Write your story, or attach a picture');return;}
       doc=Object.assign({},base,{type:'story',content:body,verseRef:val('fVerse')||null});
       await dbAdd('posts',doc);
       clearPhoto();go('console');toast('Story is up for 24 hours');return;
@@ -3991,7 +4449,8 @@ const ACTIONS={
       const body=val('fBody');if(!body){toast('Share the news');return;}
       doc=Object.assign({},base,{type:'occasion',occasion:state.ui.occasion||'Baptism',content:body});
     }else{
-      const body=val('fBody');if(!body){toast('Write your post');return;}
+      const body=val('fBody');
+      if(!body&&!carriesMedia){toast('Write your post, or attach a picture');return;}
       doc=Object.assign({},base,{type:'text',content:body});
     }
     await dbAdd('posts',doc);
@@ -4002,7 +4461,57 @@ const ACTIONS={
     e.isLive=!e.isLive;dbUpdate('events',e.id,{isLive:e.isLive});render();toast(e.isLive?'You are live':'Live ended · replay saved to sermons');
   },
   'approve-member':function(el){toast(el.dataset.v+' approved and added to members');},
-  'open-image':function(el){openSheet('image',{id:el.dataset.id});},
+  'open-image':function(el){openSheet('image',{id:el.dataset.id,i:Number(el.dataset.i)||0});},
+  /* ---------- composer attachments ---------- */
+  'cm-kind':function(el){
+    const k=el.dataset.v;
+    state.ui.composeKind=k;
+    if(k!=='photos')state.ui.composePhotos=[];
+    if(k!=='video')state.ui.composeVideo=null;
+    if(k!=='audio')state.ui.composeAudio=null;
+    render();
+  },
+  'pick-photos':function(){
+    const left=MAX_PHOTOS-(state.ui.composePhotos||[]).length;
+    if(left<=0){toast('Five pictures is the limit');return;}
+    const inp=document.createElement('input');
+    inp.type='file';inp.accept='image/*';inp.multiple=true;
+    inp.onchange=function(){
+      const files=Array.prototype.slice.call(inp.files||[],0,left);
+      if(!files.length)return;
+      if((inp.files||[]).length>left)toast('Only the first '+left+' were added — five is the limit');
+      let pending=files.length;
+      files.forEach(function(f){
+        readImage(f,1080,0.78,function(data){
+          state.ui.composePhotos=(state.ui.composePhotos||[]).concat([data]).slice(0,MAX_PHOTOS);
+          if(--pending<=0)render();
+        });
+      });
+    };
+    inp.click();
+  },
+  'drop-photo':function(el){
+    const i=Number(el.dataset.i);
+    state.ui.composePhotos=(state.ui.composePhotos||[]).filter(function(_,k){return k!==i;});
+    render();
+  },
+  'pick-video':function(){
+    pickFile('video/*',function(f){
+      readVideo(f,function(v){state.ui.composeVideo=v;render();
+        toast(v.session?'Video ready for this session — too large to keep after a reload':'Video attached');});
+    });
+  },
+  'clear-video':function(){state.ui.composeVideo=null;render();},
+  'pick-audio':function(){
+    pickFile('audio/*',function(f){
+      if(f.size>4.2*1024*1024){toast('That audio is over 4 MB — choose a shorter clip');return;}
+      const fr=new FileReader();
+      fr.onerror=function(){toast('Could not read that file');};
+      fr.onload=function(){state.ui.composeAudio={src:fr.result,name:f.name};render();toast('Audio attached');};
+      fr.readAsDataURL(f);
+    });
+  },
+  'clear-audio':function(){state.ui.composeAudio=null;render();},
   'pick-photo':function(){const i=document.getElementById('photoInput');if(i)i.click();},
   'clear-photo':function(){state.ui.composePhoto=null;state.ui.composePhotoName='';render();},
   soon:function(el){const v=el.dataset.v;if(SOON[v])go('soon',{v:v,from:state.route});else openSheet('soon',{v:v});},
@@ -4186,7 +4695,7 @@ setTimeout(function(){
   if(state.route!=='splash')return;
   const s=state.session;
   const link=(location.hash.match(/^#news\/([\w-]+)/)||[])[1];
-  if(s&&s.role==='church')go(s.verified?'console':'pending');
+  if(s&&s.role==='church'&&!believerMode())go(s.verified?'console':'pending');
   else if(s||link)go('home');
   else go('welcome');
   /* a shared newsroom link opens that story straight away, signed in or not */
