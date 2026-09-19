@@ -20,7 +20,7 @@ const ICONS={
   check:'<path d="m5.4 12.6 4.4 4.4 8.8-9.6"/>',
   shield:'<path d="M12 3.2 19 6v6c0 4.4-3 7.4-7 8.8-4-1.4-7-4.4-7-8.8V6l7-2.8Z"/><path d="m9.2 11.8 2 2 3.6-3.8"/>',
   play:'<path d="M8.6 5.4 18.4 12l-9.8 6.6V5.4Z"/>',
-  settings:'<circle cx="12" cy="12" r="3.1"/><path d="M12 3.6v2.2M12 18.2v2.2M4.1 4.1l1.6 1.6M18.3 18.3l1.6 1.6M3.6 12h2.2M18.2 12h2.2M4.1 19.9l1.6-1.6M18.3 5.7l1.6-1.6"/>',
+  settings:'<circle cx="12" cy="12" r="3.2"/><path d="M19.1 14.6a1.6 1.6 0 0 0 .32 1.77l.06.06a1.9 1.9 0 1 1-2.69 2.69l-.06-.06a1.6 1.6 0 0 0-1.77-.32 1.6 1.6 0 0 0-.97 1.47v.17a1.9 1.9 0 1 1-3.8 0v-.09a1.6 1.6 0 0 0-1.03-1.46 1.6 1.6 0 0 0-1.77.32l-.06.06a1.9 1.9 0 1 1-2.69-2.69l.06-.06a1.6 1.6 0 0 0 .32-1.77 1.6 1.6 0 0 0-1.47-.97H3.3a1.9 1.9 0 1 1 0-3.8h.09a1.6 1.6 0 0 0 1.46-1.03 1.6 1.6 0 0 0-.32-1.77l-.06-.06a1.9 1.9 0 1 1 2.69-2.69l.06.06a1.6 1.6 0 0 0 1.77.32h.08a1.6 1.6 0 0 0 .97-1.47V3.3a1.9 1.9 0 1 1 3.8 0v.09a1.6 1.6 0 0 0 .97 1.47 1.6 1.6 0 0 0 1.77-.32l.06-.06a1.9 1.9 0 1 1 2.69 2.69l-.06.06a1.6 1.6 0 0 0-.32 1.77v.08a1.6 1.6 0 0 0 1.47.97h.17a1.9 1.9 0 1 1 0 3.8h-.09a1.6 1.6 0 0 0-1.47.97Z"/>',
   globe:'<circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2"/><path d="M12 3.4c2.6 3 2.6 14.2 0 17.2M12 3.4c-2.6 3-2.6 14.2 0 17.2"/>',
   moon:'<path d="M20 14.6A8.6 8.6 0 1 1 9.4 4a7 7 0 0 0 10.6 10.6Z"/>',
   sun:'<circle cx="12" cy="12" r="4.2"/><path d="M12 3.4v2M12 18.6v2M3.4 12h2M18.6 12h2M5.7 5.7l1.4 1.4M16.9 16.9l1.4 1.4M5.7 18.3l1.4-1.4M16.9 7.1l1.4-1.4"/>',
@@ -63,8 +63,7 @@ const GOALS=[
   {k:'rp2',icon:'music',t:'Psalms in 30 days',d:'Five psalms a day for a month',plan:'rp2'},
   {k:'rp3',icon:'star',t:'The Gospels in 50 days',d:'Matthew, Mark, Luke and John, end to end',plan:'rp3'},
   {k:'church',icon:'church',t:'Connect with my church',d:'Services, events and the people I worship with'},
-  {k:'journal',icon:'edit',t:'Journal my spiritual journey',d:'Private notes, prayers and answered prayers'},
-  {k:'pray',icon:'hands',t:'Pray with others',d:'Join the prayer chain and pray for requests'}
+  {k:'journal',icon:'edit',t:'Journal my spiritual journey',d:'Private notes, prayers and answered prayers'}
 ];
 /* Every church hands its members an invite code. Codes are matched ignoring case, spaces and dashes. */
 const INVITE_CODES={ch1:'GRACE-7291',ch2:'BETHEL-3304',ch3:'MARTHOMA-1876',ch4:'NEWLIFE-6112',ch5:'HOPE-2210',ch6:'EMMANUEL-1994'};
@@ -96,6 +95,38 @@ const GRADS=[
   ['#C08FD0','#3E4BA6'],['#38BDF1','#B4562F'],['#7FD8E8','#3C5AA6'],['#FF9E7A','#8C3B6E']
 ];
 function grad(seed){const g=GRADS[Math.abs(hash(seed))%GRADS.length];return 'linear-gradient(135deg,'+g[0]+','+g[1]+')';}
+/* ---------- church logos ----------
+   Every church carries its own mark. Until a church uploads a logo of its own it is given one
+   of the emblems below; ch1..ch6 are pinned to different designs and colours so no two seeded
+   churches ever look alike. The photographs in PHOTO_OF stay what they were — covers and
+   gallery art, not identity. */
+const CHURCH_EMBLEMS=[
+  {k:'arch',c:['#2BB3EA','#0A5C9E'],d:'M12 2.4c-3.7 0-6.7 3-6.7 6.7v10.6c0 .7.5 1.2 1.2 1.2h3.2v-6.1a2.3 2.3 0 0 1 4.6 0v6.1h3.2c.7 0 1.2-.5 1.2-1.2V9.1c0-3.7-3-6.7-6.7-6.7Zm.9 3.1v1.3h1.3v1.7h-1.3v2.4h-1.8V8.5H9.8V6.8h1.3V5.5h1.8Z'},
+  {k:'flame',c:['#F08A3C','#B23A1E'],d:'M12 2.2c.6 3 2 4.6 3.6 6.2 1.6 1.6 2.8 3.3 2.8 5.7A6.4 6.4 0 0 1 5.6 14c0-1.9.8-3.4 2-4.8.2 1.2.7 2 1.6 2.5-.3-3.6.7-6.7 2.8-9.5Zm0 10.1c-1.1 1.3-1.8 2.3-1.8 3.5a1.8 1.8 0 0 0 3.6 0c0-1.2-.7-2.2-1.8-3.5Z'},
+  {k:'cross',c:['#7C5CC4','#3B2C77'],d:'M10.2 2.6h3.6v5.1h5.1v3.6h-5.1v10.1h-3.6V11.3H5.1V7.7h5.1z'},
+  {k:'dove',c:['#28B58C','#136B58'],d:'M20.4 4.9c-2.8.4-4.8 1.9-6.6 3.9-2 2.2-4.2 3.3-7 3.2-.7 0-1.1.7-.7 1.3l1.6 2.4-1.9 2.5c-.4.6 0 1.4.8 1.3 4.9-.6 8.6-2.6 11.2-6.2 1.8-2.4 2.9-5.2 3.4-8.1.1-.2-.4-.4-.8-.3ZM17.9 7a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z'},
+  {k:'anchor',c:['#3C6FD1','#1B3271'],d:'M12 2.3a2.7 2.7 0 0 0-1 5.2v1.7H8.2v2.2H11v6.2a5.3 5.3 0 0 1-3.9-4.1h1.5L5.4 10 2.2 13.5h1.6A8.3 8.3 0 0 0 12 21.7a8.3 8.3 0 0 0 8.2-8.2h1.6L18.6 10l-3.2 3.5h1.5A5.3 5.3 0 0 1 13 17.6v-6.2h2.8V9.2H13V7.5a2.7 2.7 0 0 0-1-5.2Zm0 1.9a.8.8 0 1 1 0 1.6.8.8 0 0 1 0-1.6Z'},
+  {k:'book',c:['#C2524E','#7A2230'],d:'M3.2 5.1c2.7-1 5.4-1.1 8 .1v13.5c-2.6-1.2-5.3-1.1-8-.1V5.1Zm9.6.1c2.6-1.2 5.3-1.1 8-.1v13.5c-2.7-1-5.4-.9-8 .1V5.2Z'},
+  {k:'chalice',c:['#B8872F','#6D4310'],d:'M6.2 3h11.6l-.6 4.6a5.7 5.7 0 0 1-4.3 4.8v4.2h3.4v2.4H7.7v-2.4h3.4v-4.2A5.7 5.7 0 0 1 6.8 7.6L6.2 3Zm2.3 2.4.3 1.9a3.3 3.3 0 0 0 6.4 0l.3-1.9H8.5Z'},
+  {k:'star',c:['#1E9FB8','#0B4F6C'],d:'m12 2.3 2.6 6.4 6.9.5-5.3 4.5 1.7 6.7L12 16.8l-5.9 3.6 1.7-6.7-5.3-4.5 6.9-.5z'}
+];
+/* Seeded churches are pinned so the six in the directory never repeat a mark. */
+const EMBLEM_OF={ch1:0,ch2:1,ch3:2,ch4:3,ch5:4,ch6:5};
+function emblemFor(id){
+  const i=EMBLEM_OF[id];
+  return CHURCH_EMBLEMS[i!=null?i:Math.abs(hash(String(id)))%CHURCH_EMBLEMS.length];
+}
+/* The church's mark at any size. Pass the church object (or just its id). */
+function churchLogo(c,size,style){
+  const o=(c&&typeof c==='object')?c:(churchById(c)||{id:c,name:''});
+  const px=size||44, r=Math.max(8,Math.round(px*0.29)), e=emblemFor(o.id);
+  let extra=String(style||'').trim();
+  if(extra&&extra.slice(-1)!==';')extra+=';';
+  const base='width:'+px+'px;height:'+px+'px;border-radius:'+r+'px;'+extra;
+  if(o.logo)return '<span class="ch-logo" style="'+base+'background:#282828 url('+esc(o.logo)+') center/cover" role="img" aria-label="'+esc(o.name||'Church')+' logo"></span>';
+  return '<span class="ch-logo" style="'+base+'background:linear-gradient(140deg,'+e.c[0]+','+e.c[1]+')" role="img" aria-label="'+esc(o.name||'Church')+' logo">'
+    +'<svg viewBox="0 0 24 24" width="'+Math.round(px*0.56)+'" height="'+Math.round(px*0.56)+'" fill="#FFFFFF" aria-hidden="true"><path d="'+e.d+'"/></svg></span>';
+}
 function hash(s){s=String(s);let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0;}return h;}
 function coverArt(seed){
   const h1=Math.abs(hash(seed))%360, h2=(h1+62)%360, h3=(h1+188)%360;
@@ -341,10 +372,10 @@ const state={
   route:'splash',
   params:{},
   session:lsGet('session',null),
-  local:Object.assign({follows:[],saved:[],rsvps:[],prayed:[],reacted:{},journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]},
+  local:Object.assign({follows:[],saved:[],rsvps:[],reacted:{},journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]},
     lsGet('local',{})),
-  prefs:lsGet('prefs',{broadcast:true,digest:false,quiet:true,events:true,prayer:true,lang:'English',visibility:'church'}),
-  data:{churches:[],posts:[],events:[],plans:[],prayers:[],people:[],comments:[],communities:[],threads:[],connections:[],cmRequests:[]},
+  prefs:lsGet('prefs',{broadcast:true,digest:false,quiet:true,events:true,lang:'English',visibility:'church'}),
+  data:{churches:[],posts:[],events:[],plans:[],people:[],comments:[],communities:[],threads:[],connections:[],cmRequests:[],storyReacts:[]},
   ui:{tab:'All',dir:'list',dirFilters:freshFilters(),journeyTab:'Timeline',churchTab:'Posts',consoleTab:'Dashboard',
       chat:[],chatMode:'Ask',chatBusy:false,otp:null,authRole:'believer',authId:'',onboard:{},step:0,sheet:null,toast:null,ready:false,dbState:'loading',
       calMonth:null,calDay:null,railMonth:null,railDay:null,c2cTab:'Inbox',news:null,story:null,fx:null},
@@ -359,7 +390,7 @@ function saveSession(){state.session?lsSet('session',state.session):lsDel('sessi
 /* ---------- seed data ----------
    Embedded so the ark is alive on first open, online or offline. Dates are relative
    (ageHours / dayOffset) and hydrated at load, so the demo never goes stale. */
-const SEED={"prayerRequests":[{"answered":false,"authorName":"Anitha Raj","churchId":"ch2","churchName":"Bethel Assembly","prayingCount":86,"text":"My father's scan results come on Thursday. I have been carrying this alone for two weeks and I am tired. Please pray for good news, and for me to sleep.","visibility":"public","id":"pr1","ageHours":13.83},{"answered":false,"authorName":"Grace Mathew","churchId":"ch2","churchName":"Bethel Assembly","prayingCount":512,"text":"For Br. Immanuel in the ICU at St. John's, and for his wife who has not left the corridor since last night.","visibility":"public","id":"pr10","ageHours":5},{"answered":false,"authorName":"Anonymous","churchId":"ch1","churchName":"Grace Cathedral","prayingCount":124,"text":"I have not spoken to my brother in four years. He is coming to the wedding this month and I do not know how to begin.","visibility":"anonymous","id":"pr2","ageHours":20.5},{"answered":false,"authorName":"Joseph Kumar","churchId":"ch4","churchName":"New Life Fellowship","prayingCount":211,"text":"Third interview on Friday after eight months without work. Pray that I walk in without desperation on my face.","visibility":"public","id":"pr3","ageHours":4.67},{"answered":false,"authorName":"Mercy Thomas","churchId":"ch3","churchName":"St. Thomas Marthoma","prayingCount":58,"text":"For our son who left for Dubai last week. He is 22 and it is his first time away from Kerala.","visibility":"church","id":"pr4","ageHours":39.25},{"answered":false,"authorName":"Anonymous","churchId":null,"churchName":null,"prayingCount":347,"text":"I have been pretending to be fine at church for months. I still come, I still sing, and I feel nothing. Pray that something comes back.","visibility":"anonymous","id":"pr5","ageHours":60.08},{"answered":false,"authorName":"Priya Selvam","churchId":"ch6","churchName":"Emmanuel Baptist","prayingCount":94,"text":"Our daughter's board exams begin Monday. She has worked hard. Pray for a clear mind and a calm hall.","visibility":"public","id":"pr6","ageHours":29.75},{"answered":true,"authorName":"David Mathew","churchId":"ch5","churchName":"Living Hope Church","prayingCount":428,"text":"Six months sober tomorrow. Pray for the seventh, and for the friends who kept answering my calls at 2am.","visibility":"public","id":"pr7","ageHours":89},{"answered":false,"authorName":"Ruth Anand","churchId":"ch1","churchName":"Grace Cathedral","prayingCount":67,"text":"For the elderly members who stopped coming when the bus route changed. Pray that we find drivers, and that they know they were missed.","visibility":"church","id":"pr8","ageHours":2.92},{"answered":false,"authorName":"Samuel P.","churchId":"ch4","churchName":"New Life Fellowship","prayingCount":183,"text":"Pastor Ramesh walks 9km each Sunday to reach the Warangal congregation. Pray for his knees and for the roof fund.","visibility":"public","id":"pr9","ageHours":48.33}],"posts":[{"churchId":"ch1","churchName":"Grace Cathedral","comments":31,"content":"From Lamentations 3 — mercies that are new every morning are offered to people standing in the ruins, not to people who have already recovered. Audio, transcript and Tamil translation are attached.","duration":"42 min","reactions":{"amen":184,"bless":63,"fire":22,"love":97,"peace":41},"speaker":"Rev. Daniel Selvam","title":"The God Who Stays","type":"sermon","id":"p1","ageHours":27.75},{"churchId":"ch4","churchName":"New Life Fellowship","comments":29,"content":"Telugu message with English and Hindi translations generated from the transcript. On staying planted when the ground keeps moving.","duration":"39 min","reactions":{"amen":207,"bless":51,"fire":66,"love":72,"peace":44},"speaker":"Pr. Prasad Rao","title":"Rooted","type":"sermon","id":"p10","ageHours":28.5},{"audience":"Members only","churchId":"ch4","churchName":"New Life Fellowship","comments":33,"content":"Relief supplies for the flood-hit villages near Warangal leave Saturday 5am. We need eight volunteers with two-wheelers and anyone who can pack rice from Friday evening.","priority":"Important","reactions":{"amen":156,"bless":42,"fire":37,"love":88,"peace":19},"type":"broadcast","id":"p11","ageHours":16.75},{"churchId":"ch4","churchName":"New Life Fellowship","comments":52,"content":"Our eleventh village congregation meets under a tarpaulin in Warangal district. Pray for the roof before the next rains, and for Pastor Ramesh who walks 9km each Sunday to lead it.","reactions":{"amen":389,"bless":97,"fire":18,"love":121,"peace":63},"type":"prayer","id":"p12","ageHours":6.33},{"churchId":"ch5","churchName":"Living Hope Church","comments":38,"content":"On Matthew 11:28 and the difference between rest and collapse. If you only get one quiet hour this week, this is what to do with it.","duration":"31 min","reactions":{"amen":174,"bless":29,"fire":21,"love":63,"peace":118},"speaker":"Ps. Neil D'Souza","title":"Sabbath in a city that never rests","type":"sermon","id":"p13","ageHours":45.67},{"churchId":"ch5","churchName":"Living Hope Church","comments":11,"content":"Tonight at 7pm. Dinner, two short talks, and time to actually talk to each other. Childcare provided. Sixty seats, first come.","eventId":"e6","reactions":{"amen":63,"bless":17,"fire":6,"love":81,"peace":22},"title":"Marriage enrichment evening","type":"event","id":"p14","ageHours":4},{"churchId":"ch5","churchName":"Living Hope Church","comments":9,"content":"Four new small groups open this month — Andheri, Vashi, Thane and one online for people on night shifts. Ask in the group chat and we will connect you to a leader near you.","reactions":{"amen":47,"bless":9,"fire":8,"love":33,"peace":14},"type":"text","id":"p15","ageHours":86.92},{"churchId":"ch6","churchName":"Emmanuel Baptist","comments":17,"content":"Psalm 119 in Tamil, verse by verse. A lamp for the next step rather than a floodlight over the whole road.","duration":"47 min","reactions":{"amen":152,"bless":68,"fire":14,"love":41,"peace":39},"speaker":"Pr. Jeyaraj Manickam","title":"Vaarthaiyin Velicham — The Light of the Word","type":"sermon","id":"p16","ageHours":26.33},{"audience":"Everyone","churchId":"ch6","churchName":"Emmanuel Baptist","comments":6,"content":"Saturday fasting prayer at 6:00am as always. Thirty-two years without a break — come for the whole time or for ten minutes, both are welcome.","priority":"Normal","reactions":{"amen":118,"bless":33,"fire":12,"love":19,"peace":28},"type":"broadcast","id":"p17","ageHours":77.5},{"churchId":"ch6","churchName":"Emmanuel Baptist","comments":41,"content":"Sudha and Vimal were married here on Saturday, both raised in this Sunday school. Their parents met in this church too.","occasion":"Wedding","reactions":{"amen":143,"bless":76,"fire":18,"love":211,"peace":22},"type":"occasion","id":"p18","ageHours":43.83},{"churchId":"ch1","churchName":"Grace Cathedral","comments":22,"content":"We are arranging transport for elderly members who stopped coming after the bus route changed. If you drive past Mylapore on a Sunday morning, one seat is all it takes.","reactions":{"amen":88,"bless":21,"fire":5,"love":74,"peace":16},"type":"text","id":"p19","ageHours":4.83},{"audience":"Everyone","churchId":"ch1","churchName":"Grace Cathedral","comments":8,"content":"From this Sunday, the Tamil service moves to 7:00am and the English service to 9:30am. The 6:30pm midweek communion stays as it is.","priority":"Normal","reactions":{"amen":72,"bless":18,"fire":2,"love":14,"peace":9},"type":"broadcast","id":"p2","ageHours":42.33},{"churchId":"ch2","churchName":"Bethel Assembly","comments":36,"content":"Bethel turns 34 this month. It started with nine people in a garage on Hosur Road, and the same two families still set out the chairs every Sunday.","occasion":"Anniversary","reactions":{"amen":196,"bless":58,"fire":47,"love":134,"peace":33},"type":"occasion","id":"p20","ageHours":122},{"churchId":"ch1","churchName":"Grace Cathedral","comments":19,"content":"Three hours of worship in Tamil and English with the combined choirs. Doors at 6:30pm, no ticket needed, bring someone with you.","eventId":"e3","reactions":{"amen":96,"bless":24,"fire":74,"love":58,"peace":31},"title":"Night of Worship — Friday","type":"event","id":"p3","ageHours":50.67},{"churchId":"ch2","churchName":"Bethel Assembly","comments":24,"content":"Part two of our series in Hebrews. If your job, your rent and your city all changed this year, this one is for you.","duration":"36 min","reactions":{"amen":143,"bless":37,"fire":38,"love":61,"peace":52},"speaker":"Pr. Sam Abraham","title":"Anchored: faith in an unstable season","type":"sermon","id":"p4","ageHours":24.92},{"churchId":"ch2","churchName":"Bethel Assembly","comments":16,"content":"Youth camp registration closes Friday. 120 places, ₹1,800 including travel and food. Talk to Anitha if cost is the only thing stopping you — nobody is left behind for money.","reactions":{"amen":58,"bless":12,"fire":29,"love":44,"peace":7},"type":"text","id":"p5","ageHours":63.83},{"audience":"Everyone","churchId":"ch2","churchName":"Bethel Assembly","comments":67,"content":"Urgent prayer: Br. Immanuel was in a road accident last night and is in the ICU at St. John's. His family is with him. Please pray now, and keep Friday morning free if blood donors are needed.","priority":"Urgent","reactions":{"amen":412,"bless":88,"fire":9,"love":103,"peace":54},"type":"broadcast","id":"p6","ageHours":5.25},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":13,"content":"Sunday's homily in Malayalam, with an English transcript for those who asked. On grace as a road you walk, not a door you pass through once.","duration":"29 min","reactions":{"amen":121,"bless":74,"fire":11,"love":49,"peace":66},"speaker":"Fr. Thomas Varghese","title":"Kripayude Vazhi — The Way of Grace","type":"sermon","id":"p7","ageHours":47.5},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":48,"content":"Fourteen believers were baptised in the backwaters this morning, the youngest fifteen and the oldest seventy-one. The whole parish walked down together after Qurbana.","occasion":"Baptism","reactions":{"amen":268,"bless":142,"fire":31,"love":195,"peace":77},"type":"occasion","id":"p8","ageHours":74.17},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":4,"content":"Choir practice moves to Thursday 7pm this week — the church hall is being repainted before the Harvest Festival.","reactions":{"amen":34,"bless":6,"fire":1,"love":9,"peace":11},"type":"text","id":"p9","ageHours":90},{"authorCity":"Bengaluru","authorId":"pe1","authorName":"Anitha Raj","authorType":"person","comments":3,"content":"Six months ago I could not pray out loud in a room of more than three people. Tonight I led the prayer at small group and my hands did not shake. Nobody there knew what it cost. He did.","reactions":{"amen":214,"bless":38,"fire":41,"love":96,"peace":27},"type":"testimony","verseRef":"2 Corinthians 12:9","id":"up1","ageHours":3.67},{"authorCity":"Kochi","authorId":"pe9","authorName":"Vinod Kurian","authorType":"person","comments":3,"content":"Twenty-eight years in the choir and I still get nervous before Harvest Festival. Does that ever go away, or is the nervousness part of taking it seriously?","reactions":{"amen":88,"bless":19,"fire":9,"love":63,"peace":44},"type":"question","id":"up10","ageHours":15.92},{"authorCity":"Bengaluru","authorId":"pe1","authorName":"Anitha Raj","authorType":"person","comments":2,"content":"Youth camp registration closes Friday and two kids in my street cannot afford it. If anyone wants to quietly cover a place, message me — no names will ever be mentioned.","reactions":{"amen":96,"bless":34,"fire":27,"love":118,"peace":12},"type":"text","id":"up11","ageHours":2.17},{"authorCity":"Mumbai","authorId":"pe4","authorName":"David Mathew","authorType":"person","comments":3,"content":"To whoever is reading the feed at 2am because sleeping means thinking: the Psalms were written for exactly this hour. Start at 42. You are not the first person to ask God where he went.","reactions":{"amen":377,"bless":68,"fire":31,"love":142,"peace":214},"type":"text","verseRef":"Psalm 46:10","id":"up12","ageHours":9.33},{"authorCity":"Mumbai","authorId":"pe4","authorName":"David Mathew","authorType":"person","comments":4,"content":"Six months sober tomorrow. I am posting this because a year ago I read someone else's post like this and it was the first time I believed it was possible. If that is you today — it is possible.","reactions":{"amen":892,"bless":141,"fire":96,"love":402,"peace":88},"type":"testimony","verseRef":"Lamentations 3:22","id":"up2","ageHours":14.83},{"authorCity":"Chennai","authorId":"pe6","authorName":"Ruth Anand","authorType":"person","comments":2,"content":"Practical question for Chennai people: we have four elderly members who stopped coming when the bus route changed. I can take two in my car. Does anyone drive past Mylapore around 6:45 on Sunday mornings?","reactions":{"amen":63,"bless":14,"fire":4,"love":71,"peace":8},"type":"question","id":"up3","ageHours":4.33},{"authorCity":"Hyderabad","authorId":"pe2","authorName":"Joseph Kumar","authorType":"person","comments":3,"content":"Third interview on Friday, eight months without work. I have stopped asking for the job and started asking to walk in without desperation on my face. Pray with me.","reactions":{"amen":448,"bless":62,"fire":12,"love":88,"peace":74},"type":"prayer","verseRef":"Philippians 4:6","id":"up4","ageHours":5.75},{"authorCity":"Kochi","authorId":"pe3","authorName":"Mercy Thomas","authorType":"person","comments":2,"content":"He called this morning. He found a Malayalam congregation ten minutes from his flat in Dubai and went alone last Friday. Twenty-two years old, first time away from Kerala, and he went alone.","reactions":{"amen":327,"bless":84,"fire":22,"love":288,"peace":61},"type":"praise","id":"up5","ageHours":2.92},{"authorCity":"Coimbatore","authorId":"pe5","authorName":"Priya Selvam","authorType":"person","comments":2,"content":"Day 251 of the Bible in a year. I have started this plan four times since 2019 and never got past March. Today I am in Jeremiah and I am still here.","reactions":{"amen":189,"bless":41,"fire":58,"love":122,"peace":33},"type":"praise","verseRef":"Psalm 119:105","id":"up6","ageHours":16.5},{"authorCity":"Bengaluru","authorId":"pe8","authorName":"Grace Mathew","authorType":"person","comments":4,"content":"Update on Br. Immanuel: he was moved out of the ICU this afternoon and opened his eyes when his wife spoke. Keep going, everyone. Thirty-one hours of prayer and counting.","reactions":{"amen":1204,"bless":218,"fire":47,"love":388,"peace":176},"type":"prayer","id":"up7","ageHours":1.5},{"authorCity":"Hyderabad","authorId":"pe7","authorName":"Samuel Prakash","authorType":"person","comments":3,"content":"Walked the 9km to Warangal with Pastor Ramesh yesterday. Under a tarpaulin, 180 people, no fans, no floor. I have never heard singing like that in a building with a roof.","reactions":{"amen":512,"bless":96,"fire":133,"love":204,"peace":58},"type":"testimony","id":"up8","ageHours":18.25},{"authorCity":"Chennai","authorId":"pe10","authorName":"Sarah Thomas","authorType":"person","comments":2,"content":"A five-year-old in my Sunday school class explained the parable of the lost sheep to me this morning and got it more right than my last three attempts at teaching it.","reactions":{"amen":143,"bless":22,"fire":14,"love":196,"peace":18},"type":"praise","id":"up9","ageHours":0.75}],"churches":[{"about":"Planted in 1908 and rebuilt twice, Grace Cathedral has stayed on the same corner of Anna Salai for four generations. Two Sunday services, a Tamil choir that has sung together for thirty years, and a midweek communion that anyone in the city is welcome to join.","address":"12 Anna Salai, Teynampet, Chennai 600018","city":"Chennai","followers":4820,"languages":["Tamil","English"],"ministries":["Choir","Youth","Prayer Cell","Sunday School","Outreach","Ushers"],"name":"Grace Cathedral","pastorName":"Rev. Daniel Selvam","serviceTimes":["Sun 7:00am Tamil","Sun 9:30am English","Wed 6:30pm Midweek"],"tagline":"A family finding grace in the heart of the city","verified":true,"id":"ch1"},{"about":"A young congregation shaped by the city that surrounds it — students, engineers, nurses and drivers in the same room. Small groups meet across eleven neighbourhoods through the week.","address":"48 Hosur Road, Koramangala, Bengaluru 560095","city":"Bengaluru","followers":3140,"languages":["English","Kannada","Tamil"],"ministries":["Worship Team","Youth","Small Groups","Media","Kids Church"],"name":"Bethel Assembly","pastorName":"Pr. Sam Abraham","serviceTimes":["Sun 9:30am English","Sun 11:30am Kannada","Fri 7:00pm Youth"],"tagline":"Ordinary people, extraordinary God","verified":true,"id":"ch2"},{"about":"One of the oldest congregations on the Malabar coast, with a liturgy carried in Malayalam for a hundred and fifty years. Baptisms are still held in the backwaters behind the church.","address":"Church Road, Fort Kochi, Ernakulam 682001","city":"Kochi","followers":2610,"languages":["Malayalam","English"],"ministries":["Choir","Altar Servers","Women's Fellowship","Youth League"],"name":"St. Thomas Marthoma","pastorName":"Fr. Thomas Varghese","serviceTimes":["Sun 7:30am Malayalam Holy Qurbana","Sun 10:00am English","Sat 5:00pm Evening Prayer"],"tagline":"By the backwaters, since 1876","verified":true,"id":"ch3"},{"about":"A sending church with eleven village congregations planted in the last six years. Tuesday intercession runs for two hours and is streamed for those who cannot travel in.","address":"7-2-1 Kukatpally, Hyderabad 500072","city":"Hyderabad","followers":5390,"languages":["Telugu","Hindi","English"],"ministries":["Church Planting","Intercession","Relief Team","Women's Ministry","Youth"],"name":"New Life Fellowship","pastorName":"Pr. Prasad Rao","serviceTimes":["Sun 8:00am Telugu","Sun 10:30am English","Tue 7:00pm Intercession"],"tagline":"Reaching the villages beyond the ring road","verified":true,"id":"ch4"},{"about":"A congregation of commuters. Everything is built around people who work six days a week — short services, midweek prayer online, and small groups that meet close to where people live.","address":"Linking Road, Bandra West, Mumbai 400050","city":"Mumbai","followers":2870,"languages":["English","Hindi","Marathi"],"ministries":["Small Groups","Counselling","Worship","Marriage Ministry","Kids"],"name":"Living Hope Church","pastorName":"Ps. Neil D'Souza","serviceTimes":["Sun 10:00am English","Sun 12:30pm Hindi","Thu 8:00pm Prayer"],"tagline":"Rest for a city that never stops","verified":true,"id":"ch5"},{"about":"Expository preaching in two languages, a Saturday fasting prayer that has met without a break since 1994, and a small library open to the neighbourhood on weekday evenings.","address":"5 Race Course Road, Coimbatore 641018","city":"Coimbatore","followers":1980,"languages":["Tamil","English"],"ministries":["Bible Study","Fasting Prayer","Library","Choir","Men's Fellowship"],"name":"Emmanuel Baptist","pastorName":"Pr. Jeyaraj Manickam","serviceTimes":["Sun 8:00am Tamil","Sun 10:30am English","Sat 6:00am Fasting Prayer"],"tagline":"The word, plainly taught, in Tamil and English","verified":true,"id":"ch6"}],"comments":[{"amens":34,"authorId":"pe8","authorName":"Grace Mathew","postId":"up1","text":"I was in that room. It did not sound like someone who was afraid.","id":"cm1","ageHours":3.08},{"amens":77,"authorId":"pe3","authorName":"Mercy Thomas","postId":"up10","text":"Twenty-eight years is not nervousness. It is reverence that never got comfortable.","id":"cm10","ageHours":15.33},{"amens":118,"authorId":"pe8","authorName":"Grace Mathew","postId":"p6","text":"Blood donors: St. John's needs B negative. I am going at 7am if anyone wants to come together.","id":"cm11","ageHours":4.5},{"amens":246,"authorId":"pe9","authorName":"Vinod Kurian","postId":"p8","text":"The seventy-one year old is my uncle. He waited a long time for this morning.","id":"cm12","ageHours":72.67},{"amens":12,"authorId":"pe2","authorName":"Joseph Kumar","postId":"up1","text":"Six months of small, unglamorous obedience. This is what it produces.","id":"cm2","ageHours":2.8},{"amens":7,"authorId":"pe5","authorName":"Priya Selvam","postId":"up1","text":"Saving this for the next time I have to speak in front of the school assembly.","id":"cm3","ageHours":1.97},{"amens":88,"authorId":"pe1","authorName":"Anitha Raj","postId":"up2","text":"Six months. Tomorrow we celebrate, and then we start on the seventh.","id":"cm4","ageHours":14.33},{"amens":156,"authorId":"pe7","authorName":"Samuel Prakash","postId":"up2","text":"My brother is four days in. I am reading this to him tonight.","id":"cm5","ageHours":13.75},{"amens":41,"authorId":"pe10","authorName":"Sarah Thomas","postId":"up2","text":"The friends who answered at 2am deserve a post of their own.","id":"cm6","ageHours":5.17},{"amens":22,"authorId":"pe10","authorName":"Sarah Thomas","postId":"up3","text":"I pass Mylapore at 6:30. I can take two. Sending you my number.","id":"cm7","ageHours":3.92},{"amens":63,"authorId":"pe4","authorName":"David Mathew","postId":"up4","text":"Praying at 9am Friday. Tell us what happens either way.","id":"cm8","ageHours":4.97},{"amens":204,"authorId":"pe2","authorName":"Joseph Kumar","postId":"up7","text":"Out of the ICU. I have refreshed this post eleven times today.","id":"cm9","ageHours":1.2}],"events":[{"capacity":400,"churchId":"ch1","churchName":"Grace Cathedral","description":"Our Wednesday communion, open to anyone in the city. Tamil and English liturgy side by side, forty minutes, streamed for those who cannot travel in.","isLive":true,"location":"Main sanctuary, Anna Salai","locationType":"onsite","rsvpCount":148,"title":"Midweek Communion Service","id":"e1","dayOffset":0,"time":"18:30"},{"capacity":0,"churchId":"ch4","churchName":"New Life Fellowship","description":"Two hours of intercession for our village congregations, the relief work near Warangal, and requests sent in through the prayer chain.","isLive":true,"location":"Online stream","locationType":"online","rsvpCount":92,"title":"Telugu Intercession Hour","id":"e2","dayOffset":0,"time":"19:00"},{"capacity":600,"churchId":"ch1","churchName":"Grace Cathedral","description":"Three hours of worship with the combined Tamil and English choirs, and a short word from Rev. Daniel Selvam. Doors at 6:30pm.","isLive":false,"location":"Main sanctuary, Anna Salai","locationType":"onsite","rsvpCount":214,"title":"Night of Worship","id":"e3","dayOffset":1,"time":"19:00"},{"capacity":120,"churchId":"ch2","churchName":"Bethel Assembly","description":"Three days in the Nandi Hills for ages 14 to 24. Travel, food and accommodation included. Registration closes Friday.","isLive":false,"location":"Nandi Hills Retreat Centre","locationType":"onsite","rsvpCount":78,"title":"Youth Camp — Ridge Retreat","id":"e4","dayOffset":9,"time":"07:00"},{"capacity":500,"churchId":"ch3","churchName":"St. Thomas Marthoma","description":"The parish Harvest Festival with the full choir, followed by the auction of harvest gifts in aid of the parish school.","isLive":false,"location":"Church Road, Fort Kochi","locationType":"onsite","rsvpCount":320,"title":"Harvest Festival Service","id":"e5","dayOffset":3,"time":"08:00"},{"capacity":60,"churchId":"ch5","churchName":"Living Hope Church","description":"Dinner, two short talks and unhurried time to talk to each other. Childcare provided on site.","isLive":false,"location":"Linking Road, Bandra West","locationType":"onsite","rsvpCount":41,"title":"Marriage Enrichment Evening","id":"e6","dayOffset":0,"time":"19:00"},{"capacity":0,"churchId":"ch6","churchName":"Emmanuel Baptist","description":"Thirty-two unbroken years of Saturday morning prayer. Come for the whole three hours or for ten minutes.","isLive":false,"location":"Race Course Road, Coimbatore","locationType":"onsite","rsvpCount":130,"title":"Saturday Fasting Prayer","id":"e7","dayOffset":2,"time":"06:00"},{"capacity":700,"churchId":"ch2","churchName":"Bethel Assembly","description":"English at 9:30am and Kannada at 11:30am, with kids church running alongside both.","isLive":false,"location":"Hosur Road, Koramangala","locationType":"onsite","rsvpCount":410,"title":"Sunday Celebration Service","id":"e8","dayOffset":3,"time":"09:30"}],"people":[{"bio":"Worship team at Bethel. Learning to trust slowly, out loud.","city":"Bengaluru","followers":412,"following":88,"homeChurchId":"ch2","joinedAt":"2026-03-02T10:00:00+05:30","name":"Anitha Raj","id":"pe1"},{"bio":"Sunday school, second standard. Twenty-two small theologians and a lot of glitter.","city":"Chennai","followers":205,"following":119,"homeChurchId":"ch1","joinedAt":"2026-06-01T10:00:00+05:30","name":"Sarah Thomas","id":"pe10"},{"bio":"Engineer. Hosts a Tuesday small group in Kukatpally. Eight months job hunting and still here.","city":"Hyderabad","followers":230,"following":140,"homeChurchId":"ch4","joinedAt":"2026-04-11T10:00:00+05:30","name":"Joseph Kumar","id":"pe2"},{"bio":"Nurse. Sunday school teacher for eleven years. Mother of one, now in Dubai.","city":"Kochi","followers":318,"following":96,"homeChurchId":"ch3","joinedAt":"2026-02-25T10:00:00+05:30","name":"Mercy Thomas","id":"pe3"},{"bio":"Six months sober tomorrow. Counting days out loud so someone else can too.","city":"Mumbai","followers":1240,"following":210,"homeChurchId":"ch5","joinedAt":"2026-01-30T10:00:00+05:30","name":"David Mathew","id":"pe4"},{"bio":"Teacher. Reading the Bible in a year for the first time — day 251 and I have never made it this far.","city":"Coimbatore","followers":176,"following":132,"homeChurchId":"ch6","joinedAt":"2026-01-08T10:00:00+05:30","name":"Priya Selvam","id":"pe5"},{"bio":"Drives the Sunday morning route for our elderly members. Ask me for a seat.","city":"Chennai","followers":289,"following":74,"homeChurchId":"ch1","joinedAt":"2026-03-19T10:00:00+05:30","name":"Ruth Anand","id":"pe6"},{"bio":"Walks with Pastor Ramesh to the Warangal congregation most Sundays.","city":"Hyderabad","followers":521,"following":188,"homeChurchId":"ch4","joinedAt":"2026-02-14T10:00:00+05:30","name":"Samuel Prakash","id":"pe7"},{"bio":"Youth leader. Camp is my favourite three days of the year.","city":"Bengaluru","followers":634,"following":301,"homeChurchId":"ch2","joinedAt":"2026-04-02T10:00:00+05:30","name":"Grace Mathew","id":"pe8"},{"bio":"Choir tenor since 1998. Still nervous before every Harvest Festival.","city":"Kochi","followers":143,"following":61,"homeChurchId":"ch3","joinedAt":"2026-05-06T10:00:00+05:30","name":"Vinod Kurian","id":"pe9"}],"readingPlans":[{"category":"Whole Bible","days":365,"description":"Genesis to Revelation in twelve months, roughly fifteen minutes a day, with a Psalm alongside each reading so the week never becomes only history.","title":"The Bible in a Year","todayRef":"Genesis 12 · Psalm 9","id":"rp1"},{"category":"Psalms","days":30,"description":"Five psalms a day for a month. Built for a season when words are hard to find — lament, praise and honesty in the same breath.","title":"Psalms in 30 Days","todayRef":"Psalm 23","id":"rp2"},{"category":"Gospels","days":50,"description":"Matthew, Mark, Luke and John end to end. A good first plan if you are new, or returning after a long time away.","title":"The Gospels in 50 Days","todayRef":"Luke 5:1-16","id":"rp3"}]};
+const SEED={"posts":[{"churchId":"ch1","churchName":"Grace Cathedral","comments":31,"content":"From Lamentations 3 — mercies that are new every morning are offered to people standing in the ruins, not to people who have already recovered. Audio, transcript and Tamil translation are attached.","duration":"42 min","reactions":{"amen":184,"bless":63,"fire":22,"love":97,"peace":41},"speaker":"Rev. Daniel Selvam","title":"The God Who Stays","type":"sermon","id":"p1","ageHours":27.75},{"churchId":"ch4","churchName":"New Life Fellowship","comments":29,"content":"Telugu message with English and Hindi translations generated from the transcript. On staying planted when the ground keeps moving.","duration":"39 min","reactions":{"amen":207,"bless":51,"fire":66,"love":72,"peace":44},"speaker":"Pr. Prasad Rao","title":"Rooted","type":"sermon","id":"p10","ageHours":28.5},{"audience":"Members only","churchId":"ch4","churchName":"New Life Fellowship","comments":33,"content":"Relief supplies for the flood-hit villages near Warangal leave Saturday 5am. We need eight volunteers with two-wheelers and anyone who can pack rice from Friday evening.","priority":"Important","reactions":{"amen":156,"bless":42,"fire":37,"love":88,"peace":19},"type":"broadcast","id":"p11","ageHours":16.75},{"churchId":"ch4","churchName":"New Life Fellowship","comments":52,"content":"Our eleventh village congregation meets under a tarpaulin in Warangal district. Pray for the roof before the next rains, and for Pastor Ramesh who walks 9km each Sunday to lead it.","reactions":{"amen":389,"bless":97,"fire":18,"love":121,"peace":63},"type":"text","id":"p12","ageHours":6.33},{"churchId":"ch5","churchName":"Living Hope Church","comments":38,"content":"On Matthew 11:28 and the difference between rest and collapse. If you only get one quiet hour this week, this is what to do with it.","duration":"31 min","reactions":{"amen":174,"bless":29,"fire":21,"love":63,"peace":118},"speaker":"Ps. Neil D'Souza","title":"Sabbath in a city that never rests","type":"sermon","id":"p13","ageHours":45.67},{"churchId":"ch5","churchName":"Living Hope Church","comments":11,"content":"Tonight at 7pm. Dinner, two short talks, and time to actually talk to each other. Childcare provided. Sixty seats, first come.","eventId":"e6","reactions":{"amen":63,"bless":17,"fire":6,"love":81,"peace":22},"title":"Marriage enrichment evening","type":"event","id":"p14","ageHours":4},{"churchId":"ch5","churchName":"Living Hope Church","comments":9,"content":"Four new small groups open this month — Andheri, Vashi, Thane and one online for people on night shifts. Ask in the group chat and we will connect you to a leader near you.","reactions":{"amen":47,"bless":9,"fire":8,"love":33,"peace":14},"type":"text","id":"p15","ageHours":86.92},{"churchId":"ch6","churchName":"Emmanuel Baptist","comments":17,"content":"Psalm 119 in Tamil, verse by verse. A lamp for the next step rather than a floodlight over the whole road.","duration":"47 min","reactions":{"amen":152,"bless":68,"fire":14,"love":41,"peace":39},"speaker":"Pr. Jeyaraj Manickam","title":"Vaarthaiyin Velicham — The Light of the Word","type":"sermon","id":"p16","ageHours":26.33},{"audience":"Everyone","churchId":"ch6","churchName":"Emmanuel Baptist","comments":6,"content":"Saturday fasting prayer at 6:00am as always. Thirty-two years without a break — come for the whole time or for ten minutes, both are welcome.","priority":"Normal","reactions":{"amen":118,"bless":33,"fire":12,"love":19,"peace":28},"type":"broadcast","id":"p17","ageHours":77.5},{"churchId":"ch6","churchName":"Emmanuel Baptist","comments":41,"content":"Sudha and Vimal were married here on Saturday, both raised in this Sunday school. Their parents met in this church too.","occasion":"Wedding","reactions":{"amen":143,"bless":76,"fire":18,"love":211,"peace":22},"type":"occasion","id":"p18","ageHours":43.83},{"churchId":"ch1","churchName":"Grace Cathedral","comments":22,"content":"We are arranging transport for elderly members who stopped coming after the bus route changed. If you drive past Mylapore on a Sunday morning, one seat is all it takes.","reactions":{"amen":88,"bless":21,"fire":5,"love":74,"peace":16},"type":"text","id":"p19","ageHours":4.83},{"audience":"Everyone","churchId":"ch1","churchName":"Grace Cathedral","comments":8,"content":"From this Sunday, the Tamil service moves to 7:00am and the English service to 9:30am. The 6:30pm midweek communion stays as it is.","priority":"Normal","reactions":{"amen":72,"bless":18,"fire":2,"love":14,"peace":9},"type":"broadcast","id":"p2","ageHours":42.33},{"churchId":"ch2","churchName":"Bethel Assembly","comments":36,"content":"Bethel turns 34 this month. It started with nine people in a garage on Hosur Road, and the same two families still set out the chairs every Sunday.","occasion":"Anniversary","reactions":{"amen":196,"bless":58,"fire":47,"love":134,"peace":33},"type":"occasion","id":"p20","ageHours":122},{"churchId":"ch1","churchName":"Grace Cathedral","comments":19,"content":"Three hours of worship in Tamil and English with the combined choirs. Doors at 6:30pm, no ticket needed, bring someone with you.","eventId":"e3","reactions":{"amen":96,"bless":24,"fire":74,"love":58,"peace":31},"title":"Night of Worship — Friday","type":"event","id":"p3","ageHours":50.67},{"churchId":"ch2","churchName":"Bethel Assembly","comments":24,"content":"Part two of our series in Hebrews. If your job, your rent and your city all changed this year, this one is for you.","duration":"36 min","reactions":{"amen":143,"bless":37,"fire":38,"love":61,"peace":52},"speaker":"Pr. Sam Abraham","title":"Anchored: faith in an unstable season","type":"sermon","id":"p4","ageHours":24.92},{"churchId":"ch2","churchName":"Bethel Assembly","comments":16,"content":"Youth camp registration closes Friday. 120 places, ₹1,800 including travel and food. Talk to Anitha if cost is the only thing stopping you — nobody is left behind for money.","reactions":{"amen":58,"bless":12,"fire":29,"love":44,"peace":7},"type":"text","id":"p5","ageHours":63.83},{"audience":"Everyone","churchId":"ch2","churchName":"Bethel Assembly","comments":67,"content":"Urgent prayer: Br. Immanuel was in a road accident last night and is in the ICU at St. John's. His family is with him. Please pray now, and keep Friday morning free if blood donors are needed.","priority":"Urgent","reactions":{"amen":412,"bless":88,"fire":9,"love":103,"peace":54},"type":"broadcast","id":"p6","ageHours":5.25},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":13,"content":"Sunday's homily in Malayalam, with an English transcript for those who asked. On grace as a road you walk, not a door you pass through once.","duration":"29 min","reactions":{"amen":121,"bless":74,"fire":11,"love":49,"peace":66},"speaker":"Fr. Thomas Varghese","title":"Kripayude Vazhi — The Way of Grace","type":"sermon","id":"p7","ageHours":47.5},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":48,"content":"Fourteen believers were baptised in the backwaters this morning, the youngest fifteen and the oldest seventy-one. The whole parish walked down together after Qurbana.","occasion":"Baptism","reactions":{"amen":268,"bless":142,"fire":31,"love":195,"peace":77},"type":"occasion","id":"p8","ageHours":74.17},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":4,"content":"Choir practice moves to Thursday 7pm this week — the church hall is being repainted before the Harvest Festival.","reactions":{"amen":34,"bless":6,"fire":1,"love":9,"peace":11},"type":"text","id":"p9","ageHours":90},{"authorCity":"Bengaluru","authorId":"pe1","authorName":"Anitha Raj","authorType":"person","comments":3,"content":"Six months ago I could not pray out loud in a room of more than three people. Tonight I led the prayer at small group and my hands did not shake. Nobody there knew what it cost. He did.","reactions":{"amen":214,"bless":38,"fire":41,"love":96,"peace":27},"type":"testimony","verseRef":"2 Corinthians 12:9","id":"up1","ageHours":3.67},{"authorCity":"Kochi","authorId":"pe9","authorName":"Vinod Kurian","authorType":"person","comments":3,"content":"Twenty-eight years in the choir and I still get nervous before Harvest Festival. Does that ever go away, or is the nervousness part of taking it seriously?","reactions":{"amen":88,"bless":19,"fire":9,"love":63,"peace":44},"type":"question","id":"up10","ageHours":15.92},{"authorCity":"Bengaluru","authorId":"pe1","authorName":"Anitha Raj","authorType":"person","comments":2,"content":"Youth camp registration closes Friday and two kids in my street cannot afford it. If anyone wants to quietly cover a place, message me — no names will ever be mentioned.","reactions":{"amen":96,"bless":34,"fire":27,"love":118,"peace":12},"type":"text","id":"up11","ageHours":2.17},{"authorCity":"Mumbai","authorId":"pe4","authorName":"David Mathew","authorType":"person","comments":3,"content":"To whoever is reading the feed at 2am because sleeping means thinking: the Psalms were written for exactly this hour. Start at 42. You are not the first person to ask God where he went.","reactions":{"amen":377,"bless":68,"fire":31,"love":142,"peace":214},"type":"text","verseRef":"Psalm 46:10","id":"up12","ageHours":9.33},{"authorCity":"Mumbai","authorId":"pe4","authorName":"David Mathew","authorType":"person","comments":4,"content":"Six months sober tomorrow. I am posting this because a year ago I read someone else's post like this and it was the first time I believed it was possible. If that is you today — it is possible.","reactions":{"amen":892,"bless":141,"fire":96,"love":402,"peace":88},"type":"testimony","verseRef":"Lamentations 3:22","id":"up2","ageHours":14.83},{"authorCity":"Chennai","authorId":"pe6","authorName":"Ruth Anand","authorType":"person","comments":2,"content":"Practical question for Chennai people: we have four elderly members who stopped coming when the bus route changed. I can take two in my car. Does anyone drive past Mylapore around 6:45 on Sunday mornings?","reactions":{"amen":63,"bless":14,"fire":4,"love":71,"peace":8},"type":"question","id":"up3","ageHours":4.33},{"authorCity":"Hyderabad","authorId":"pe2","authorName":"Joseph Kumar","authorType":"person","comments":3,"content":"Third interview on Friday, eight months without work. I have stopped asking for the job and started asking to walk in without desperation on my face. Pray with me.","reactions":{"amen":448,"bless":62,"fire":12,"love":88,"peace":74},"type":"text","verseRef":"Philippians 4:6","id":"up4","ageHours":5.75},{"authorCity":"Kochi","authorId":"pe3","authorName":"Mercy Thomas","authorType":"person","comments":2,"content":"He called this morning. He found a Malayalam congregation ten minutes from his flat in Dubai and went alone last Friday. Twenty-two years old, first time away from Kerala, and he went alone.","reactions":{"amen":327,"bless":84,"fire":22,"love":288,"peace":61},"type":"praise","id":"up5","ageHours":2.92},{"authorCity":"Coimbatore","authorId":"pe5","authorName":"Priya Selvam","authorType":"person","comments":2,"content":"Day 251 of the Bible in a year. I have started this plan four times since 2019 and never got past March. Today I am in Jeremiah and I am still here.","reactions":{"amen":189,"bless":41,"fire":58,"love":122,"peace":33},"type":"praise","verseRef":"Psalm 119:105","id":"up6","ageHours":16.5},{"authorCity":"Bengaluru","authorId":"pe8","authorName":"Grace Mathew","authorType":"person","comments":4,"content":"Update on Br. Immanuel: he was moved out of the ICU this afternoon and opened his eyes when his wife spoke. Keep going, everyone. Thirty-one hours of prayer and counting.","reactions":{"amen":1204,"bless":218,"fire":47,"love":388,"peace":176},"type":"text","id":"up7","ageHours":1.5},{"authorCity":"Hyderabad","authorId":"pe7","authorName":"Samuel Prakash","authorType":"person","comments":3,"content":"Walked the 9km to Warangal with Pastor Ramesh yesterday. Under a tarpaulin, 180 people, no fans, no floor. I have never heard singing like that in a building with a roof.","reactions":{"amen":512,"bless":96,"fire":133,"love":204,"peace":58},"type":"testimony","id":"up8","ageHours":18.25},{"authorCity":"Chennai","authorId":"pe10","authorName":"Sarah Thomas","authorType":"person","comments":2,"content":"A five-year-old in my Sunday school class explained the parable of the lost sheep to me this morning and got it more right than my last three attempts at teaching it.","reactions":{"amen":143,"bless":22,"fire":14,"love":196,"peace":18},"type":"praise","id":"up9","ageHours":0.75}],"churches":[{"about":"Planted in 1908 and rebuilt twice, Grace Cathedral has stayed on the same corner of Anna Salai for four generations. Two Sunday services, a Tamil choir that has sung together for thirty years, and a midweek communion that anyone in the city is welcome to join.","address":"12 Anna Salai, Teynampet, Chennai 600018","city":"Chennai","followers":4820,"languages":["Tamil","English"],"ministries":["Choir","Youth","Prayer Cell","Sunday School","Outreach","Ushers"],"name":"Grace Cathedral","pastorName":"Rev. Daniel Selvam","serviceTimes":["Sun 7:00am Tamil","Sun 9:30am English","Wed 6:30pm Midweek"],"tagline":"A family finding grace in the heart of the city","verified":true,"id":"ch1","handle":"grace.cathedral"},{"about":"A young congregation shaped by the city that surrounds it — students, engineers, nurses and drivers in the same room. Small groups meet across eleven neighbourhoods through the week.","address":"48 Hosur Road, Koramangala, Bengaluru 560095","city":"Bengaluru","followers":3140,"languages":["English","Kannada","Tamil"],"ministries":["Worship Team","Youth","Small Groups","Media","Kids Church"],"name":"Bethel Assembly","pastorName":"Pr. Sam Abraham","serviceTimes":["Sun 9:30am English","Sun 11:30am Kannada","Fri 7:00pm Youth"],"tagline":"Ordinary people, extraordinary God","verified":true,"id":"ch2","handle":"bethel.assembly"},{"about":"One of the oldest congregations on the Malabar coast, with a liturgy carried in Malayalam for a hundred and fifty years. Baptisms are still held in the backwaters behind the church.","address":"Church Road, Fort Kochi, Ernakulam 682001","city":"Kochi","followers":2610,"languages":["Malayalam","English"],"ministries":["Choir","Altar Servers","Women's Fellowship","Youth League"],"name":"St. Thomas Marthoma","pastorName":"Fr. Thomas Varghese","serviceTimes":["Sun 7:30am Malayalam Holy Qurbana","Sun 10:00am English","Sat 5:00pm Evening Prayer"],"tagline":"By the backwaters, since 1876","verified":true,"id":"ch3","handle":"stthomas.marthoma"},{"about":"A sending church with eleven village congregations planted in the last six years. Tuesday intercession runs for two hours and is streamed for those who cannot travel in.","address":"7-2-1 Kukatpally, Hyderabad 500072","city":"Hyderabad","followers":5390,"languages":["Telugu","Hindi","English"],"ministries":["Church Planting","Intercession","Relief Team","Women's Ministry","Youth"],"name":"New Life Fellowship","pastorName":"Pr. Prasad Rao","serviceTimes":["Sun 8:00am Telugu","Sun 10:30am English","Tue 7:00pm Intercession"],"tagline":"Reaching the villages beyond the ring road","verified":true,"id":"ch4","handle":"newlife.fellowship"},{"about":"A congregation of commuters. Everything is built around people who work six days a week — short services, midweek prayer online, and small groups that meet close to where people live.","address":"Linking Road, Bandra West, Mumbai 400050","city":"Mumbai","followers":2870,"languages":["English","Hindi","Marathi"],"ministries":["Small Groups","Counselling","Worship","Marriage Ministry","Kids"],"name":"Living Hope Church","pastorName":"Ps. Neil D'Souza","serviceTimes":["Sun 10:00am English","Sun 12:30pm Hindi","Thu 8:00pm Prayer"],"tagline":"Rest for a city that never stops","verified":true,"id":"ch5","handle":"livinghope"},{"about":"Expository preaching in two languages, a Saturday fasting prayer that has met without a break since 1994, and a small library open to the neighbourhood on weekday evenings.","address":"5 Race Course Road, Coimbatore 641018","city":"Coimbatore","followers":1980,"languages":["Tamil","English"],"ministries":["Bible Study","Fasting Prayer","Library","Choir","Men's Fellowship"],"name":"Emmanuel Baptist","pastorName":"Pr. Jeyaraj Manickam","serviceTimes":["Sun 8:00am Tamil","Sun 10:30am English","Sat 6:00am Fasting Prayer"],"tagline":"The word, plainly taught, in Tamil and English","verified":true,"id":"ch6","handle":"emmanuel.baptist"}],"comments":[{"amens":34,"authorId":"pe8","authorName":"Grace Mathew","postId":"up1","text":"I was in that room. It did not sound like someone who was afraid.","id":"cm1","ageHours":3.08},{"amens":77,"authorId":"pe3","authorName":"Mercy Thomas","postId":"up10","text":"Twenty-eight years is not nervousness. It is reverence that never got comfortable.","id":"cm10","ageHours":15.33},{"amens":118,"authorId":"pe8","authorName":"Grace Mathew","postId":"p6","text":"Blood donors: St. John's needs B negative. I am going at 7am if anyone wants to come together.","id":"cm11","ageHours":4.5},{"amens":246,"authorId":"pe9","authorName":"Vinod Kurian","postId":"p8","text":"The seventy-one year old is my uncle. He waited a long time for this morning.","id":"cm12","ageHours":72.67},{"amens":12,"authorId":"pe2","authorName":"Joseph Kumar","postId":"up1","text":"Six months of small, unglamorous obedience. This is what it produces.","id":"cm2","ageHours":2.8},{"amens":7,"authorId":"pe5","authorName":"Priya Selvam","postId":"up1","text":"Saving this for the next time I have to speak in front of the school assembly.","id":"cm3","ageHours":1.97},{"amens":88,"authorId":"pe1","authorName":"Anitha Raj","postId":"up2","text":"Six months. Tomorrow we celebrate, and then we start on the seventh.","id":"cm4","ageHours":14.33},{"amens":156,"authorId":"pe7","authorName":"Samuel Prakash","postId":"up2","text":"My brother is four days in. I am reading this to him tonight.","id":"cm5","ageHours":13.75},{"amens":41,"authorId":"pe10","authorName":"Sarah Thomas","postId":"up2","text":"The friends who answered at 2am deserve a post of their own.","id":"cm6","ageHours":5.17},{"amens":22,"authorId":"pe10","authorName":"Sarah Thomas","postId":"up3","text":"I pass Mylapore at 6:30. I can take two. Sending you my number.","id":"cm7","ageHours":3.92},{"amens":63,"authorId":"pe4","authorName":"David Mathew","postId":"up4","text":"Praying at 9am Friday. Tell us what happens either way.","id":"cm8","ageHours":4.97},{"amens":204,"authorId":"pe2","authorName":"Joseph Kumar","postId":"up7","text":"Out of the ICU. I have refreshed this post eleven times today.","id":"cm9","ageHours":1.2}],"events":[{"capacity":400,"churchId":"ch1","churchName":"Grace Cathedral","description":"Our Wednesday communion, open to anyone in the city. Tamil and English liturgy side by side, forty minutes, streamed for those who cannot travel in.","isLive":true,"location":"Main sanctuary, Anna Salai","locationType":"onsite","rsvpCount":148,"title":"Midweek Communion Service","id":"e1","dayOffset":0,"time":"18:30"},{"capacity":0,"churchId":"ch4","churchName":"New Life Fellowship","description":"Two hours of intercession for our village congregations, the relief work near Warangal, and requests sent in through the prayer chain.","isLive":true,"location":"Online stream","locationType":"online","rsvpCount":92,"title":"Telugu Intercession Hour","id":"e2","dayOffset":0,"time":"19:00"},{"capacity":600,"churchId":"ch1","churchName":"Grace Cathedral","description":"Three hours of worship with the combined Tamil and English choirs, and a short word from Rev. Daniel Selvam. Doors at 6:30pm.","isLive":false,"location":"Main sanctuary, Anna Salai","locationType":"onsite","rsvpCount":214,"title":"Night of Worship","id":"e3","dayOffset":1,"time":"19:00"},{"capacity":120,"churchId":"ch2","churchName":"Bethel Assembly","description":"Three days in the Nandi Hills for ages 14 to 24. Travel, food and accommodation included. Registration closes Friday.","isLive":false,"location":"Nandi Hills Retreat Centre","locationType":"onsite","rsvpCount":78,"title":"Youth Camp — Ridge Retreat","id":"e4","dayOffset":9,"time":"07:00"},{"capacity":500,"churchId":"ch3","churchName":"St. Thomas Marthoma","description":"The parish Harvest Festival with the full choir, followed by the auction of harvest gifts in aid of the parish school.","isLive":false,"location":"Church Road, Fort Kochi","locationType":"onsite","rsvpCount":320,"title":"Harvest Festival Service","id":"e5","dayOffset":3,"time":"08:00"},{"capacity":60,"churchId":"ch5","churchName":"Living Hope Church","description":"Dinner, two short talks and unhurried time to talk to each other. Childcare provided on site.","isLive":false,"location":"Linking Road, Bandra West","locationType":"onsite","rsvpCount":41,"title":"Marriage Enrichment Evening","id":"e6","dayOffset":0,"time":"19:00"},{"capacity":0,"churchId":"ch6","churchName":"Emmanuel Baptist","description":"Thirty-two unbroken years of Saturday morning prayer. Come for the whole three hours or for ten minutes.","isLive":false,"location":"Race Course Road, Coimbatore","locationType":"onsite","rsvpCount":130,"title":"Saturday Fasting Prayer","id":"e7","dayOffset":2,"time":"06:00"},{"capacity":700,"churchId":"ch2","churchName":"Bethel Assembly","description":"English at 9:30am and Kannada at 11:30am, with kids church running alongside both.","isLive":false,"location":"Hosur Road, Koramangala","locationType":"onsite","rsvpCount":410,"title":"Sunday Celebration Service","id":"e8","dayOffset":3,"time":"09:30"}],"people":[{"bio":"Worship team at Bethel. Learning to trust slowly, out loud.","city":"Bengaluru","followers":412,"following":88,"homeChurchId":"ch2","joinedAt":"2026-03-02T10:00:00+05:30","name":"Anitha Raj","id":"pe1"},{"bio":"Sunday school, second standard. Twenty-two small theologians and a lot of glitter.","city":"Chennai","followers":205,"following":119,"homeChurchId":"ch1","joinedAt":"2026-06-01T10:00:00+05:30","name":"Sarah Thomas","id":"pe10"},{"bio":"Engineer. Hosts a Tuesday small group in Kukatpally. Eight months job hunting and still here.","city":"Hyderabad","followers":230,"following":140,"homeChurchId":"ch4","joinedAt":"2026-04-11T10:00:00+05:30","name":"Joseph Kumar","id":"pe2"},{"bio":"Nurse. Sunday school teacher for eleven years. Mother of one, now in Dubai.","city":"Kochi","followers":318,"following":96,"homeChurchId":"ch3","joinedAt":"2026-02-25T10:00:00+05:30","name":"Mercy Thomas","id":"pe3"},{"bio":"Six months sober tomorrow. Counting days out loud so someone else can too.","city":"Mumbai","followers":1240,"following":210,"homeChurchId":"ch5","joinedAt":"2026-01-30T10:00:00+05:30","name":"David Mathew","id":"pe4"},{"bio":"Teacher. Reading the Bible in a year for the first time — day 251 and I have never made it this far.","city":"Coimbatore","followers":176,"following":132,"homeChurchId":"ch6","joinedAt":"2026-01-08T10:00:00+05:30","name":"Priya Selvam","id":"pe5"},{"bio":"Drives the Sunday morning route for our elderly members. Ask me for a seat.","city":"Chennai","followers":289,"following":74,"homeChurchId":"ch1","joinedAt":"2026-03-19T10:00:00+05:30","name":"Ruth Anand","id":"pe6"},{"bio":"Walks with Pastor Ramesh to the Warangal congregation most Sundays.","city":"Hyderabad","followers":521,"following":188,"homeChurchId":"ch4","joinedAt":"2026-02-14T10:00:00+05:30","name":"Samuel Prakash","id":"pe7"},{"bio":"Youth leader. Camp is my favourite three days of the year.","city":"Bengaluru","followers":634,"following":301,"homeChurchId":"ch2","joinedAt":"2026-04-02T10:00:00+05:30","name":"Grace Mathew","id":"pe8"},{"bio":"Choir tenor since 1998. Still nervous before every Harvest Festival.","city":"Kochi","followers":143,"following":61,"homeChurchId":"ch3","joinedAt":"2026-05-06T10:00:00+05:30","name":"Vinod Kurian","id":"pe9"}],"readingPlans":[{"category":"Whole Bible","days":365,"description":"Genesis to Revelation in twelve months, roughly fifteen minutes a day, with a Psalm alongside each reading so the week never becomes only history.","title":"The Bible in a Year","todayRef":"Genesis 12 · Psalm 9","id":"rp1"},{"category":"Psalms","days":30,"description":"Five psalms a day for a month. Built for a season when words are hard to find — lament, praise and honesty in the same breath.","title":"Psalms in 30 Days","todayRef":"Psalm 23","id":"rp2"},{"category":"Gospels","days":50,"description":"Matthew, Mark, Luke and John end to end. A good first plan if you are new, or returning after a long time away.","title":"The Gospels in 50 Days","todayRef":"Luke 5:1-16","id":"rp3"}]};
 const SEED_EXTRA={
   /* Communities belong to a church. Only its admins create them, only its followers see them,
      and every member is let in by an admin. */
@@ -444,6 +475,7 @@ function hydrate(o){
   if(!o.photo&&PHOTO_OF[o.id])o.photo=photoFor(o.id);
   if('denomination' in o)delete o.denomination;
   if(INVITE_CODES[o.id]&&!o.inviteCode)o.inviteCode=INVITE_CODES[o.id];
+  if(o.serviceTimes&&!o.handle&&o.name)o.handle=suggestHandle(o.name);
   if(o.id==='rp3'){o.days=50;o.title='The Gospels in 50 Days';o.description='Matthew, Mark, Luke and John end to end, at an unhurried pace. A good first plan if you are new, or returning after a long time away.';}
   const now=Date.now();
   if(o.ageHours!=null&&o.ageHours!=='')o.createdAt=new Date(now-Number(o.ageHours)*3600e3).toISOString();
@@ -470,12 +502,12 @@ function postMedia(p){
 
 /* ---------- db layer ---------- */
 let DB=null;
-const COLS=['churches','posts','events','readingPlans','prayerRequests','people','comments','communities','communityRequests','churchThreads','churchConnections'];
+const COLS=['churches','posts','events','readingPlans','people','comments','communities','communityRequests','churchThreads','churchConnections','storyReactions'];
 /* Communities, their join requests, church threads and connections are device-local: they carry
    the seeded history, so a shared store must never replace it with a partial copy. */
-const LOCAL_ONLY={communities:1,communityRequests:1,churchThreads:1,churchConnections:1};
-const MAP={churches:'churches',posts:'posts',events:'events',readingPlans:'plans',prayerRequests:'prayers',people:'people',comments:'comments',
-  communities:'communities',communityRequests:'cmRequests',churchThreads:'threads',churchConnections:'connections'};
+const LOCAL_ONLY={communities:1,communityRequests:1,churchThreads:1,churchConnections:1,storyReactions:1};
+const MAP={churches:'churches',posts:'posts',events:'events',readingPlans:'plans',people:'people',comments:'comments',
+  communities:'communities',communityRequests:'cmRequests',churchThreads:'threads',churchConnections:'connections',storyReactions:'storyReacts'};
 function seedFor(c){
   if(c==='posts')return (SEED.posts||[]).concat(SEED_EXTRA.stories);
   return SEED[c]||SEED_EXTRA[c]||[];
@@ -491,6 +523,7 @@ function applyLocal(c){
 }
 function loadSeed(){
   COLS.forEach(function(c){state.data[MAP[c]]=seedFor(c).map(hydrate);applyLocal(c);});
+  state.data.storyReacts=lsGet('storyReacts',[]);
 }
 async function initDB(){
   loadSeed();state.ui.ready=true;render();
@@ -511,6 +544,40 @@ async function initDB(){
 }
 function localDoc(col,id){return (state.data[MAP[col]]||[]).find(function(x){return x.id===id;});}
 function rememberPatch(col,id,patch){const p=localPatches();p[col]=p[col]||{};p[col][id]=Object.assign(p[col][id]||{},patch);lsSet('patched',p);}
+/* Move a counter by delta, exactly once, and mirror it to the database.
+   dbBump edits the in-memory document itself when there is no live database, so callers must
+   never touch the document as well — doing that counted every reaction and RSVP twice. */
+/* Story reactions are kept by name as well as by count: a church needs to know who was
+   moved by what, not only how many taps a story collected. One row per viewer per story —
+   changing your reaction rewrites your row, taking it back removes it. */
+function storyReactKey(){
+  const s=state.session;
+  return s?(s.key||s.id):('guest:'+(lsGet('guestId',null)||(function(){const g=uid('g_');lsSet('guestId',g);return g;})()));
+}
+function recordStoryReaction(post,k){
+  if(!post||post.type!=='story')return;
+  const who=storyReactKey(), s=state.session;
+  const rows=state.data.storyReacts;
+  const i=rows.findIndex(function(r){return r.postId===post.id&&r.userKey===who;});
+  if(!k){ if(i>-1)rows.splice(i,1); }
+  else{
+    const row={id:i>-1?rows[i].id:uid('sr_'),postId:post.id,churchId:post.churchId||null,userKey:who,
+      userName:(s&&s.name)||'A guest',userHandle:(s&&s.handle)||'',reaction:k,at:new Date().toISOString()};
+    if(i>-1)rows[i]=row; else rows.push(row);
+  }
+  lsSet('storyReacts',state.data.storyReacts);
+}
+function bumpCount(col,id,field,delta){
+  if(DB&&!LOCAL_ONLY[col]){
+    const d=localDoc(col,id);
+    if(d){
+      const parts=field.split('.');
+      if(parts.length>1){d[parts[0]]=d[parts[0]]||{};d[parts[0]][parts[1]]=Math.max(0,(Number(d[parts[0]][parts[1]])||0)+delta);}
+      else d[field]=Math.max(0,(Number(d[field])||0)+delta);
+    }
+  }
+  dbBump(col,id,field,delta);
+}
 async function dbBump(col,id,field,delta,extra){
   if(!DB||LOCAL_ONLY[col]){
     const d=localDoc(col,id);if(!d)return;const patch={};
@@ -641,7 +708,7 @@ function suggestedPosts(){
     let why='Popular on the ark';
     if(ip.cities[c.city])why='Near you in '+c.city;
     else if((c.languages||[]).some(function(l){return ip.langs[l];}))why='Services in '+(c.languages||[]).filter(function(l){return ip.langs[l];})[0];
-    if(ip.types[p.type]>=2)why='Because you engage with '+(p.type==='sermon'?'sermons':p.type==='event'?'events':p.type==='occasion'?'occasions':p.type==='prayer'?'prayer':'posts like this');
+    if(ip.types[p.type]>=2)why='Because you engage with '+(p.type==='sermon'?'sermons':p.type==='event'?'events':p.type==='occasion'?'occasions':'posts like this');
     return {p:p,score:score,why:why};
   }).sort(function(a,b){return b.score-a.score;});
 }
@@ -877,7 +944,7 @@ function viewAuth(){
       +'<p class="cap">See the console with a full inbox, connections and history — sign in as a seeded church.</p>'
       +'<div class="stack gap-8">'+state.data.churches.filter(function(c){return /^ch\d$/.test(c.id);}).slice(0,3).map(function(c){
         return '<button class="row between gap-12" data-act="demo-church" data-id="'+c.id+'" style="text-align:left;padding:11px 13px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
-          +'<span class="row gap-10"><span class="avatar avatar-sm" style="background:'+grad(c.id)+'">'+initials(c.name)+'</span>'
+          +'<span class="row gap-10">'+churchLogo(c,34)+''
           +'<span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">'+esc(c.pastorName||'')+' · '+esc(c.city||'')+'</span></span></span>'+ico('chevR',16)+'</button>';}).join('')+'</div></div>':'')
     +'<p class="cap mt-16" style="text-align:center;max-width:38ch;margin-inline:auto">By continuing you agree to the community guidelines. Your data is never sold and never used for ads.</p>'
     +'</div></div>';
@@ -917,14 +984,39 @@ function suggestHandle(name){
   return String(name||'').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'')
     .replace(/[^a-z0-9]+/g,'.').replace(/^\.+|\.+$/g,'').slice(0,20);
 }
-/* Handles already taken: seeded believers and any profile saved on this device (except your own). */
+/* Usernames are unique within an account type and only within it: believers share one
+   namespace, churches share another, and a church may carry the same handle as a believer.
+   Matching ignores case so @Grace and @grace are the same name.
+   Believer handles: seeded people, plus every profile saved on this device bar your own. */
 function takenHandles(){
   const own=accountKey(state.ui.authId),out={};
-  state.data.people.forEach(function(p){out[suggestHandle(p.name)]=1;});
+  state.data.people.forEach(function(p){
+    if(p.handle)out[norm(p.handle)]=1;
+    out[norm(suggestHandle(p.name))]=1;
+  });
   try{Object.keys(localStorage).forEach(function(k){
     if(k.indexOf(LS+'profile.')!==0||k===LS+'profile.'+own)return;
-    const p=lsGet(k.slice(LS.length),null);if(p&&p.handle)out[p.handle]=1;});}catch(e){}
+    const p=lsGet(k.slice(LS.length),null);
+    if(p&&p.handle&&p.role!=='church')out[norm(p.handle)]=1;});}catch(e){}
   return out;
+}
+function norm(h){return String(h||'').trim().toLowerCase();}
+/* Church handles: every church in the directory, optionally ignoring one church's own handle
+   so a church editing its profile is not told its own name is taken. */
+function takenChurchHandles(exceptId){
+  const out={};
+  state.data.churches.forEach(function(c){
+    if(exceptId&&c.id===exceptId)return;
+    out[norm(c.handle||suggestHandle(c.name))]=1;
+  });
+  return out;
+}
+/* The first free handle built from a name, within whichever namespace is asked for. */
+function freeHandle(name,taken){
+  const base=suggestHandle(name)||'church';
+  if(!taken[norm(base)])return base;
+  for(let i=2;i<200;i++){const t=(base+'.'+i).slice(0,24);if(!taken[norm(t)])return t;}
+  return (base+'.'+Math.floor(Math.random()*9999)).slice(0,24);
 }
 /* Anything typed on an onboarding step survives re-renders (chip taps, photo upload, terms). */
 function captureOnboard(){
@@ -974,7 +1066,7 @@ function viewOnboardBeliever(){
         +'<button class="btn btn-primary" data-act="ob-verify-code" style="height:52px">Verify</button></div>',err.code,'Your church office or pastor shares this code with members.')
       +(c?'<div class="joined-church">'
         +'<div class="jc-cover">'+(photoFor(c.id)?'<img src="'+esc(photoFor(c.id))+'" alt="">':coverArt(c.id))+'<span class="badge badge-mint">'+ico('check',12)+'Code accepted</span></div>'
-        +'<div class="row gap-12 jc-body"><span class="avatar" style="background:'+grad(c.id)+'">'+initials(c.name)+'</span>'
+        +'<div class="row gap-12 jc-body">'+churchLogo(c,44)+''
         +'<div class="stack gap-2" style="min-width:0"><span class="row gap-6"><span class="h3">'+esc(c.name)+'</span>'+ico('shield',14,'accent')+'</span>'
         +'<span class="cap">'+esc(c.city||'')+' · '+esc((c.serviceTimes||[])[0]||'')+'</span></div>'
         +'</div></div>':'')
@@ -1057,6 +1149,9 @@ function viewOnboardChurch(){
     +'<p class="body">This becomes your public profile. A platform reviewer checks your details before the verified badge appears.</p></div>'
     +'<div class="glass pad stack gap-16 mt-24">'
     +'<div class="field"><label class="label" for="cName">Church name</label><input class="input" id="cName" placeholder="Grace Cathedral" value="'+esc(o.name||'')+'"></div>'
+    +'<div class="field'+(o.chHandleError?' has-error':'')+'"><label class="label" for="cHandle">Username</label>'
+    +'<div class="input-group"><span class="ig-pre">@</span><input class="input" id="cHandle" autocapitalize="none" spellcheck="false" maxlength="24" placeholder="grace.cathedral" value="'+esc(o.chHandle||'')+'"></div>'
+    +(o.chHandleError?'<span class="field-error" role="alert">'+ico('x',12)+esc(o.chHandleError)+'</span>':'<span class="field-hint">Your church\'s name on the ark. No two churches share one.</span>')+'</div>'
     +'<div class="field"><label class="label" for="cCity">City</label><input class="input" id="cCity" placeholder="Chennai" value="'+esc(o.city||'')+'"></div>'
     +'<div class="field"><label class="label" for="cAddr">Address</label><input class="input" id="cAddr" placeholder="12 Anna Salai, Teynampet"></div>'
     +'<div class="field"><label class="label" for="cTimes">Service times</label><input class="input" id="cTimes" placeholder="Sun 7:00am Tamil · Sun 9:30am English"></div>'
@@ -1133,7 +1228,6 @@ function priorityStrip(){
 }
 function journeyRingCard(){
   const p=myPlan(),pct=planPct(),day=state.local.planDay||0,streak=state.local.streak||0;
-  const prayers=(state.local.prayed||[]).length;
   return '<button class="glass press pad row gap-20 between" data-go="journey" style="width:100%;text-align:left">'
     +'<div class="row gap-16">'+ring(pct,74,pct+'%','plan')
     +'<div class="stack gap-6"><span class="eyebrow">Your journey</span>'
@@ -1141,7 +1235,7 @@ function journeyRingCard(){
     +'<span class="cap">'+(p?'Day '+day+' of '+p.days:'Start a reading rhythm')+'</span></div></div>'
     +'<div class="stack gap-10" style="text-align:right;flex:none">'
     +'<span class="stack gap-2"><span class="num h3 accent">'+streak+'</span><span class="cap" style="font-size:11px">day streak</span></span>'
-    +'<span class="stack gap-2"><span class="num h3" style="color:var(--rose)">'+prayers+'</span><span class="cap" style="font-size:11px">prayers</span></span></div></button>';
+    +'</div></button>';
 }
 function authorHeader(a,p,opts){
   opts=opts||{};
@@ -1150,7 +1244,7 @@ function authorHeader(a,p,opts){
   const cm=p.communityId?communityById(p.communityId):null;
   return '<header class="row between gap-12">'
     +'<button class="row gap-12" data-go="'+route+'" data-id="'+esc(a.id||'')+'" style="min-width:0;text-align:left">'
-    +'<span class="avatar" style="background:'+grad(a.seed)+'">'+initials(a.name)+'</span>'
+    +(a.type==='church'?churchLogo({id:a.id,name:a.name},44):'<span class="avatar" style="background:'+grad(a.seed)+'">'+initials(a.name)+'</span>')
     +'<span class="stack gap-2" style="min-width:0"><span class="row gap-6" style="min-width:0">'
     +'<span class="h3" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(a.name)+'</span>'
     +(a.verified?'<span class="accent" style="display:flex;flex:none">'+ico('shield',14)+'</span>':'')
@@ -1167,14 +1261,10 @@ function postCard(p,opts){
   const isBroadcast=p.type==='broadcast';
   const saved=(state.local.saved||[]).indexOf(p.id)>-1;
   const cmts=commentsFor(p.id), total=reactionTotal(p);
-  const typeTag=isBroadcast?('<span class="badge '+(p.priority==='Urgent'?'badge-rose':p.priority==='Important'?'badge-accent':'badge-ice')+'">'+ico('radio',12)+esc(p.priority||'Broadcast')+'</span>')
-    :p.type==='sermon'?'<span class="badge badge-accent">'+ico('mic',12)+'Sermon</span>'
-    :p.type==='event'?'<span class="badge badge-ice">'+ico('cal',12)+'Event</span>'
-    :p.type==='prayer'?'<span class="badge badge-rose">'+ico('hands',12)+'Prayer</span>'
-    :p.type==='testimony'?'<span class="badge badge-mint">'+ico('star',12)+'Testimony</span>'
-    :p.type==='praise'?'<span class="badge badge-accent">'+ico('sparkle',12)+'Praise</span>'
-    :p.type==='question'?'<span class="badge badge-lav">'+ico('msg',12)+'Question</span>'
-    :p.type==='occasion'?'<span class="badge badge-mint">'+ico('star',12)+esc(p.occasion||'Occasion')+'</span>':'';
+  /* Only sermons and events carry a tag. Ordinary posts speak for themselves, and an urgent
+     broadcast still reads as urgent through the card's border. */
+  const typeTag=p.type==='sermon'?'<span class="badge badge-accent">'+ico('mic',12)+'Sermon</span>'
+    :p.type==='event'?'<span class="badge badge-ice">'+ico('cal',12)+'Event</span>':'';
   const topReacts=REACTIONS.filter(function(r){return (p.reactions&&p.reactions[r.k])>0;})
     .sort(function(x,y){return p.reactions[y.k]-p.reactions[x.k];}).slice(0,3);
   return '<article class="glass pad stack gap-13"'+(isBroadcast&&p.priority==='Urgent'?' style="border-color:rgba(232,145,154,.3)"':'')+'>'
@@ -1427,7 +1517,7 @@ function momentsStrip(){
       const isSeen=seen.indexOf(key)>-1&&!m.live;
       const pic=photoFor(m.author.id);
       return '<button class="moment'+(m.live?' is-live':isSeen?' is-seen':'')+'" data-act="open-moment" data-i="'+i+'" aria-label="'+esc(m.author.name)+(m.live?' is live':' story')+'">'
-        +'<span class="moment-ring"><span class="moment-inner" style="background:'+(pic?'#282828 url('+pic+') center/cover':grad(m.author.seed))+'">'+(pic?'':initials(m.author.name))+'</span></span>'
+        +'<span class="moment-ring"><span class="moment-inner">'+(m.author.type==='church'?churchLogo({id:m.author.id,name:m.author.name},59,'border-radius:50%;width:100%;height:100%'):'<span class="avatar" style="width:100%;height:100%;border-radius:50%;background:'+(pic?'#282828 url('+pic+') center/cover':grad(m.author.seed))+'">'+(pic?'':initials(m.author.name))+'</span>')+'</span></span>'
         +(m.live?'<span class="moment-live">Live</span>':'')
         +'<span class="moment-name">'+esc(m.author.name.split(' ')[0])+'</span></button>';
     }).join('')+'</div>';
@@ -1437,14 +1527,13 @@ function feedTabFilter(t){
   return function(p){
     if(t==='Sermons')return p.type==='sermon';
     if(t==='Events')return p.type==='event';
-    if(t==='Prayer')return p.type==='prayer'||(p.type==='broadcast'&&p.priority==='Urgent');
     if(t==='Occasions')return p.type==='occasion';
     return true;
   };
 }
 function viewHome(){
   const name=(state.session&&state.session.name)||'friend';
-  const filters=['All','Sermons','Events','Prayer','Occasions'];
+  const filters=['All','Sermons','Events','Occasions'];
   const t=filters.indexOf(state.ui.tab)>-1?state.ui.tab:'All',keep=feedTabFilter(t);
   const followed=followedPosts().filter(keep);
   const sugg=suggestedPosts().filter(function(x){return keep(x.p);}).slice(0,12);
@@ -1619,7 +1708,7 @@ function suggestItems(q){
   q=String(q||'').trim();
   const items=[],liveIds=liveEvents().map(function(e){return e.churchId;});
   const ql=q.toLowerCase();
-  const chRow=function(c,sub){items.push({kind:'church',id:c.id,html:'<span class="sg-thumb">'+(photoFor(c.id)?'<img src="'+esc(photoFor(c.id))+'" alt="">':'<span class="avatar avatar-sm" style="background:'+grad(c.id)+'">'+initials(c.name)+'</span>')+'</span>'
+  const chRow=function(c,sub){items.push({kind:'church',id:c.id,html:'<span class="sg-thumb">'+churchLogo(c,30)+'</span>'
     +'<span class="stack gap-2" style="min-width:0"><span class="sg-title">'+hl(c.name,q)+(liveIds.indexOf(c.id)>-1?' <span class="live-txt">· Live</span>':'')+'</span>'
     +'<span class="sg-sub">'+(sub||esc(c.city||'')+' · '+esc((c.serviceTimes||[])[0]||''))+'</span></span>'});};
   if(!q){
@@ -1736,7 +1825,7 @@ function churchCard(c,isLive){
     +'</div></div>'
     +'<div class="pad stack gap-14">'
     +'<div class="row between gap-12"><div class="row gap-14" style="min-width:0">'
-    +'<div class="avatar avatar-lg" style="background:'+grad(c.id)+';border-radius:20px">'+initials(c.name)+'</div>'
+    +''+churchLogo(c,56)+''
     +'<div class="stack gap-6" style="min-width:0">'
     +'<div class="row gap-6 wrap"><h3 class="h2" style="font-size:20px">'+esc(c.name)+'</h3>'+(c.verified!==false?'<span class="accent" style="display:flex;align-self:center">'+ico('shield',15)+'</span>':'')+'</div>'
     +'<span class="cap">'+esc(c.city||'')+(c.pastorName?' · '+esc(c.pastorName):'')+'</span>'
@@ -1766,7 +1855,7 @@ function churchCardC2C(c,isLive){
   const shared=myConnections(me).filter(function(id){return myConnections(c.id).indexOf(id)>-1;}).length;
   return '<article class="glass press pad stack gap-14" data-go="church-profile" data-id="'+c.id+'">'
     +'<div class="row between gap-12"><div class="row gap-14" style="min-width:0">'
-    +'<div class="avatar avatar-lg" style="background:'+grad(c.id)+';border-radius:20px">'+initials(c.name)+'</div>'
+    +''+churchLogo(c,56)+''
     +'<div class="stack gap-6" style="min-width:0">'
     +'<div class="row gap-6 wrap"><h3 class="h2" style="font-size:20px">'+esc(c.name)+'</h3>'+(c.verified!==false?'<span class="accent" style="display:flex;align-self:center">'+ico('shield',15)+'</span>':'')+'</div>'
     +'<span class="cap">'+esc(c.city||'')+' · '+esc(c.pastorName||'')+'</span>'
@@ -1799,9 +1888,13 @@ function viewChurchProfile(){
         +'<span class="cap">'+esc(p.speaker||c.pastorName||'')+' · '+fmtDate(p.createdAt)+' · '+esc(p.duration||'38 min')+'</span></span></span>'
         +ico('chevR',18)+'</button>';}).join('')+'</div>':empty('mic','Sermon library is filling up','Recorded messages appear here with transcript and summary.');
   else if(tab==='Communities'){
+    /* Communities belong to the people who walk with a church, so they stay out of sight
+       until you follow it. */
     const comms=state.data.communities.filter(function(x){return x.churchId===c.id;});
-    body=comms.length?'<div class="stack gap-12">'+comms.map(communityCard).join('')+'</div>'
-      +(following||church?'':'<p class="cap mt-12">Follow '+esc(c.name)+' to ask to join its communities.</p>')
+    body=(!following&&!church)
+      ?empty('lock','Communities are for followers','Follow '+esc(c.name)+' to see its communities and ask to join one.',
+        '<button class="btn btn-sm btn-primary" data-act="follow" data-id="'+esc(c.id)+'">'+ico('plus',16)+'Follow '+esc(c.name)+'</button>')
+      :comms.length?'<div class="stack gap-12">'+comms.map(communityCard).join('')+'</div>'
       :empty('users','No communities yet','When '+c.name+' starts a community, it appears here.');
   }
   else body='<div class="stack gap-14">'
@@ -1817,24 +1910,21 @@ function viewChurchProfile(){
       +['arches','festival','stage','water','hills','table'].map(function(k,i){
         return '<div style="width:148px;height:100px;border-radius:14px;flex:none;overflow:hidden;position:relative;border:1px solid var(--border)">'+sceneArt(k,c.id+k+i)+'</div>';}).join('')
       +'</div><p class="cap">Scene artwork until this church uploads its own photographs.</p></div>'
-      +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Connected churches · '+conns.length+'</span>'
-      +(conns.length?conns.map(function(x){return '<button class="row between gap-12" data-go="church-profile" data-id="'+x.id+'" style="text-align:left">'
-        +'<span class="row gap-10"><span class="avatar avatar-sm" style="background:'+grad(x.id)+'">'+initials(x.name)+'</span>'
-        +'<span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(x.name)+'</span><span class="cap">'+esc(x.city||'')+'</span></span></span>'+ico('chevR',16)+'</button>';}).join('')
-        :'<p class="cap">No connections yet.</p>')+'</div>';
+      +'';
   return '<div class="view-wide" style="padding-top:14px">'
     +'<button class="row gap-6 cap mt-8" data-go="'+(church?'console-c2c':'churches')+'" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+(church?'Churches':'Directory')+'</button>'
     +'<div class="cover" style="height:190px">'+(photoFor(c.id)?'<img src="'+esc(photoFor(c.id))+'" alt="'+esc(c.name)+'" style="width:100%;height:100%;object-fit:cover;display:block">':coverArt(c.id))+'</div>'
     +'<div class="view" style="padding:0;margin-top:-38px;position:relative;max-width:none">'
     +'<div class="glass pad stack gap-16">'
     +'<div class="row between gap-12" style="margin-top:-46px">'
-    +'<div class="avatar avatar-lg" style="background:'+grad(c.id)+';border:3px solid var(--bg-1);border-radius:26px">'+initials(c.name)+'</div>'
+    +''+churchLogo(c,84,'border:3px solid var(--bg-1)')+''
     +(live?'<button class="badge badge-live" data-go="event" data-id="'+live.id+'" style="height:30px;padding:0 12px"><i class="dot-live"></i>Live now</button>':'')+'</div>'
     +'<div class="stack gap-8"><div class="row gap-8 wrap"><h1 class="h1">'+esc(c.name)+'</h1>'+(c.verified!==false?verifiedTag():'<span class="badge badge-ice">Pending</span>')+'</div>'
+    +(c.handle?'<span class="cap" style="font-size:14px">@'+esc(c.handle)+'</span>':'')
     +'<p class="body">'+esc(c.tagline||'')+'</p>'
     +'<div class="row gap-14 wrap cap">'
     +'<span class="row gap-6">'+ico('me',14)+'<span class="num">'+Number((c.followers||0)+(following?1:0)).toLocaleString('en-IN')+'</span> following</span>'
-    +'<span class="row gap-6">'+ico('church',14)+'<span class="num">'+conns.length+'</span> connections</span>'
+    +'<button class="row gap-6 link-count" data-act="show-connections" data-id="'+esc(c.id)+'">'+ico('church',14)+'<span class="num">'+conns.length+'</span> connections</button>'
     +'<span class="row gap-6">'+ico('pin',14)+esc(c.city||'')+'</span>'
     +'<span class="row gap-6">'+ico('globe',14)+esc((c.languages||[]).slice(0,2).join(', '))+'</span></div></div>'
     +(church
@@ -1843,10 +1933,9 @@ function viewChurchProfile(){
       :'<div class="row gap-10 wrap">'
         +'<button class="btn btn-sm '+(following?'btn-ghost':'btn-primary')+' grow" data-act="follow" data-id="'+c.id+'">'+(following?ico('check',16)+'Following':ico('plus',16)+'Follow')+'</button>'
         +'<button class="btn btn-sm btn-ghost" data-act="home-church" data-id="'+c.id+'">'+ico(home?'check':'star',16)+(home?'Home church':'Set as home')+'</button>'
-        +'<button class="icon-btn" data-act="church-msg" data-id="'+c.id+'" aria-label="Message">'+ico('msg',17)+'</button>'
         +'<button class="icon-btn" data-act="share-church" data-id="'+c.id+'" aria-label="Share">'+ico('share',17)+'</button></div>')
     +'</div>'
-    +'<div class="tabs mt-16">'+['Posts','Events','Sermons','Communities','About'].map(function(t){
+    +'<div class="tabs mt-16">'+(['Posts','Events','Sermons'].concat(following||church?['Communities']:[]).concat(['About'])).map(function(t){
         return '<button class="tab'+(tab===t?' on':'')+'" data-act="church-tab" data-v="'+t+'">'+t+'</button>';}).join('')+'</div>'
     +'<div class="mt-16">'+body+'</div><div style="height:36px"></div></div></div>';
 }
@@ -1884,7 +1973,7 @@ function viewEvent(){
     +'<span class="badge badge-ice">'+ico(e.locationType==='online'?'globe':'pin',12)+esc(e.locationType==='online'?'Online':'In person')+'</span></span>'
     +'<h1 class="h1">'+esc(e.title)+'</h1>'
     +'<button class="row gap-10" data-go="church-profile" data-id="'+esc(e.churchId)+'" style="text-align:left">'
-    +'<span class="avatar avatar-sm" style="background:'+grad(e.churchId)+'">'+initials(e.churchName)+'</span>'
+    +''+churchLogo({id:e.churchId,name:e.churchName},30)+''
     +'<span class="stack gap-2"><span class="h3" style="font-size:14px">'+esc(e.churchName||'')+'</span><span class="cap">'+esc((c&&c.city)||'')+'</span></span></button></div>'
     +'<p class="body">'+esc(e.description||'').replace(/\n/g,'<br>')+'</p>'
     +'<div class="stack gap-10">'
@@ -1930,7 +2019,6 @@ function viewPersonProfile(){
   const p=me?meAsPerson():personById(id);
   if(!p)return '<div class="view screen-pad">'+empty('me','Believer not found','This profile may have been removed.','<button class="btn btn-sm btn-ghost" data-go="home">Back</button>')+'</div>';
   const posts=communityThreads().filter(function(x){return x.authorId===id;});
-  const prayers=state.data.prayers.filter(function(x){return x.authorId===id&&x.visibility==='public';});
   const c=p.homeChurchId?churchById(p.homeChurchId):null;
   const joined=me?myCommunityIds().map(communityById).filter(Boolean):Array.from(new Set(posts.map(function(x){return x.communityId;}))).map(communityById).filter(Boolean);
   const tab=state.ui.personTab||'Posts';
@@ -1938,7 +2026,6 @@ function viewPersonProfile(){
   if(tab==='Posts')body=posts.length?'<div class="stack gap-14 stagger">'+posts.map(function(x){return postCard(x,{follow:false});}).join('')+'</div>'
     :empty('edit',me?'You haven\'t written in a community yet':'Nothing shared yet',me?'Join a community and start a conversation — that is where believers speak on the ark.':'When they write in a community, it appears here.',
       me?'<button class="btn btn-sm btn-primary" data-go="community">Browse communities</button>':'');
-  else if(tab==='Prayers')body=prayers.length?'<div class="stack gap-12">'+prayers.map(prayerCard).join('')+'</div>':empty('hands','No public prayer requests','Requests shared publicly appear here.');
   else body='<div class="stack gap-14">'
     +'<div class="glass pad stack gap-12"><span class="eyebrow accent">About</span><p class="body">'+esc(p.bio||'A believer on the journey.')+'</p>'
     +(c?'<button class="row gap-10" data-go="church-profile" data-id="'+c.id+'" style="text-align:left">'+ico('church',16,'dim')
@@ -1966,7 +2053,7 @@ function viewPersonProfile(){
     +'<span class="stack gap-2"><span class="h3 num">'+(me?myChurchIds().length:(p.following||0))+'</span><span class="cap" style="font-size:11px">Churches</span></span></div>'
     +(me?'<button class="btn btn-sm btn-ghost btn-block" data-act="edit-profile">'+ico('edit',16)+'Edit profile</button>':'')
     +'</div>'
-    +'<div class="tabs mt-16">'+['Posts','Prayers','About'].map(function(t){
+    +'<div class="tabs mt-16">'+['Posts','About'].map(function(t){
       return '<button class="tab'+(tab===t?' on':'')+'" data-act="person-tab" data-v="'+t+'">'+t+'</button>';}).join('')+'</div>'
     +'<div class="mt-16">'+body+'</div><div style="height:36px"></div></div>';
 }
@@ -2030,7 +2117,7 @@ function viewStoryOverlay(){
           return '<span class="story-bar'+(k<st.p?' done':k===st.p?' now':'')+'"><i'+(k===st.p?' style="width:'+Math.min(100,STORY.elapsed/STORY_MS*100).toFixed(2)+'%"':'')+'></i></span>';}).join('')+'</div>'
         +'<div class="row between gap-10">'
         +'<button class="row gap-10 story-author" data-go="church-profile" data-id="'+esc(a.id)+'">'
-        +'<span class="avatar avatar-sm" style="background:'+(pic?'#282828 url('+pic+') center/cover':grad(a.seed))+'">'+(pic?'':initials(a.name))+'</span>'
+        +''+(a.type==='church'?churchLogo({id:a.id,name:a.name},34):'<span class="avatar avatar-sm" style="background:'+(pic?'#282828 url('+pic+') center/cover':grad(a.seed))+'">'+(pic?'':initials(a.name))+'</span>')+''
         +'<span class="stack gap-2" style="text-align:left"><span class="story-name">'+esc(a.name)+(a.verified?' '+ico('shield',13):'')+'</span>'
         +'<span class="story-time">'+(p.live?'Streaming now':ago(p.createdAt))+'</span></span></button>'
         +'<span class="row gap-6">'+(m.live?'<span class="badge badge-live"><i class="dot-live"></i>Live</span>':'')
@@ -2126,10 +2213,6 @@ function notifItems(){
     if(h<=1&&h>-1&&r.h1)out.push({t:new Date(now-60e3).toISOString(),icon:'bell',tone:'accent',title:'Starting soon · '+esc(e.title),sub:esc(e.churchName||'')+' · '+fmtTime(e.datetime),go:'event',id:e.id});
     else if(h<=24&&h>1&&r.d1)out.push({t:new Date(now-3600e3).toISOString(),icon:'bell',tone:'accent',title:'Tomorrow · '+esc(e.title),sub:esc(e.churchName||'')+' · '+fmtDate(e.datetime)+' '+fmtTime(e.datetime),go:'event',id:e.id});
   });
-  state.data.prayers.forEach(function(pr){
-    if(!isMe(pr.authorId)||!pr.prayingCount)return;
-    out.push({t:pr.createdAt,icon:'hands',tone:'rose',title:pr.prayingCount+' people are praying for you',sub:esc(pr.text.slice(0,72)),go:'journey',id:''});
-  });
   state.data.comments.forEach(function(c){
     const p=state.data.posts.find(function(x){return x.id===c.postId;});
     if(!p||!isMe(p.authorId)||isMe(c.authorId))return;
@@ -2158,11 +2241,10 @@ function viewNotifications(){
 
 /* ---------- journey ---------- */
 function viewJourney(){
-  const tab=state.ui.journeyTab,tabs=['Timeline','Plan','Prayer','Journal','Family'];
+  const tab=state.ui.journeyTab,tabs=['Timeline','Plan','Journal','Family'];
   let body='';
   if(tab==='Timeline')body=journeyTimeline();
   else if(tab==='Plan')body=journeyPlan();
-  else if(tab==='Prayer')body=journeyPrayer();
   else if(tab==='Journal')body=journeyJournal();
   else body=journeyFamily();
   return topbar('Journey','Your walk, gathered',{
@@ -2278,31 +2360,6 @@ function journeyPlan(){
     +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Reminders</span>'
     +prefRow('Daily reading nudge','events','A gentle ping at 7:00am')
     +'<p class="cap">Quiet hours are respected — nothing between 10pm and 6am.</p></div></div>';
-}
-function journeyPrayer(){
-  const list=state.data.prayers.slice().sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);});
-  return '<div class="stack gap-14 mt-8">'
-    +'<button class="glass press pad row between gap-12" data-act="new-prayer" style="text-align:left;border-color:rgba(232,145,154,.28)">'
-    +'<span class="row gap-12">'+ico('hands',22,'rose')+'<span class="stack gap-2"><span class="h3">Share a prayer request</span><span class="cap">Public, church-only, or anonymous</span></span></span>'
-    +'<span class="icon-btn">'+ico('plus',18)+'</span></button>'
-    +(list.length?list.map(prayerCard).join(''):empty('hands','The prayer chain is quiet','Be the first to share a request — the chain lights up when someone prays.'))+'</div>';
-}
-function prayerCard(pr){
-  const prayed=(state.local.prayed||[]).indexOf(pr.id)>-1;
-  const anon=pr.visibility==='anonymous';
-  return '<article class="glass pad stack gap-12'+(pr.answered?' answered':'')+'"'+(pr.answered?' style="border-color:rgba(79,203,152,.3)"':'')+'>'
-    +(pr.answered?'<span class="badge badge-mint">'+ico('check',12)+'Answered</span>':'')
-    +'<div class="row between gap-12"><div class="row gap-10" style="min-width:0">'
-    +'<span class="avatar avatar-sm" style="background:'+(anon?'linear-gradient(135deg,#6B7299,#3A4166)':grad(pr.id))+'">'+(anon?ico('lock',15):initials(pr.authorName))+'</span>'
-    +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(anon?'Anonymous':pr.authorName||'A believer')+'</span>'
-    +'<span class="cap">'+ago(pr.createdAt)+(pr.churchName?' · '+esc(pr.churchName):'')+'</span></span></div>'
-    +'<span class="badge '+(pr.visibility==='church'?'badge-ice':anon?'badge-lav':'badge-rose')+'">'+esc(pr.visibility==='church'?'Church only':anon?'Anonymous':'Public')+'</span></div>'
-    +'<p class="body" style="color:var(--text-1)">'+esc(pr.text).replace(/\n/g,'<br>')+'</p>'
-    +'<div class="row between gap-12">'
-    +'<div class="row gap-8"><div class="row" style="margin-right:2px">'
-    +[0,1,2].map(function(i){return '<span class="avatar avatar-sm" style="width:24px;height:24px;border-radius:9px;font-size:10px;margin-left:'+(i?'-8px':'0')+';background:'+grad(pr.id+i)+';border:1.5px solid var(--bg-1)">'+String.fromCharCode(65+((Math.abs(hash(pr.id+i))%26)))+'</span>';}).join('')
-    +'</div><span class="cap"><span class="num">'+((pr.prayingCount||0)+(prayed?1:0))+'</span> praying</span></div>'
-    +'<button class="btn btn-xs '+(prayed?'btn-ghost':'btn-outline')+'" data-act="pray" data-id="'+pr.id+'">'+(prayed?'\u{1F64F} Praying':'\u{1F64F} I\'m praying')+'</button></div></article>';
 }
 function journeyJournal(){
   const list=(state.local.journal||[]);
@@ -2552,7 +2609,7 @@ function viewLive(){
     +'<div class="row gap-8 mt-12 wrap">'+REACTIONS.map(function(r){return '<button class="react" data-act="live-react" data-e="'+r.e+'" aria-label="'+r.l+'"><span class="em">'+r.e+'</span>'+r.l+'</button>';}).join('')+'</div>'
     +'<div class="row gap-10 mt-12">'
     +'<button class="btn btn-sm '+(here?'btn-ghost':'btn-primary')+' grow" data-act="live-here" data-id="'+e.id+'">'+ico(here?'check':'pin',16)+(here?'You\'re here':'I\'m here')+'</button>'
-    +(isChurchSession()?'':'<button class="btn btn-sm btn-outline" data-act="new-prayer">'+ico('hands',16)+'Prayer request</button>')+'</div>'
+    +'</div>'
     +'<div class="glass pad stack gap-12 mt-14"><div class="row between"><span class="eyebrow accent">Live chat</span><span class="cap num">'+chat.length+' messages</span></div>'
     +'<div class="live-chat" id="liveChat">'+chat.map(function(m){return '<div class="live-msg'+(m.me?' me':'')+'"><b>'+esc(m.n)+'</b><span>'+esc(m.t)+'</span></div>';}).join('')+'</div>'
     +'<div class="row gap-8"><input class="input grow" id="liveBox" placeholder="Say something kind…" style="padding:12px 16px;border-radius:var(--r-pill)">'
@@ -2571,7 +2628,6 @@ const SOON={
   'QR attendance':{i:'grid',eye:'Ministry ops',lead:'One QR at the door. Members tap to check in; leaders see who came.',pts:['Works offline in the sanctuary','Family check-in in one tap','Attendance trends per service'],hue:160},
   'Transfer letters':{i:'file',eye:'Ministry ops',lead:'Issue and receive membership transfer letters between verified churches.',pts:['Issued by the sending church, accepted by the receiving one','The member consents before anything moves','Full history kept for both churches'],hue:160},
   'Reply to member':{i:'msg',eye:'Pastoral care',lead:'Private replies from pastors to prayer and care requests.',pts:['Visible only to the member and pastors','Book a visit or a call from the reply','Nothing leaves the care queue'],hue:340},
-  'Prayer request to church':{i:'hands',eye:'Believer',lead:'Send a prayer request straight to a church’s pastoral care queue.',pts:['Private by default','Pastors reply from the care queue','Mark it answered when it is'],hue:340},
   'Visit request':{i:'cal',eye:'Believer',lead:'Ask a church about visiting — service times, language and where to park.',pts:['Answered by a real person at the church','Directions and service time in one card','Someone to meet you at the door if you want'],hue:230}
 };
 function stainedGlass(h){
@@ -2636,14 +2692,11 @@ function viewMe(){
 
   const follows=myChurchIds(),home=s.homeChurchId?churchById(s.homeChurchId):null;
   const posts=communityThreads().filter(function(x){return isMe(x.authorId);});
-  const prayers=state.data.prayers.filter(function(x){return isMe(x.authorId);});
   const joined=myCommunityIds().map(communityById).filter(Boolean);
   const tab=state.ui.personTab||'Posts';
   let body='';
   if(tab==='Posts')body=posts.length?'<div class="stack gap-14 stagger">'+posts.map(function(x){return postCard(x,{follow:false});}).join('')+'</div>'
     :empty('edit','You haven\'t written in a community yet','Join a community at your church and start a conversation — that is where believers speak on the ark.','<button class="btn btn-sm btn-primary" data-go="community">Browse communities</button>');
-  else if(tab==='Prayers')body=prayers.length?'<div class="stack gap-12">'+prayers.map(prayerCard).join('')+'</div>'
-    :empty('hands','No prayer requests yet','Requests you share on the prayer chain appear here.','<button class="btn btn-sm btn-primary" data-act="new-prayer">Share a request</button>');
   else body='<div class="stack gap-14">'
     +'<div class="glass pad stack gap-12"><span class="eyebrow accent">About</span><p class="body">'+esc(s.bio||'Add a line about your walk from Edit profile.')+'</p>'
     +(home?'<button class="row gap-10" data-go="church-profile" data-id="'+home.id+'" style="text-align:left">'+ico('church',16,'dim')+'<span class="body" style="color:var(--text-1)">Home church · '+esc(home.name)+'</span></button>':'')
@@ -2667,21 +2720,21 @@ function viewMe(){
     +(home?'<button class="row gap-6 ice" data-go="church-profile" data-id="'+home.id+'">'+ico('church',14)+esc(home.name)+'</button>':'')+'</div></div>'
     +'<div class="me-stats">'
     +'<span><b class="num">'+follows.length+'</b>Churches</span><span><b class="num">'+joined.length+'</b>Communities</span>'
-    +'<span><b class="num">'+(state.local.rsvps||[]).length+'</b>Events</span><span><b class="num">'+(state.local.prayed||[]).length+'</b>Prayed for</span></div>'
+    +'<span><b class="num">'+(state.local.rsvps||[]).length+'</b>Events</span></div>'
     +'<div class="row gap-10 wrap"><button class="btn btn-sm btn-ghost grow" data-act="edit-profile">'+ico('edit',16)+'Edit profile</button>'
     +'<button class="btn btn-sm btn-primary grow" data-act="join-church">'+ico('plus',16)+'Join another church</button></div>'
     +'<div class="private-box"><span class="row gap-6 eyebrow">'+ico('lock',12)+'Only you and your church admins see this</span>'
     +'<div class="row gap-14 wrap cap"><span class="row gap-6">'+ico('mail',14)+esc(s.email||'—')+(s.provider&&SOCIAL[s.provider]?' · via '+SOCIAL[s.provider].label:'')+'</span>'
     +'<span class="row gap-6">'+ico('phone',14)+esc(s.phone||'Add a number in Edit profile')+'</span></div></div>'
     +'</div>'
-    +'<div class="tabs mt-16">'+['Posts','Prayers','About'].map(function(t){
+    +'<div class="tabs mt-16">'+['Posts','About'].map(function(t){
       return '<button class="tab'+(tab===t?' on':'')+'" data-act="person-tab" data-v="'+t+'">'+t+'</button>';}).join('')+'</div>'
     +'<div class="mt-16">'+body+'</div>'
     +'<div class="sec-title"><span class="eyebrow accent">My churches</span><button class="cap" data-go="churches">Find more</button></div>'
     +(follows.length?'<div class="stack gap-10">'+follows.map(function(id){const c=churchById(id);if(!c)return '';
       const isHome=s.homeChurchId===id,mem=isMemberOf(id);
       return '<button class="glass press pad-sm row between gap-12" data-go="church-profile" data-id="'+id+'" style="text-align:left">'
-        +'<span class="row gap-12" style="min-width:0"><span class="avatar avatar-sm" style="background:'+(photoFor(id)?'#282828 url('+photoFor(id)+') center/cover':grad(id))+'">'+(photoFor(id)?'':initials(c.name))+'</span>'
+        +'<span class="row gap-12" style="min-width:0">'+churchLogo(c,34)+''
         +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">'+esc(c.city||'')+' · '+(mem?'Member':'Following')+'</span></span></span>'
         +(isHome?'<span class="badge badge-accent">'+ico('star',12)+'Home</span>':mem?'<span class="badge badge-mint">'+ico('check',11)+'Member</span>':ico('chevR',16))+'</button>';}).join('')+'</div>'
       :empty('church','No churches yet','Join your church with its invite code.','<button class="btn btn-sm btn-primary" data-act="join-church">Enter an invite code</button>'))
@@ -2714,8 +2767,17 @@ function viewSettings(){
     +'<span class="h3">Daylight</span><span class="cap">White ground, charcoal ink</span></button></div></div>'
     +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Notifications</span>'
     +prefRow('Church-to-church messages','broadcast','New messages and connection requests')
-    +'<hr class="divider">'+prefRow('Prayer requests','prayer','Private requests to the care queue')
     +'<hr class="divider">'+prefRow('Quiet hours','quiet','Nothing between 10pm and 6am')+'</div>'
+    +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Privacy</span>'
+    +(function(){
+        const c=myChurch()||{};
+        const on=!!c.connectionsPrivate;
+        return '<button class="row between gap-12" data-act="ch-connections-private" style="text-align:left;width:100%">'
+          +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:15px">Hide who we are connected with</span>'
+          +'<span class="cap">Everyone still sees how many connections you have — just not which churches</span></span>'
+          +'<span class="switch'+(on?' on':'')+'" role="switch" aria-checked="'+on+'"></span></button>';
+      })()
+    +'</div>'
     +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Church profile</span>'
     +(state.session.churchId?'<button class="btn btn-ghost btn-block" data-go="church-profile" data-id="'+esc(state.session.churchId)+'">'+ico('eye',17)+'View public profile</button>':'')
     +'<button class="btn btn-ghost btn-block" data-act="export">'+ico('file',17)+'Export church data</button></div>'
@@ -2740,7 +2802,6 @@ function viewSettings(){
     +prefRow('Church broadcasts','broadcast','Announcements from churches you follow')
     +'<hr class="divider">'+prefRow('Daily digest instead of feed','digest','One summary a day, no drip')
     +'<hr class="divider">'+prefRow('Event reminders','events','1 day and 1 hour before')
-    +'<hr class="divider">'+prefRow('Prayer chain alerts','prayer','Urgent requests only')
     +'<hr class="divider">'+prefRow('Quiet hours','quiet','Nothing between 10pm and 6am')+'</div>'
     +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Privacy</span>'
     +'<div class="field"><label class="label" for="setVis">Who can see my activity</label>'
@@ -2775,7 +2836,6 @@ function myEvents(){const s=state.session;return state.data.events.filter(functi
 function viewConsole(){
   const c=myChurch(),posts=myPosts(),evs=myEvents();
   const reach=posts.reduce(function(a,p){return a+Object.keys(p.reactions||{}).reduce(function(x,k){return x+(p.reactions[k]||0);},0);},0);
-  const prayers=state.data.prayers.filter(function(p){return p.churchId===(state.session&&state.session.churchId);});
   const cid=state.session&&state.session.churchId,cmPend=cid?pendingCommunityRequests(cid).length:0;
   const myComms=state.data.communities.filter(function(x){return x.churchId===cid;});
   return topbar(esc((c&&c.name)||(state.session&&state.session.church&&state.session.church.name)||'Your church'),'Church console',{
@@ -2794,12 +2854,14 @@ function viewConsole(){
       .map(function(s){return '<div class="stat" style="flex:1;min-width:150px"><div class="v '+s[2]+' num">'+s[1]+'</div><div class="cap mt-4">'+s[0]+'</div></div>';}).join('')+'</div>'
     +'<div class="sec-title"><span class="eyebrow accent">Needs you</span></div>'
     +'<div class="stack gap-10">'
-    +consoleRow('hands','Pastoral care queue',prayers.length+' prayer requests · 2 visitation asks','console-care','badge-rose',prayers.length||3)
+    +consoleRow('hands','Pastoral care queue','2 visitation asks · questions from BibleGPT','console-care','badge-rose',3)
     +consoleRow('msg','Church-to-church',(function(){const id=state.session&&state.session.churchId;const u=id?unreadThreads(id):0,p=id?pendingFor(id).length:0;
         return (u?u+' unread message'+(u>1?'s':''):'Inbox is clear')+' · '+(p?p+' connection request'+(p>1?'s':''):'no new requests');})(),'console-c2c','badge-ice',
         (state.session&&state.session.churchId)?unreadThreads(state.session.churchId)+pendingFor(state.session.churchId).length:0)
     +consoleRow('users','Community requests',cmPend?cmPend+' believer'+(cmPend>1?'s':'')+' asking to join your communities':'No one waiting · create and manage communities','console-communities','badge-accent',cmPend)
     +consoleRow('users','Membership requests','4 members waiting for approval','console-members','badge-accent',4)
+    +consoleRow('sparkle','Story reactions',(function(){const n=myStories().reduce(function(a,p){return a+storyReactsFor(p.id).length;},0);
+        return n?n+' reaction'+(n>1?'s':'')+' · see who reacted to what':'See who reacts to your stories';})(),'console-stories','badge-accent',0)
     +'</div>'
     +'<div class="sec-title"><span class="eyebrow accent">Recent posts</span><button class="cap" data-go="console-compose">New post</button></div>'
     +(posts.length?'<div class="stack gap-12">'+posts.slice(0,4).map(function(p){
@@ -2966,7 +3028,7 @@ function viewConsoleC2C(){
       const other=(t.churchIds||[]).filter(function(x){return x!==me;})[0],c=churchById(other),m=lastMsg(t);
       const unread=m.from&&m.from!==me&&(!seen[t.id]||dt(m.at)>dt(seen[t.id]));
       return '<button class="glass press pad-sm row between gap-12" data-go="console-thread" data-id="'+t.id+'" style="text-align:left'+(unread?';border-color:rgba(0,163,225,.32)':'')+'">'
-        +'<span class="row gap-12" style="min-width:0"><span class="avatar" style="background:'+grad(other)+'">'+initials((c&&c.name)||(t.names||{})[other]||'?')+'</span>'
+        +'<span class="row gap-12" style="min-width:0">'+churchLogo({id:other,name:(c&&c.name)||(t.names||{})[other]||'?'},44)+''
         +'<span class="stack gap-2" style="min-width:0"><span class="row gap-6"><span class="h3" style="font-size:15px">'+esc((c&&c.name)||(t.names||{})[other]||'Church')+'</span>'+ico('shield',13,'accent')+'</span>'
         +'<span class="cap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'+(unread?'color:var(--text-1);font-weight:600':'')+'">'+(m.from===me?'You: ':'')+esc(m.text)+'</span>'
         +'<span class="cap" style="font-size:11px">'+esc(t.topic||'')+(t.topic?' · ':'')+ago(m.at)+'</span></span></span>'
@@ -2976,19 +3038,19 @@ function viewConsoleC2C(){
     body=(incoming.length?'<div class="glass pad stack gap-12"><span class="eyebrow accent">Requests · '+incoming.length+'</span>'
       +incoming.map(function(x){const c=churchById(x.from)||{name:'A church'};
         return '<div class="row between gap-12"><button class="row gap-10" data-go="church-profile" data-id="'+x.from+'" style="text-align:left;min-width:0">'
-          +'<span class="avatar avatar-sm" style="background:'+grad(x.from)+'">'+initials(c.name)+'</span>'
+          +''+churchLogo(c,34)+''
           +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">'+esc(c.city||'')+' · '+ago(x.createdAt)+'</span></span></button>'
           +'<span class="row gap-6" style="flex:none"><button class="btn btn-xs btn-primary" data-act="c2c-accept" data-id="'+x.id+'">'+ico('check',13)+'Accept</button>'
           +'<button class="icon-btn" data-act="c2c-decline" data-id="'+x.id+'" aria-label="Decline" style="width:32px;height:32px">'+ico('x',14)+'</button></span></div>';}).join('')+'</div>':'')
       +'<div class="glass pad stack gap-12 mt-14"><span class="eyebrow accent">Connected · '+conns.length+'</span>'
       +(conns.length?conns.map(function(c){return '<div class="row between gap-12"><button class="row gap-10" data-go="church-profile" data-id="'+c.id+'" style="text-align:left;min-width:0">'
-        +'<span class="avatar avatar-sm" style="background:'+grad(c.id)+'">'+initials(c.name)+'</span>'
+        +''+churchLogo(c,34)+''
         +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">'+esc(c.city||'')+' · '+esc((c.languages||[]).join(', '))+'</span></span></button>'
         +'<button class="chip" data-act="c2c-message" data-id="'+c.id+'" style="flex:none">'+ico('msg',14)+'Message</button></div>';}).join('')
         :'<p class="cap">No connections yet. Find churches in the Discover tab.</p>')+'</div>'
       +(outgoing.length?'<div class="glass pad stack gap-12 mt-14"><span class="eyebrow accent">Sent · waiting</span>'
         +outgoing.map(function(x){const c=churchById(x.to)||{name:'A church'};
-          return '<div class="row between gap-12"><span class="row gap-10"><span class="avatar avatar-sm" style="background:'+grad(x.to)+'">'+initials(c.name)+'</span>'
+          return '<div class="row between gap-12"><span class="row gap-10">'+churchLogo(c,34)+''
             +'<span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">Requested '+ago(x.createdAt)+'</span></span></span>'
             +'<button class="chip" data-act="c2c-cancel" data-id="'+x.id+'">Withdraw</button></div>';}).join('')+'</div>':'');
   }else{
@@ -3016,7 +3078,7 @@ function viewConsoleThread(){
     +'<div class="row between gap-12 mt-8" style="margin-bottom:14px">'
     +'<button class="row gap-6 cap" data-go="console-c2c" style="color:var(--text-3)">'+ico('arrowL',16)+'Inbox</button>'
     +'<button class="chip" data-go="church-profile" data-id="'+esc(other)+'">'+ico('eye',14)+'Profile</button></div>'
-    +'<div class="glass pad-sm row gap-12" style="margin-bottom:14px"><span class="avatar" style="background:'+grad(other)+'">'+initials(c.name)+'</span>'
+    +'<div class="glass pad-sm row gap-12" style="margin-bottom:14px">'+churchLogo(c,44)+''
     +'<span class="stack gap-2" style="min-width:0"><span class="row gap-6"><span class="h3">'+esc(c.name)+'</span>'+ico('shield',14,'accent')+'</span>'
     +'<span class="cap">'+esc(c.city||'')+(c.pastorName?' · '+esc(c.pastorName):'')+(t.topic?' · '+esc(t.topic):'')+'</span></span></div>'
     +'<div class="stack gap-10" style="flex:1" id="threadBody">'
@@ -3028,25 +3090,63 @@ function viewConsoleThread(){
     +'<button class="btn btn-primary" data-act="c2c-send" data-id="'+t.id+'" style="height:42px;width:42px;padding:0;border-radius:50%;flex:none">'+ico('send',17)+'</button></div>'
     +'<div style="height:24px"></div></div>';
 }
+/* What a story did. Per story: how many of each reaction, and the believers behind them —
+   the church side of the taps that happen in the story overlay. */
+function myStories(){
+  const cid=state.session&&state.session.churchId;
+  return state.data.posts.filter(function(p){return p.type==='story'&&p.churchId===cid;})
+    .sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);});
+}
+/* A story usually has no title, so its opening words stand in — cut on a word, not mid-syllable. */
+function storyLabel(p){
+  if(p.title)return p.title;
+  const t=String(p.content||'').trim();
+  if(t.length<=52)return t||'Story';
+  const cut=t.slice(0,52);
+  return cut.slice(0,Math.max(cut.lastIndexOf(' '),30)).replace(/[,;:.]$/,'')+'…';
+}
+function storyReactsFor(postId){
+  return state.data.storyReacts.filter(function(r){return r.postId===postId;})
+    .sort(function(a,b){return dt(b.at)-dt(a.at);});
+}
+function viewConsoleStories(){
+  const stories=myStories();
+  const total=stories.reduce(function(a,p){return a+storyReactsFor(p.id).length;},0);
+  return topbar('Story reactions',total+' reaction'+(total===1?'':'s')+' across '+stories.length+' stor'+(stories.length===1?'y':'ies'),{back:'console'})
+    +'<div class="view stack gap-14">'
+    +(stories.length?stories.map(function(p){
+      const rows=storyReactsFor(p.id);
+      const byKind={};rows.forEach(function(r){byKind[r.reaction]=(byKind[r.reaction]||0)+1;});
+      return '<div class="glass pad stack gap-12">'
+        +'<div class="row between gap-12"><span class="stack gap-2" style="min-width:0">'
+        +'<span class="h3" style="font-size:15px">'+esc(storyLabel(p))+'</span>'
+        +'<span class="cap">'+ago(p.createdAt)+' · <span class="num">'+rows.length+'</span> reaction'+(rows.length===1?'':'s')+'</span></span>'
+        +'<button class="chip" data-go="post" data-id="'+esc(p.id)+'">View</button></div>'
+        +'<div class="row gap-8 wrap">'+REACTIONS.map(function(r){
+            const n=byKind[r.k]||0;
+            return '<span class="chip static'+(n?'':' muted')+'"><span class="em">'+r.e+'</span> '+r.l+' <b class="num">'+n+'</b></span>';}).join('')+'</div>'
+        +(rows.length?'<hr class="divider"><div class="stack gap-10">'+rows.map(function(r){
+            const meta=REACTIONS.filter(function(x){return x.k===r.reaction;})[0]||{e:'',l:r.reaction};
+            return '<div class="row between gap-12"><span class="row gap-10" style="min-width:0">'
+              +'<span class="avatar avatar-sm" style="background:'+grad(r.userKey)+'">'+initials(r.userName)+'</span>'
+              +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14px">'+esc(r.userName)+'</span>'
+              +'<span class="cap">'+(r.userHandle?'@'+esc(r.userHandle)+' · ':'')+ago(r.at)+'</span></span></span>'
+              +'<span class="row gap-6 cap" style="flex:none"><span style="font-size:15px">'+meta.e+'</span>'+esc(meta.l)+'</span></div>';}).join('')+'</div>'
+          :'<p class="cap">No reactions yet.</p>')
+        +'</div>';}).join('')
+      :empty('sparkle','No stories in the last day','Stories live for 24 hours. Publish one and the reactions land here.',
+        '<button class="btn btn-sm btn-primary" data-go="console-compose">Publish a story</button>'))
+    +'<div style="height:30px"></div></div>';
+}
 function viewConsoleCare(){
-  const prayers=state.data.prayers.filter(function(p){return p.churchId===(state.session&&state.session.churchId)||p.visibility==='church';});
   return topbar('Pastoral care','Private queue · pastors only',{back:'console'})
     +'<div class="view stack gap-14">'
     +'<div class="row gap-10 cap" style="padding:13px 15px;border-radius:var(--r-md);background:rgba(232,145,154,.1);border:1px solid rgba(232,145,154,.28);color:var(--rose)">'
-    +ico('lock',15)+'Private requests are visible only to pastors of this church.</div>'
+    +ico('lock',15)+'This queue is visible only to pastors of this church.</div>'
     +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Visitation & counselling</span>'
     +[['Hospital visit · Mrs. Mary','Requested 2 days ago','Urgent'],['Marriage counselling','Requested yesterday','Normal'],['Home dedication','This Saturday','Normal']].map(function(r){
       return '<div class="row between gap-12"><span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(r[0])+'</span><span class="cap">'+esc(r[1])+'</span></span>'
         +'<span class="badge '+(r[2]==='Urgent'?'badge-rose':'badge-ice')+'">'+r[2]+'</span></div>';}).join('')+'</div>'
-    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Prayer requests · '+prayers.length+'</span>'
-    +(prayers.length?prayers.slice(0,6).map(function(p){
-      return '<div class="stack gap-6" style="padding:13px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
-        +'<div class="row between gap-10"><span class="h3" style="font-size:14px">'+esc(p.visibility==='anonymous'?'Anonymous':p.authorName)+'</span>'
-        +'<span class="cap">'+ago(p.createdAt)+'</span></div>'
-        +'<span class="body" style="font-size:14.5px">'+esc(p.text)+'</span>'
-        +'<div class="row gap-8"><button class="chip" data-act="pray" data-id="'+p.id+'">\u{1F64F} Pray</button>'
-        +'<button class="chip" data-act="soon" data-v="Reply to member">'+ico('msg',14)+'Reply</button></div></div>';}).join('')
-      :'<p class="cap">No requests waiting.</p>')+'</div>'
     +'<div class="glass pad stack gap-12"><span class="eyebrow accent">From BibleGPT</span>'
     +'<p class="body">Questions the assistant handed to a pastor appear here.</p>'
     +((state.local.care||[]).length?(state.local.care||[]).map(function(q){
@@ -3059,20 +3159,13 @@ function viewConsoleCare(){
 function renderSheet(){
   const s=state.ui.sheet;if(!s)return '';
   let inner='';
-  if(s.kind==='prayer'){
-    inner='<span class="eyebrow accent">New prayer request</span><h2 class="h1 mt-8">Share it with the chain</h2>'
-      +'<textarea class="textarea mt-16" id="prText" placeholder="What would you like prayer for?"></textarea>'
-      +'<div class="row gap-8 wrap mt-16">'+[['public','Public'],['church','Church only'],['anonymous','Anonymous']].map(function(v){
-        return '<button class="chip'+((state.ui.prVis||'public')===v[0]?' on':'')+'" data-act="pr-vis" data-v="'+v[0]+'">'+v[1]+'</button>';}).join('')+'</div>'
-      +'<button class="btn btn-primary btn-block mt-16" data-act="submit-prayer">Post to the prayer chain</button>'
-      +'<p class="cap mt-12">Private requests reach only the pastors of your church.</p>';
-  }else if(s.kind==='post'){
-    const types=[['question','Question','msg'],['testimony','Testimony','star'],['praise','Praise','sparkle'],['prayer','Prayer','hands'],['text','Word','edit']];
+  if(s.kind==='post'){
+    const types=[['question','Question','msg'],['testimony','Testimony','star'],['praise','Praise','sparkle'],['text','Word','edit']];
     const t=state.ui.postType||'question',cm=communityById(s.params.id)||{name:'the community'};
     inner='<span class="eyebrow accent">New conversation · '+esc(cm.name)+'</span><h2 class="h1 mt-8">What is on your heart?</h2>'
       +'<div class="scroll-x mt-16">'+types.map(function(x){
         return '<button class="chip'+(t===x[0]?' on':'')+'" data-act="post-type" data-v="'+x[0]+'">'+ico(x[2],14)+x[1]+'</button>';}).join('')+'</div>'
-      +'<textarea class="textarea mt-16" id="npText" placeholder="'+(t==='testimony'?'Tell what God has done…':t==='praise'?'What are you thankful for?':t==='prayer'?'What do you need prayer for?':t==='question'?'Ask the community…':'Share a word…')+'" style="min-height:140px"></textarea>'
+      +'<textarea class="textarea mt-16" id="npText" placeholder="'+(t==='testimony'?'Tell what God has done…':t==='praise'?'What are you thankful for?':t==='question'?'Ask the community…':'Share a word…')+'" style="min-height:140px"></textarea>'
       +'<div class="field mt-12"><label class="label" for="npVerse">Attach a verse (optional)</label>'
       +'<select class="select" id="npVerse"><option value="">No verse</option>'
       +VERSES.map(function(v){return '<option value="'+esc(v.r)+'">'+esc(v.r)+'</option>';}).join('')+'</select></div>'
@@ -3176,14 +3269,26 @@ function renderSheet(){
       +'<div class="row gap-8 wrap mt-16">'+['Lamentations 3:22','Psalm 46:10'].map(function(v){
         return '<button class="verse-chip" data-act="open-verse" data-r="'+esc(v)+'">'+ico('book',13)+esc(v)+'</button>';}).join('')+'</div>'
       +'<p class="cap mt-16">In this prototype the summary is illustrative. Pastors can correct summaries before they publish.</p>';
-  }else if(s.kind==='message'){
+  }else if(s.kind==='connections'){
+    /* The number is always public. Who the churches are is the church's own call — when it
+       keeps the list private, everyone but the church itself sees the count alone. */
     const c=churchById(s.params.id)||{};
-    inner='<span class="eyebrow accent">Message '+esc(c.name||'church')+'</span>'
-      +'<div class="glass pad stack gap-12 mt-16" style="border-color:rgba(127,212,245,.28)">'
-      +'<div class="row gap-10">'+ico('shield',18,'ice')+'<span class="body" style="font-size:14.5px">Direct messages are between <b>verified churches</b> only. Believers reach a church through its posts, events and prayer chain.</span></div></div>'
-      +'<div class="stack gap-10 mt-16">'
-      +'<button class="btn btn-ghost btn-block" data-act="soon" data-v="Prayer request to church">'+ico('hands',17)+'Send a prayer request</button>'
-      +'<button class="btn btn-ghost btn-block" data-act="soon" data-v="Visit request">'+ico('cal',17)+'Ask about visiting</button></div>';
+    const list=myConnections(c.id).map(churchById).filter(Boolean);
+    const mine=isChurchSession()&&state.session.churchId===c.id;
+    const hidden=!!c.connectionsPrivate&&!mine;
+    inner='<span class="eyebrow accent">'+esc(c.name||'Church')+'</span>'
+      +'<h2 class="h1 mt-8">'+list.length+' connection'+(list.length===1?'':'s')+'</h2>'
+      +(hidden
+        ?'<div class="glass pad stack gap-12 mt-16"><div class="row gap-10">'+ico('lock',18,'ice')
+          +'<span class="body" style="font-size:14.5px">'+esc(c.name||'This church')+' keeps its connections private. The number is shown, the churches are not.</span></div></div>'
+        :list.length
+          ?'<div class="stack gap-10 mt-16">'+list.map(function(x){
+            return '<button class="glass press pad-sm row between gap-12" data-go="church-profile" data-id="'+esc(x.id)+'" style="text-align:left">'
+              +'<span class="row gap-10" style="min-width:0">'+churchLogo(x,34)
+              +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(x.name)+'</span>'
+              +'<span class="cap">'+esc(x.city||'')+'</span></span></span>'+ico('chevR',16)+'</button>';}).join('')+'</div>'
+          :'<p class="cap mt-16">No connections yet.</p>')
+      +(mine&&c.connectionsPrivate?'<p class="cap mt-12">'+ico('eye',13)+' Only you can see this list.</p>':'');
   }else if(s.kind==='soon'){
     inner='<div class="stack center gap-14" style="text-align:center">'
       +'<div class="icon-btn" style="width:56px;height:56px;color:var(--lavender);border-color:rgba(192,143,208,.35);background:rgba(192,143,208,.1)">'+ico('sparkle',26)+'</div>'
@@ -3248,6 +3353,7 @@ function render(){
     else if(r==='console-members')body=viewConsoleMembers();
     else if(r==='console-c2c')body=viewConsoleC2C();
     else if(r==='console-care')body=viewConsoleCare();
+    else if(r==='console-stories')body=viewConsoleStories();
     else body=viewHome();
     html='<div class="shell">'+renderNav()+'<main class="main" id="main">'+body+'</main></div>';
   }
@@ -3339,7 +3445,7 @@ const ACTIONS={
       const user=String(o.user||'').trim().toLowerCase().replace(/^@/,'');
       if(!user)err.user='Choose a username';
       else if(!/^[a-z0-9._]{3,24}$/.test(user))err.user='Use 3 to 24 letters, numbers, dots or underscores';
-      else if(takenHandles()[user])err.user='@'+user+' is taken. Try another.';
+      else if(takenHandles()[norm(user)])err.user='@'+user+' is taken. Try another.';
       if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(o.email||'').trim()))err.email='Enter a valid email address';
       const digits=String(o.phone||'').replace(/[\s\-().]/g,'');
       if(!digits)err.phone='Enter a contact number';else if(!/^\d{6,14}$/.test(digits))err.phone='Use 6 to 14 digits, without the country code';
@@ -3372,7 +3478,7 @@ const ACTIONS={
       provider:meta.provider||'email',photo:o.photo||meta.photo||null};
     state.session=session;saveSession();
     state.prefs.lang=o.lang||'English';savePrefs();
-    if(state.local.follows.indexOf(o.churchId)<0){state.local.follows.push(o.churchId);dbBump('churches',o.churchId,'followers',1);}
+    if(state.local.follows.indexOf(o.churchId)<0){state.local.follows.push(o.churchId);bumpCount('churches',o.churchId,'followers',1);}
     state.local.planDay=0;state.local.streak=0;saveLocal();
     saveProfile();state.ui.obErrors={};
     go('home');toast('Welcome to '+((c&&c.name)||'the ark')+', '+String(session.name).split(' ')[0]);
@@ -3381,8 +3487,14 @@ const ACTIONS={
   'mock-upload-audio':function(){state.ui.audioUp=true;toast('Audio uploaded · transcript generated');render();},
   'church-submit':async function(){
     const name=val('cName');
+    const o=state.ui.onboard;
     if(!name){toast('Your church needs a name');return;}
-    const church={name:name,city:val('cCity'),address:val('cAddr'),inviteCode:makeInviteCode(name),
+    const handle=norm(val('cHandle'))||freeHandle(name,takenChurchHandles());
+    o.chHandle=handle;o.chHandleError='';
+    if(!/^[a-z0-9._]{3,24}$/.test(handle))o.chHandleError='Use 3 to 24 letters, numbers, dots or underscores';
+    else if(takenChurchHandles()[handle])o.chHandleError='@'+handle+' is taken by another church';
+    if(o.chHandleError){render();toast('Please check the highlighted field');return;}
+    const church={name:name,handle:handle,city:val('cCity'),address:val('cAddr'),inviteCode:makeInviteCode(name),
       serviceTimes:val('cTimes')?val('cTimes').split('·').map(function(s){return s.trim();}):['Sun 9:30am'],
       languages:val('cLangs')?val('cLangs').split(',').map(function(s){return s.trim();}):['English'],
       pastorName:val('cPastor'),tagline:val('cTag')||'A church family on believersArk',
@@ -3394,7 +3506,8 @@ const ACTIONS={
   },
   'approve-church':async function(){
     const s=state.session;if(!s||!s.church)return;
-    const c=Object.assign({},s.church,{verified:true,inviteCode:s.church.inviteCode||makeInviteCode(s.church.name)});
+    const c=Object.assign({},s.church,{verified:true,inviteCode:s.church.inviteCode||makeInviteCode(s.church.name),
+      handle:s.church.handle||freeHandle(s.church.name,takenChurchHandles())});
     const id=await dbAdd('churches',c);
     s.verified=true;s.churchId=id||('local_'+uid());
     if(!localDoc('churches',s.churchId))state.data.churches.push(hydrate(Object.assign({id:s.churchId},c)));
@@ -3483,7 +3596,7 @@ const ACTIONS={
   'live-here':function(el){
     if(!requireAuth())return;
     const e=state.data.events.find(function(x){return x.id===el.dataset.id;});if(!e)return;
-    if(state.local.rsvps.indexOf(e.id)<0){state.local.rsvps.push(e.id);saveLocal();dbBump('events',e.id,'rsvpCount',1);e.rsvpCount=(e.rsvpCount||0)+1;}
+    if(state.local.rsvps.indexOf(e.id)<0){state.local.rsvps.push(e.id);saveLocal();bumpCount('events',e.id,'rsvpCount',1);}
     render();toast('Attendance recorded — welcome');
   },
   'live-send':function(){
@@ -3546,18 +3659,17 @@ const ACTIONS={
   summarise:function(el){openSheet('summary',{id:el.dataset.id});},
   react:function(el){
     const id=el.dataset.id,k=el.dataset.k,prev=state.local.reacted[id];
-    if(prev===k){delete state.local.reacted[id];dbBump('posts',id,'reactions.'+k,-1);}
-    else{state.local.reacted[id]=k;dbBump('posts',id,'reactions.'+k,1);if(prev)dbBump('posts',id,'reactions.'+prev,-1);}
+    if(prev===k){delete state.local.reacted[id];bumpCount('posts',id,'reactions.'+k,-1);}
+    else{state.local.reacted[id]=k;bumpCount('posts',id,'reactions.'+k,1);if(prev)bumpCount('posts',id,'reactions.'+prev,-1);}
     saveLocal();
-    const p=state.data.posts.find(function(x){return x.id===id;});
-    if(p){p.reactions=p.reactions||{};p.reactions[k]=(p.reactions[k]||0)+(prev===k?-1:1);if(prev&&prev!==k)p.reactions[prev]=Math.max(0,(p.reactions[prev]||0)-1);}
+    recordStoryReaction(state.data.posts.find(function(x){return x.id===id;}),prev===k?null:k);
     render();
   },
   follow:async function(el){
     const id=el.dataset.id,i=state.local.follows.indexOf(id);
     const c=churchById(id);
-    if(i>-1){state.local.follows.splice(i,1);dbBump('churches',id,'followers',-1);toast('Unfollowed'+(c?' '+c.name:''));}
-    else{state.local.follows.push(id);dbBump('churches',id,'followers',1);
+    if(i>-1){state.local.follows.splice(i,1);bumpCount('churches',id,'followers',-1);toast('Unfollowed'+(c?' '+c.name:''));}
+    else{state.local.follows.push(id);bumpCount('churches',id,'followers',1);
       toast(state.session?'Following '+((c&&c.name)||'this church')+' — their posts are in your feed':'Following. Sign in to keep this across devices.');}
     saveLocal();saveProfile();render();
   },
@@ -3618,7 +3730,7 @@ const ACTIONS={
     const name=val('epName'),user=val('epUser').toLowerCase().replace(/^@/,''),digits=val('epPhone').replace(/[\s\-().]/g,''),city=val('epCity');
     if(!name)e.name='Add the name people will see';
     if(!/^[a-z0-9._]{3,24}$/.test(user))e.user='Use 3 to 24 letters, numbers, dots or underscores';
-    else if(user!==s.handle&&takenHandles()[user])e.user='@'+user+' is taken';
+    else if(norm(user)!==norm(s.handle)&&takenHandles()[norm(user)])e.user='@'+user+' is taken';
     if(!/^\d{6,14}$/.test(digits))e.phone='Use 6 to 14 digits';
     if(!city)e.city='Enter your city';
     state.ui.profileErrors=e;
@@ -3654,7 +3766,7 @@ const ACTIONS={
     s.memberOf=s.memberOf||[];
     if(s.memberOf.indexOf(c.id)>-1){state.ui.joinError='You\'re already a member of '+c.name;render();return;}
     s.memberOf.push(c.id);if(!s.homeChurchId)s.homeChurchId=c.id;
-    if(state.local.follows.indexOf(c.id)<0){state.local.follows.push(c.id);dbBump('churches',c.id,'followers',1);saveLocal();}
+    if(state.local.follows.indexOf(c.id)<0){state.local.follows.push(c.id);bumpCount('churches',c.id,'followers',1);saveLocal();}
     saveSession();saveProfile();state.ui.joinChurch=c.id;render();toast('Welcome to '+c.name);
   },
   'copy-invite':function(el){
@@ -3665,7 +3777,7 @@ const ACTIONS={
   'amen-comment':function(el){
     const c=state.data.comments.find(function(x){return x.id===el.dataset.id;});
     if(!c)return;
-    dbBump('comments',c.id,'amens',1);c.amens=(c.amens||0)+1;render();
+    bumpCount('comments',c.id,'amens',1);render();
   },
   'reply-comment':function(el){
     const box=document.getElementById('cmtBox');
@@ -3677,7 +3789,13 @@ const ACTIONS={
     if(state.session.homeChurchId&&state.local.follows.indexOf(el.dataset.id)<0)state.local.follows.push(el.dataset.id);
     saveSession();saveLocal();saveProfile();render();toast(state.session.homeChurchId?'Set as your home church':'Home church cleared');
   },
-  'church-msg':function(el){openSheet('message',{id:el.dataset.id});},
+  'show-connections':function(el){openSheet('connections',{id:el.dataset.id});},
+  'ch-connections-private':function(){
+    const c=myChurch();if(!c){toast('Finish verification first');return;}
+    c.connectionsPrivate=!c.connectionsPrivate;
+    dbUpdate('churches',c.id,{connectionsPrivate:c.connectionsPrivate});
+    render();toast(c.connectionsPrivate?'Your connections are private now':'Your connections are visible again');
+  },
   'church-tab':function(el){state.ui.churchTab=el.dataset.v;render();},
   'dir-view':function(){state.ui.dir=state.ui.dir==='map'?'list':'map';render();},
   'dir-search':function(){state.ui.dirFilters.q=val('dirQ');render();},
@@ -3701,10 +3819,8 @@ const ACTIONS={
   rsvp:function(el){
     if(!requireAuth())return;
     const id=el.dataset.id,i=state.local.rsvps.indexOf(id);
-    if(i>-1){state.local.rsvps.splice(i,1);dbBump('events',id,'rsvpCount',-1);toast('RSVP cancelled');}
-    else{state.local.rsvps.push(id);dbBump('events',id,'rsvpCount',1);toast('You\'re going — reminders are set');}
-    const e=state.data.events.find(function(x){return x.id===id;});
-    if(e)e.rsvpCount=Math.max(0,(e.rsvpCount||0)+(i>-1?-1:1));
+    if(i>-1){state.local.rsvps.splice(i,1);bumpCount('events',id,'rsvpCount',-1);toast('RSVP cancelled');}
+    else{state.local.rsvps.push(id);bumpCount('events',id,'rsvpCount',1);toast('You\'re going — reminders are set');}
     saveLocal();render();
   },
   comment:async function(el){
@@ -3715,7 +3831,7 @@ const ACTIONS={
     const s=state.session;
     const doc={postId:el.dataset.id,authorId:s.id,authorName:s.name,text:t,amens:0,createdAt:new Date().toISOString()};
     await dbAdd('comments',doc);
-    dbBump('posts',el.dataset.id,'comments',1);
+    bumpCount('posts',el.dataset.id,'comments',1);
     render();toast('Comment posted');
   },
   'journey-tab':function(el){state.ui.journeyTab=el.dataset.v;render();},
@@ -3736,26 +3852,6 @@ const ACTIONS={
     saveLocal();saveProfile();render();toast('Day complete · '+state.local.streak+' day streak');
   },
   'note-verse':function(){state.ui.journeyTab='Journal';closeSheet();go('journey');toast('Add your note below');},
-  'new-prayer':function(){if(!requireAuth())return;openSheet('prayer');},
-  'pr-vis':function(el){state.ui.prVis=el.dataset.v;render();},
-  'submit-prayer':async function(){
-    const t=val('prText');if(!t){toast('Write your request first');return;}
-    const vis=state.ui.prVis||'public',s=state.session;
-    const home=s&&s.homeChurchId?churchById(s.homeChurchId):null;
-    const doc={authorName:vis==='anonymous'?'Anonymous':(s&&s.name)||'A believer',authorId:(s&&s.id)||null,text:t,visibility:vis,
-      churchId:home?home.id:null,churchName:home?home.name:null,prayingCount:0,answered:false,createdAt:new Date().toISOString()};
-    closeSheet();
-    await dbAdd('prayerRequests',doc);
-    state.ui.journeyTab='Prayer';if(state.route!=='live')go('journey');else render();toast('Shared with the prayer chain');
-  },
-  pray:function(el){
-    if(!requireAuth())return;
-    const id=el.dataset.id;
-    if(state.local.prayed.indexOf(id)>-1){toast('You\'re already praying for this');return;}
-    state.local.prayed.push(id);saveLocal();dbBump('prayerRequests',id,'prayingCount',1);
-    const pr=state.data.prayers.find(function(x){return x.id===id;});if(pr)pr.prayingCount=(pr.prayingCount||0)+1;
-    render();toast('\u{1F64F} Amen — they have been told someone is praying');
-  },
   'add-journal':function(){
     if(!requireAuth())return;
     const t=val('jEntry');if(!t){toast('Write something first');return;}
@@ -3799,7 +3895,7 @@ const ACTIONS={
   'delete-account':function(){
     if(!state.ui.confirmDelete){state.ui.confirmDelete=true;toast('Tap again to permanently delete your account');return;}
     state.session=null;saveSession();
-    state.local={follows:[],saved:[],rsvps:[],prayed:[],reacted:{},journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]};
+    state.local={follows:[],saved:[],rsvps:[],reacted:{},journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]};
     saveLocal();state.ui.confirmDelete=false;go('welcome');toast('Account and local data deleted');
   },
   compose:function(el){state.ui.composeType=el.dataset.v;state.ui.composePhoto=null;state.ui.composePhotoName='';go('console-compose');},

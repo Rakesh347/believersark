@@ -10,3 +10,6 @@ desktop.ini
 # Dependencies, if a build step is ever added
 node_modules/
 dist/
+
+# Claude Code local dev-server config
+.claude/
