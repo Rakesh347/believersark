@@ -54,8 +54,30 @@ function ico(name,size,cls){return '<svg class="'+(cls||'')+'" width="'+(size||2
 
 const REACTIONS=[{k:'amen',e:'\u{1F64F}',l:'Amen'},{k:'bless',e:'✝️',l:'Bless'},{k:'peace',e:'\u{1F54A}️',l:'Peace'},{k:'love',e:'❤️',l:'Love'},{k:'fire',e:'\u{1F525}',l:'Spirit'}];
 const LANGS=['English','Tamil','Malayalam','Telugu','Hindi','Kannada','Marathi','Bengali'];
-const DENOMS=['Non-denominational','Pentecostal','Baptist','Church of South India','Roman Catholic','Methodist','Assemblies of God','Brethren','Lutheran','Orthodox'];
+const COUNTRIES=['India','United Arab Emirates','Singapore','Malaysia','Sri Lanka','Nepal','United States','United Kingdom','Canada','Australia','New Zealand','Germany','Kenya','Nigeria','South Africa','Qatar','Saudi Arabia','Kuwait','Oman','Bahrain','Other'];
+const DIAL_CODES=['+91','+971','+65','+60','+94','+977','+1','+44','+61','+64','+49','+254','+234','+27','+974','+966','+965','+968','+973'];
+const GENDERS=['Female','Male','Prefer not to say'];
+/* The personal goals offered at the end of onboarding. Plan goals map onto a reading plan. */
+const GOALS=[
+  {k:'rp1',icon:'book',t:'The Bible in a year',d:'Genesis to Revelation, about 15 minutes a day',plan:'rp1'},
+  {k:'rp2',icon:'music',t:'Psalms in 30 days',d:'Five psalms a day for a month',plan:'rp2'},
+  {k:'rp3',icon:'star',t:'The Gospels in 50 days',d:'Matthew, Mark, Luke and John, end to end',plan:'rp3'},
+  {k:'church',icon:'church',t:'Connect with my church',d:'Services, events and the people I worship with'},
+  {k:'journal',icon:'edit',t:'Journal my spiritual journey',d:'Private notes, prayers and answered prayers'},
+  {k:'pray',icon:'hands',t:'Pray with others',d:'Join the prayer chain and pray for requests'}
+];
+/* Every church hands its members an invite code. Codes are matched ignoring case, spaces and dashes. */
+const INVITE_CODES={ch1:'GRACE-7291',ch2:'BETHEL-3304',ch3:'MARTHOMA-1876',ch4:'NEWLIFE-6112',ch5:'HOPE-2210',ch6:'EMMANUEL-1994'};
+function normCode(s){return String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');}
+function churchByInvite(code){const n=normCode(code);if(n.length<4)return null;return state.data.churches.find(function(c){return c.inviteCode&&normCode(c.inviteCode)===n;})||null;}
+function makeInviteCode(name){const w=String(name||'CHURCH').toUpperCase().replace(/[^A-Z]/g,'').slice(0,8)||'CHURCH';return w+'-'+String(1000+Math.floor(Math.random()*9000));}
 const VERSES=[
+  {r:'John 3:16',t:'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.'},
+  {r:'Genesis 1:1',t:'In the beginning God created the heaven and the earth.'},
+  {r:'Matthew 6:9',t:'After this manner therefore pray ye: Our Father which art in heaven, Hallowed be thy name.'},
+  {r:'Ephesians 2:8',t:'For by grace are ye saved through faith; and that not of yourselves: it is the gift of God.'},
+  {r:'John 1:1',t:'In the beginning was the Word, and the Word was with God, and the Word was God.'},
+  {r:'1 Corinthians 13:4',t:'Charity suffereth long, and is kind; charity envieth not; charity vaunteth not itself, is not puffed up.'},
   {r:'Psalm 46:10',t:'Be still, and know that I am God.'},
   {r:'Isaiah 40:31',t:'But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary.'},
   {r:'Psalm 119:105',t:'Thy word is a lamp unto my feet, and a light unto my path.'},
@@ -286,7 +308,6 @@ const POST_SCENE={p1:'arches',p3:'stage',p4:'rays',p5:'hills',p7:'arches',p8:'wa
   st1:'arches',st2:'road',st3:'rays',st4:'festival',st5:'table',st6:'lamp'};
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
 function uid(p){return (p||'')+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);}
-function money(n){return '₹'+Number(n||0).toLocaleString('en-IN');}
 function initials(n){return String(n||'?').trim().split(/\s+/).slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();}
 const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -320,14 +341,17 @@ const state={
   route:'splash',
   params:{},
   session:lsGet('session',null),
-  local:Object.assign({follows:[],saved:[],rsvps:[],prayed:[],reacted:{},journal:[],planDay:0,streak:0,lastRead:null,giving:[],milestones:[],care:[],seenMoments:[],notifSeen:null,communities:[],reminders:{},family:[]},
+  local:Object.assign({follows:[],saved:[],rsvps:[],prayed:[],reacted:{},journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]},
     lsGet('local',{})),
-  prefs:lsGet('prefs',{broadcast:true,digest:false,quiet:true,events:true,prayer:true,lang:'English',visibility:'church',showGiving:false}),
-  data:{churches:[],posts:[],events:[],plans:[],prayers:[],campaigns:[],people:[],comments:[],communities:[],threads:[],connections:[]},
-  ui:{tab:'All',dir:'list',dirFilters:{q:'',denom:'',lang:'',live:false},journeyTab:'Timeline',churchTab:'Posts',consoleTab:'Dashboard',
-      chat:[],chatMode:'Ask',chatBusy:false,otp:null,authRole:'believer',authId:'',onboard:{},step:0,sheet:null,toast:null,ready:false,dbState:'loading',giveAmt:1000,
-      calMonth:null,calDay:null,c2cTab:'Inbox'},
+  prefs:lsGet('prefs',{broadcast:true,digest:false,quiet:true,events:true,prayer:true,lang:'English',visibility:'church'}),
+  data:{churches:[],posts:[],events:[],plans:[],prayers:[],people:[],comments:[],communities:[],threads:[],connections:[],cmRequests:[]},
+  ui:{tab:'All',dir:'list',dirFilters:freshFilters(),journeyTab:'Timeline',churchTab:'Posts',consoleTab:'Dashboard',
+      chat:[],chatMode:'Ask',chatBusy:false,otp:null,authRole:'believer',authId:'',onboard:{},step:0,sheet:null,toast:null,ready:false,dbState:'loading',
+      calMonth:null,calDay:null,railMonth:null,railDay:null,c2cTab:'Inbox',news:null,story:null,fx:null},
 };
+function freshFilters(){return {q:'',cities:[],langs:[],days:[],times:[],ministries:[],live:false,following:'any',sort:'popular'};}
+/* legacy local fields from the giving era are dropped on load */
+delete state.local.giving;delete state.local.communities;delete state.prefs.showGiving;
 function saveLocal(){lsSet('local',state.local);}
 function savePrefs(){lsSet('prefs',state.prefs);}
 function saveSession(){state.session?lsSet('session',state.session):lsDel('session');}
@@ -335,15 +359,41 @@ function saveSession(){state.session?lsSet('session',state.session):lsDel('sessi
 /* ---------- seed data ----------
    Embedded so the ark is alive on first open, online or offline. Dates are relative
    (ageHours / dayOffset) and hydrated at load, so the demo never goes stale. */
-const SEED={"prayerRequests":[{"answered":false,"authorName":"Anitha Raj","churchId":"ch2","churchName":"Bethel Assembly","prayingCount":86,"text":"My father's scan results come on Thursday. I have been carrying this alone for two weeks and I am tired. Please pray for good news, and for me to sleep.","visibility":"public","id":"pr1","ageHours":13.83},{"answered":false,"authorName":"Grace Mathew","churchId":"ch2","churchName":"Bethel Assembly","prayingCount":512,"text":"For Br. Immanuel in the ICU at St. John's, and for his wife who has not left the corridor since last night.","visibility":"public","id":"pr10","ageHours":5},{"answered":false,"authorName":"Anonymous","churchId":"ch1","churchName":"Grace Cathedral","prayingCount":124,"text":"I have not spoken to my brother in four years. He is coming to the wedding this month and I do not know how to begin.","visibility":"anonymous","id":"pr2","ageHours":20.5},{"answered":false,"authorName":"Joseph Kumar","churchId":"ch4","churchName":"New Life Fellowship","prayingCount":211,"text":"Third interview on Friday after eight months without work. Pray that I walk in without desperation on my face.","visibility":"public","id":"pr3","ageHours":4.67},{"answered":false,"authorName":"Mercy Thomas","churchId":"ch3","churchName":"St. Thomas Marthoma","prayingCount":58,"text":"For our son who left for Dubai last week. He is 22 and it is his first time away from Kerala.","visibility":"church","id":"pr4","ageHours":39.25},{"answered":false,"authorName":"Anonymous","churchId":null,"churchName":null,"prayingCount":347,"text":"I have been pretending to be fine at church for months. I still come, I still sing, and I feel nothing. Pray that something comes back.","visibility":"anonymous","id":"pr5","ageHours":60.08},{"answered":false,"authorName":"Priya Selvam","churchId":"ch6","churchName":"Emmanuel Baptist","prayingCount":94,"text":"Our daughter's board exams begin Monday. She has worked hard. Pray for a clear mind and a calm hall.","visibility":"public","id":"pr6","ageHours":29.75},{"answered":true,"authorName":"David Mathew","churchId":"ch5","churchName":"Living Hope Church","prayingCount":428,"text":"Six months sober tomorrow. Pray for the seventh, and for the friends who kept answering my calls at 2am.","visibility":"public","id":"pr7","ageHours":89},{"answered":false,"authorName":"Ruth Anand","churchId":"ch1","churchName":"Grace Cathedral","prayingCount":67,"text":"For the elderly members who stopped coming when the bus route changed. Pray that we find drivers, and that they know they were missed.","visibility":"church","id":"pr8","ageHours":2.92},{"answered":false,"authorName":"Samuel P.","churchId":"ch4","churchName":"New Life Fellowship","prayingCount":183,"text":"Pastor Ramesh walks 9km each Sunday to reach the Warangal congregation. Pray for his knees and for the roof fund.","visibility":"public","id":"pr9","ageHours":48.33}],"posts":[{"churchId":"ch1","churchName":"Grace Cathedral","comments":31,"content":"From Lamentations 3 — mercies that are new every morning are offered to people standing in the ruins, not to people who have already recovered. Audio, transcript and Tamil translation are attached.","duration":"42 min","reactions":{"amen":184,"bless":63,"fire":22,"love":97,"peace":41},"speaker":"Rev. Daniel Selvam","title":"The God Who Stays","type":"sermon","id":"p1","ageHours":27.75},{"churchId":"ch4","churchName":"New Life Fellowship","comments":29,"content":"Telugu message with English and Hindi translations generated from the transcript. On staying planted when the ground keeps moving.","duration":"39 min","reactions":{"amen":207,"bless":51,"fire":66,"love":72,"peace":44},"speaker":"Pr. Prasad Rao","title":"Rooted","type":"sermon","id":"p10","ageHours":28.5},{"audience":"Members only","churchId":"ch4","churchName":"New Life Fellowship","comments":33,"content":"Relief supplies for the flood-hit villages near Warangal leave Saturday 5am. We need eight volunteers with two-wheelers and anyone who can pack rice from Friday evening.","priority":"Important","reactions":{"amen":156,"bless":42,"fire":37,"love":88,"peace":19},"type":"broadcast","id":"p11","ageHours":16.75},{"churchId":"ch4","churchName":"New Life Fellowship","comments":52,"content":"Our eleventh village congregation meets under a tarpaulin in Warangal district. Pray for the roof before the next rains, and for Pastor Ramesh who walks 9km each Sunday to lead it.","reactions":{"amen":389,"bless":97,"fire":18,"love":121,"peace":63},"type":"prayer","id":"p12","ageHours":6.33},{"churchId":"ch5","churchName":"Living Hope Church","comments":38,"content":"On Matthew 11:28 and the difference between rest and collapse. If you only get one quiet hour this week, this is what to do with it.","duration":"31 min","reactions":{"amen":174,"bless":29,"fire":21,"love":63,"peace":118},"speaker":"Ps. Neil D'Souza","title":"Sabbath in a city that never rests","type":"sermon","id":"p13","ageHours":45.67},{"churchId":"ch5","churchName":"Living Hope Church","comments":11,"content":"Tonight at 7pm. Dinner, two short talks, and time to actually talk to each other. Childcare provided. Sixty seats, first come.","eventId":"e6","reactions":{"amen":63,"bless":17,"fire":6,"love":81,"peace":22},"title":"Marriage enrichment evening","type":"event","id":"p14","ageHours":4},{"churchId":"ch5","churchName":"Living Hope Church","comments":9,"content":"Four new small groups open this month — Andheri, Vashi, Thane and one online for people on night shifts. Ask in the group chat and we will connect you to a leader near you.","reactions":{"amen":47,"bless":9,"fire":8,"love":33,"peace":14},"type":"text","id":"p15","ageHours":86.92},{"churchId":"ch6","churchName":"Emmanuel Baptist","comments":17,"content":"Psalm 119 in Tamil, verse by verse. A lamp for the next step rather than a floodlight over the whole road.","duration":"47 min","reactions":{"amen":152,"bless":68,"fire":14,"love":41,"peace":39},"speaker":"Pr. Jeyaraj Manickam","title":"Vaarthaiyin Velicham — The Light of the Word","type":"sermon","id":"p16","ageHours":26.33},{"audience":"Everyone","churchId":"ch6","churchName":"Emmanuel Baptist","comments":6,"content":"Saturday fasting prayer at 6:00am as always. Thirty-two years without a break — come for the whole time or for ten minutes, both are welcome.","priority":"Normal","reactions":{"amen":118,"bless":33,"fire":12,"love":19,"peace":28},"type":"broadcast","id":"p17","ageHours":77.5},{"churchId":"ch6","churchName":"Emmanuel Baptist","comments":41,"content":"Sudha and Vimal were married here on Saturday, both raised in this Sunday school. Their parents met in this church too.","occasion":"Wedding","reactions":{"amen":143,"bless":76,"fire":18,"love":211,"peace":22},"type":"occasion","id":"p18","ageHours":43.83},{"churchId":"ch1","churchName":"Grace Cathedral","comments":22,"content":"We are arranging transport for elderly members who stopped coming after the bus route changed. If you drive past Mylapore on a Sunday morning, one seat is all it takes.","reactions":{"amen":88,"bless":21,"fire":5,"love":74,"peace":16},"type":"text","id":"p19","ageHours":4.83},{"audience":"Everyone","churchId":"ch1","churchName":"Grace Cathedral","comments":8,"content":"From this Sunday, the Tamil service moves to 7:00am and the English service to 9:30am. The 6:30pm midweek communion stays as it is.","priority":"Normal","reactions":{"amen":72,"bless":18,"fire":2,"love":14,"peace":9},"type":"broadcast","id":"p2","ageHours":42.33},{"churchId":"ch2","churchName":"Bethel Assembly","comments":36,"content":"Bethel turns 34 this month. It started with nine people in a garage on Hosur Road, and the same two families still set out the chairs every Sunday.","occasion":"Anniversary","reactions":{"amen":196,"bless":58,"fire":47,"love":134,"peace":33},"type":"occasion","id":"p20","ageHours":122},{"churchId":"ch1","churchName":"Grace Cathedral","comments":19,"content":"Three hours of worship in Tamil and English with the combined choirs. Doors at 6:30pm, no ticket needed, bring someone with you.","eventId":"e3","reactions":{"amen":96,"bless":24,"fire":74,"love":58,"peace":31},"title":"Night of Worship — Friday","type":"event","id":"p3","ageHours":50.67},{"churchId":"ch2","churchName":"Bethel Assembly","comments":24,"content":"Part two of our series in Hebrews. If your job, your rent and your city all changed this year, this one is for you.","duration":"36 min","reactions":{"amen":143,"bless":37,"fire":38,"love":61,"peace":52},"speaker":"Pr. Sam Abraham","title":"Anchored: faith in an unstable season","type":"sermon","id":"p4","ageHours":24.92},{"churchId":"ch2","churchName":"Bethel Assembly","comments":16,"content":"Youth camp registration closes Friday. 120 places, ₹1,800 including travel and food. Talk to Anitha if cost is the only thing stopping you — nobody is left behind for money.","reactions":{"amen":58,"bless":12,"fire":29,"love":44,"peace":7},"type":"text","id":"p5","ageHours":63.83},{"audience":"Everyone","churchId":"ch2","churchName":"Bethel Assembly","comments":67,"content":"Urgent prayer: Br. Immanuel was in a road accident last night and is in the ICU at St. John's. His family is with him. Please pray now, and keep Friday morning free if blood donors are needed.","priority":"Urgent","reactions":{"amen":412,"bless":88,"fire":9,"love":103,"peace":54},"type":"broadcast","id":"p6","ageHours":5.25},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":13,"content":"Sunday's homily in Malayalam, with an English transcript for those who asked. On grace as a road you walk, not a door you pass through once.","duration":"29 min","reactions":{"amen":121,"bless":74,"fire":11,"love":49,"peace":66},"speaker":"Fr. Thomas Varghese","title":"Kripayude Vazhi — The Way of Grace","type":"sermon","id":"p7","ageHours":47.5},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":48,"content":"Fourteen believers were baptised in the backwaters this morning, the youngest fifteen and the oldest seventy-one. The whole parish walked down together after Qurbana.","occasion":"Baptism","reactions":{"amen":268,"bless":142,"fire":31,"love":195,"peace":77},"type":"occasion","id":"p8","ageHours":74.17},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":4,"content":"Choir practice moves to Thursday 7pm this week — the church hall is being repainted before the Harvest Festival.","reactions":{"amen":34,"bless":6,"fire":1,"love":9,"peace":11},"type":"text","id":"p9","ageHours":90},{"authorCity":"Bengaluru","authorId":"pe1","authorName":"Anitha Raj","authorType":"person","comments":3,"content":"Six months ago I could not pray out loud in a room of more than three people. Tonight I led the prayer at small group and my hands did not shake. Nobody there knew what it cost. He did.","reactions":{"amen":214,"bless":38,"fire":41,"love":96,"peace":27},"type":"testimony","verseRef":"2 Corinthians 12:9","id":"up1","ageHours":3.67},{"authorCity":"Kochi","authorId":"pe9","authorName":"Vinod Kurian","authorType":"person","comments":3,"content":"Twenty-eight years in the choir and I still get nervous before Harvest Festival. Does that ever go away, or is the nervousness part of taking it seriously?","reactions":{"amen":88,"bless":19,"fire":9,"love":63,"peace":44},"type":"question","id":"up10","ageHours":15.92},{"authorCity":"Bengaluru","authorId":"pe1","authorName":"Anitha Raj","authorType":"person","comments":2,"content":"Youth camp registration closes Friday and two kids in my street cannot afford it. If anyone wants to quietly cover a place, message me — no names will ever be mentioned.","reactions":{"amen":96,"bless":34,"fire":27,"love":118,"peace":12},"type":"text","id":"up11","ageHours":2.17},{"authorCity":"Mumbai","authorId":"pe4","authorName":"David Mathew","authorType":"person","comments":3,"content":"To whoever is reading the feed at 2am because sleeping means thinking: the Psalms were written for exactly this hour. Start at 42. You are not the first person to ask God where he went.","reactions":{"amen":377,"bless":68,"fire":31,"love":142,"peace":214},"type":"text","verseRef":"Psalm 46:10","id":"up12","ageHours":9.33},{"authorCity":"Mumbai","authorId":"pe4","authorName":"David Mathew","authorType":"person","comments":4,"content":"Six months sober tomorrow. I am posting this because a year ago I read someone else's post like this and it was the first time I believed it was possible. If that is you today — it is possible.","reactions":{"amen":892,"bless":141,"fire":96,"love":402,"peace":88},"type":"testimony","verseRef":"Lamentations 3:22","id":"up2","ageHours":14.83},{"authorCity":"Chennai","authorId":"pe6","authorName":"Ruth Anand","authorType":"person","comments":2,"content":"Practical question for Chennai people: we have four elderly members who stopped coming when the bus route changed. I can take two in my car. Does anyone drive past Mylapore around 6:45 on Sunday mornings?","reactions":{"amen":63,"bless":14,"fire":4,"love":71,"peace":8},"type":"question","id":"up3","ageHours":4.33},{"authorCity":"Hyderabad","authorId":"pe2","authorName":"Joseph Kumar","authorType":"person","comments":3,"content":"Third interview on Friday, eight months without work. I have stopped asking for the job and started asking to walk in without desperation on my face. Pray with me.","reactions":{"amen":448,"bless":62,"fire":12,"love":88,"peace":74},"type":"prayer","verseRef":"Philippians 4:6","id":"up4","ageHours":5.75},{"authorCity":"Kochi","authorId":"pe3","authorName":"Mercy Thomas","authorType":"person","comments":2,"content":"He called this morning. He found a Malayalam congregation ten minutes from his flat in Dubai and went alone last Friday. Twenty-two years old, first time away from Kerala, and he went alone.","reactions":{"amen":327,"bless":84,"fire":22,"love":288,"peace":61},"type":"praise","id":"up5","ageHours":2.92},{"authorCity":"Coimbatore","authorId":"pe5","authorName":"Priya Selvam","authorType":"person","comments":2,"content":"Day 251 of the Bible in a year. I have started this plan four times since 2019 and never got past March. Today I am in Jeremiah and I am still here.","reactions":{"amen":189,"bless":41,"fire":58,"love":122,"peace":33},"type":"praise","verseRef":"Psalm 119:105","id":"up6","ageHours":16.5},{"authorCity":"Bengaluru","authorId":"pe8","authorName":"Grace Mathew","authorType":"person","comments":4,"content":"Update on Br. Immanuel: he was moved out of the ICU this afternoon and opened his eyes when his wife spoke. Keep going, everyone. Thirty-one hours of prayer and counting.","reactions":{"amen":1204,"bless":218,"fire":47,"love":388,"peace":176},"type":"prayer","id":"up7","ageHours":1.5},{"authorCity":"Hyderabad","authorId":"pe7","authorName":"Samuel Prakash","authorType":"person","comments":3,"content":"Walked the 9km to Warangal with Pastor Ramesh yesterday. Under a tarpaulin, 180 people, no fans, no floor. I have never heard singing like that in a building with a roof.","reactions":{"amen":512,"bless":96,"fire":133,"love":204,"peace":58},"type":"testimony","id":"up8","ageHours":18.25},{"authorCity":"Chennai","authorId":"pe10","authorName":"Sarah Thomas","authorType":"person","comments":2,"content":"A five-year-old in my Sunday school class explained the parable of the lost sheep to me this morning and got it more right than my last three attempts at teaching it.","reactions":{"amen":143,"bless":22,"fire":14,"love":196,"peace":18},"type":"praise","id":"up9","ageHours":0.75}],"givingCampaigns":[{"category":"Building","churchId":"ch4","churchName":"New Life Fellowship","description":"Our eleventh village congregation meets under a tarpaulin. This campaign builds a permanent roof, a floor and basic sound for 180 people before the next monsoon. Every rupee is reported with photographs and receipts, and 80G receipts are issued automatically.","goal":1200000,"raised":742500,"title":"A roof before the rains — Warangal","id":"gc1"}],"churches":[{"about":"Planted in 1908 and rebuilt twice, Grace Cathedral has stayed on the same corner of Anna Salai for four generations. Two Sunday services, a Tamil choir that has sung together for thirty years, and a midweek communion that anyone in the city is welcome to join.","address":"12 Anna Salai, Teynampet, Chennai 600018","city":"Chennai","denomination":"Church of South India","followers":4820,"languages":["Tamil","English"],"ministries":["Choir","Youth","Prayer Cell","Sunday School","Outreach","Ushers"],"name":"Grace Cathedral","pastorName":"Rev. Daniel Selvam","serviceTimes":["Sun 7:00am Tamil","Sun 9:30am English","Wed 6:30pm Midweek"],"tagline":"A family finding grace in the heart of the city","verified":true,"id":"ch1"},{"about":"A young congregation shaped by the city that surrounds it — students, engineers, nurses and drivers in the same room. Small groups meet across eleven neighbourhoods through the week.","address":"48 Hosur Road, Koramangala, Bengaluru 560095","city":"Bengaluru","denomination":"Assemblies of God","followers":3140,"languages":["English","Kannada","Tamil"],"ministries":["Worship Team","Youth","Small Groups","Media","Kids Church"],"name":"Bethel Assembly","pastorName":"Pr. Sam Abraham","serviceTimes":["Sun 9:30am English","Sun 11:30am Kannada","Fri 7:00pm Youth"],"tagline":"Ordinary people, extraordinary God","verified":true,"id":"ch2"},{"about":"One of the oldest congregations on the Malabar coast, with a liturgy carried in Malayalam for a hundred and fifty years. Baptisms are still held in the backwaters behind the church.","address":"Church Road, Fort Kochi, Ernakulam 682001","city":"Kochi","denomination":"Orthodox","followers":2610,"languages":["Malayalam","English"],"ministries":["Choir","Altar Servers","Women's Fellowship","Youth League"],"name":"St. Thomas Marthoma","pastorName":"Fr. Thomas Varghese","serviceTimes":["Sun 7:30am Malayalam Holy Qurbana","Sun 10:00am English","Sat 5:00pm Evening Prayer"],"tagline":"By the backwaters, since 1876","verified":true,"id":"ch3"},{"about":"A sending church with eleven village congregations planted in the last six years. Tuesday intercession runs for two hours and is streamed for those who cannot travel in.","address":"7-2-1 Kukatpally, Hyderabad 500072","city":"Hyderabad","denomination":"Pentecostal","followers":5390,"languages":["Telugu","Hindi","English"],"ministries":["Church Planting","Intercession","Relief Team","Women's Ministry","Youth"],"name":"New Life Fellowship","pastorName":"Pr. Prasad Rao","serviceTimes":["Sun 8:00am Telugu","Sun 10:30am English","Tue 7:00pm Intercession"],"tagline":"Reaching the villages beyond the ring road","verified":true,"id":"ch4"},{"about":"A congregation of commuters. Everything is built around people who work six days a week — short services, midweek prayer online, and small groups that meet close to where people live.","address":"Linking Road, Bandra West, Mumbai 400050","city":"Mumbai","denomination":"Non-denominational","followers":2870,"languages":["English","Hindi","Marathi"],"ministries":["Small Groups","Counselling","Worship","Marriage Ministry","Kids"],"name":"Living Hope Church","pastorName":"Ps. Neil D'Souza","serviceTimes":["Sun 10:00am English","Sun 12:30pm Hindi","Thu 8:00pm Prayer"],"tagline":"Rest for a city that never stops","verified":true,"id":"ch5"},{"about":"Expository preaching in two languages, a Saturday fasting prayer that has met without a break since 1994, and a small library open to the neighbourhood on weekday evenings.","address":"5 Race Course Road, Coimbatore 641018","city":"Coimbatore","denomination":"Baptist","followers":1980,"languages":["Tamil","English"],"ministries":["Bible Study","Fasting Prayer","Library","Choir","Men's Fellowship"],"name":"Emmanuel Baptist","pastorName":"Pr. Jeyaraj Manickam","serviceTimes":["Sun 8:00am Tamil","Sun 10:30am English","Sat 6:00am Fasting Prayer"],"tagline":"The word, plainly taught, in Tamil and English","verified":true,"id":"ch6"}],"comments":[{"amens":34,"authorId":"pe8","authorName":"Grace Mathew","postId":"up1","text":"I was in that room. It did not sound like someone who was afraid.","id":"cm1","ageHours":3.08},{"amens":77,"authorId":"pe3","authorName":"Mercy Thomas","postId":"up10","text":"Twenty-eight years is not nervousness. It is reverence that never got comfortable.","id":"cm10","ageHours":15.33},{"amens":118,"authorId":"pe8","authorName":"Grace Mathew","postId":"p6","text":"Blood donors: St. John's needs B negative. I am going at 7am if anyone wants to come together.","id":"cm11","ageHours":4.5},{"amens":246,"authorId":"pe9","authorName":"Vinod Kurian","postId":"p8","text":"The seventy-one year old is my uncle. He waited a long time for this morning.","id":"cm12","ageHours":72.67},{"amens":12,"authorId":"pe2","authorName":"Joseph Kumar","postId":"up1","text":"Six months of small, unglamorous obedience. This is what it produces.","id":"cm2","ageHours":2.8},{"amens":7,"authorId":"pe5","authorName":"Priya Selvam","postId":"up1","text":"Saving this for the next time I have to speak in front of the school assembly.","id":"cm3","ageHours":1.97},{"amens":88,"authorId":"pe1","authorName":"Anitha Raj","postId":"up2","text":"Six months. Tomorrow we celebrate, and then we start on the seventh.","id":"cm4","ageHours":14.33},{"amens":156,"authorId":"pe7","authorName":"Samuel Prakash","postId":"up2","text":"My brother is four days in. I am reading this to him tonight.","id":"cm5","ageHours":13.75},{"amens":41,"authorId":"pe10","authorName":"Sarah Thomas","postId":"up2","text":"The friends who answered at 2am deserve a post of their own.","id":"cm6","ageHours":5.17},{"amens":22,"authorId":"pe10","authorName":"Sarah Thomas","postId":"up3","text":"I pass Mylapore at 6:30. I can take two. Sending you my number.","id":"cm7","ageHours":3.92},{"amens":63,"authorId":"pe4","authorName":"David Mathew","postId":"up4","text":"Praying at 9am Friday. Tell us what happens either way.","id":"cm8","ageHours":4.97},{"amens":204,"authorId":"pe2","authorName":"Joseph Kumar","postId":"up7","text":"Out of the ICU. I have refreshed this post eleven times today.","id":"cm9","ageHours":1.2}],"events":[{"capacity":400,"churchId":"ch1","churchName":"Grace Cathedral","description":"Our Wednesday communion, open to anyone in the city. Tamil and English liturgy side by side, forty minutes, streamed for those who cannot travel in.","isLive":true,"location":"Main sanctuary, Anna Salai","locationType":"onsite","rsvpCount":148,"title":"Midweek Communion Service","id":"e1","dayOffset":0,"time":"18:30"},{"capacity":0,"churchId":"ch4","churchName":"New Life Fellowship","description":"Two hours of intercession for our village congregations, the relief work near Warangal, and requests sent in through the prayer chain.","isLive":true,"location":"Online stream","locationType":"online","rsvpCount":92,"title":"Telugu Intercession Hour","id":"e2","dayOffset":0,"time":"19:00"},{"capacity":600,"churchId":"ch1","churchName":"Grace Cathedral","description":"Three hours of worship with the combined Tamil and English choirs, and a short word from Rev. Daniel Selvam. Doors at 6:30pm.","isLive":false,"location":"Main sanctuary, Anna Salai","locationType":"onsite","rsvpCount":214,"title":"Night of Worship","id":"e3","dayOffset":1,"time":"19:00"},{"capacity":120,"churchId":"ch2","churchName":"Bethel Assembly","description":"Three days in the Nandi Hills for ages 14 to 24. Travel, food and accommodation included. Registration closes Friday.","isLive":false,"location":"Nandi Hills Retreat Centre","locationType":"onsite","rsvpCount":78,"title":"Youth Camp — Ridge Retreat","id":"e4","dayOffset":9,"time":"07:00"},{"capacity":500,"churchId":"ch3","churchName":"St. Thomas Marthoma","description":"The parish Harvest Festival with the full choir, followed by the auction of harvest gifts in aid of the parish school.","isLive":false,"location":"Church Road, Fort Kochi","locationType":"onsite","rsvpCount":320,"title":"Harvest Festival Service","id":"e5","dayOffset":3,"time":"08:00"},{"capacity":60,"churchId":"ch5","churchName":"Living Hope Church","description":"Dinner, two short talks and unhurried time to talk to each other. Childcare provided on site.","isLive":false,"location":"Linking Road, Bandra West","locationType":"onsite","rsvpCount":41,"title":"Marriage Enrichment Evening","id":"e6","dayOffset":0,"time":"19:00"},{"capacity":0,"churchId":"ch6","churchName":"Emmanuel Baptist","description":"Thirty-two unbroken years of Saturday morning prayer. Come for the whole three hours or for ten minutes.","isLive":false,"location":"Race Course Road, Coimbatore","locationType":"onsite","rsvpCount":130,"title":"Saturday Fasting Prayer","id":"e7","dayOffset":2,"time":"06:00"},{"capacity":700,"churchId":"ch2","churchName":"Bethel Assembly","description":"English at 9:30am and Kannada at 11:30am, with kids church running alongside both.","isLive":false,"location":"Hosur Road, Koramangala","locationType":"onsite","rsvpCount":410,"title":"Sunday Celebration Service","id":"e8","dayOffset":3,"time":"09:30"}],"people":[{"bio":"Worship team at Bethel. Learning to trust slowly, out loud.","city":"Bengaluru","followers":412,"following":88,"homeChurchId":"ch2","joinedAt":"2026-03-02T10:00:00+05:30","name":"Anitha Raj","id":"pe1"},{"bio":"Sunday school, second standard. Twenty-two small theologians and a lot of glitter.","city":"Chennai","followers":205,"following":119,"homeChurchId":"ch1","joinedAt":"2026-06-01T10:00:00+05:30","name":"Sarah Thomas","id":"pe10"},{"bio":"Engineer. Hosts a Tuesday small group in Kukatpally. Eight months job hunting and still here.","city":"Hyderabad","followers":230,"following":140,"homeChurchId":"ch4","joinedAt":"2026-04-11T10:00:00+05:30","name":"Joseph Kumar","id":"pe2"},{"bio":"Nurse. Sunday school teacher for eleven years. Mother of one, now in Dubai.","city":"Kochi","followers":318,"following":96,"homeChurchId":"ch3","joinedAt":"2026-02-25T10:00:00+05:30","name":"Mercy Thomas","id":"pe3"},{"bio":"Six months sober tomorrow. Counting days out loud so someone else can too.","city":"Mumbai","followers":1240,"following":210,"homeChurchId":"ch5","joinedAt":"2026-01-30T10:00:00+05:30","name":"David Mathew","id":"pe4"},{"bio":"Teacher. Reading the Bible in a year for the first time — day 251 and I have never made it this far.","city":"Coimbatore","followers":176,"following":132,"homeChurchId":"ch6","joinedAt":"2026-01-08T10:00:00+05:30","name":"Priya Selvam","id":"pe5"},{"bio":"Drives the Sunday morning route for our elderly members. Ask me for a seat.","city":"Chennai","followers":289,"following":74,"homeChurchId":"ch1","joinedAt":"2026-03-19T10:00:00+05:30","name":"Ruth Anand","id":"pe6"},{"bio":"Walks with Pastor Ramesh to the Warangal congregation most Sundays.","city":"Hyderabad","followers":521,"following":188,"homeChurchId":"ch4","joinedAt":"2026-02-14T10:00:00+05:30","name":"Samuel Prakash","id":"pe7"},{"bio":"Youth leader. Camp is my favourite three days of the year.","city":"Bengaluru","followers":634,"following":301,"homeChurchId":"ch2","joinedAt":"2026-04-02T10:00:00+05:30","name":"Grace Mathew","id":"pe8"},{"bio":"Choir tenor since 1998. Still nervous before every Harvest Festival.","city":"Kochi","followers":143,"following":61,"homeChurchId":"ch3","joinedAt":"2026-05-06T10:00:00+05:30","name":"Vinod Kurian","id":"pe9"}],"readingPlans":[{"category":"Whole Bible","days":365,"description":"Genesis to Revelation in twelve months, roughly fifteen minutes a day, with a Psalm alongside each reading so the week never becomes only history.","title":"The Bible in a Year","todayRef":"Genesis 12 · Psalm 9","id":"rp1"},{"category":"Psalms","days":30,"description":"Five psalms a day for a month. Built for a season when words are hard to find — lament, praise and honesty in the same breath.","title":"Psalms in 30 Days","todayRef":"Psalm 23","id":"rp2"},{"category":"Gospels","days":40,"description":"Matthew, Mark, Luke and John end to end. A good first plan if you are new, or returning after a long time away.","title":"The Gospels in 40 Days","todayRef":"Luke 5:1-16","id":"rp3"}]};
+const SEED={"prayerRequests":[{"answered":false,"authorName":"Anitha Raj","churchId":"ch2","churchName":"Bethel Assembly","prayingCount":86,"text":"My father's scan results come on Thursday. I have been carrying this alone for two weeks and I am tired. Please pray for good news, and for me to sleep.","visibility":"public","id":"pr1","ageHours":13.83},{"answered":false,"authorName":"Grace Mathew","churchId":"ch2","churchName":"Bethel Assembly","prayingCount":512,"text":"For Br. Immanuel in the ICU at St. John's, and for his wife who has not left the corridor since last night.","visibility":"public","id":"pr10","ageHours":5},{"answered":false,"authorName":"Anonymous","churchId":"ch1","churchName":"Grace Cathedral","prayingCount":124,"text":"I have not spoken to my brother in four years. He is coming to the wedding this month and I do not know how to begin.","visibility":"anonymous","id":"pr2","ageHours":20.5},{"answered":false,"authorName":"Joseph Kumar","churchId":"ch4","churchName":"New Life Fellowship","prayingCount":211,"text":"Third interview on Friday after eight months without work. Pray that I walk in without desperation on my face.","visibility":"public","id":"pr3","ageHours":4.67},{"answered":false,"authorName":"Mercy Thomas","churchId":"ch3","churchName":"St. Thomas Marthoma","prayingCount":58,"text":"For our son who left for Dubai last week. He is 22 and it is his first time away from Kerala.","visibility":"church","id":"pr4","ageHours":39.25},{"answered":false,"authorName":"Anonymous","churchId":null,"churchName":null,"prayingCount":347,"text":"I have been pretending to be fine at church for months. I still come, I still sing, and I feel nothing. Pray that something comes back.","visibility":"anonymous","id":"pr5","ageHours":60.08},{"answered":false,"authorName":"Priya Selvam","churchId":"ch6","churchName":"Emmanuel Baptist","prayingCount":94,"text":"Our daughter's board exams begin Monday. She has worked hard. Pray for a clear mind and a calm hall.","visibility":"public","id":"pr6","ageHours":29.75},{"answered":true,"authorName":"David Mathew","churchId":"ch5","churchName":"Living Hope Church","prayingCount":428,"text":"Six months sober tomorrow. Pray for the seventh, and for the friends who kept answering my calls at 2am.","visibility":"public","id":"pr7","ageHours":89},{"answered":false,"authorName":"Ruth Anand","churchId":"ch1","churchName":"Grace Cathedral","prayingCount":67,"text":"For the elderly members who stopped coming when the bus route changed. Pray that we find drivers, and that they know they were missed.","visibility":"church","id":"pr8","ageHours":2.92},{"answered":false,"authorName":"Samuel P.","churchId":"ch4","churchName":"New Life Fellowship","prayingCount":183,"text":"Pastor Ramesh walks 9km each Sunday to reach the Warangal congregation. Pray for his knees and for the roof fund.","visibility":"public","id":"pr9","ageHours":48.33}],"posts":[{"churchId":"ch1","churchName":"Grace Cathedral","comments":31,"content":"From Lamentations 3 — mercies that are new every morning are offered to people standing in the ruins, not to people who have already recovered. Audio, transcript and Tamil translation are attached.","duration":"42 min","reactions":{"amen":184,"bless":63,"fire":22,"love":97,"peace":41},"speaker":"Rev. Daniel Selvam","title":"The God Who Stays","type":"sermon","id":"p1","ageHours":27.75},{"churchId":"ch4","churchName":"New Life Fellowship","comments":29,"content":"Telugu message with English and Hindi translations generated from the transcript. On staying planted when the ground keeps moving.","duration":"39 min","reactions":{"amen":207,"bless":51,"fire":66,"love":72,"peace":44},"speaker":"Pr. Prasad Rao","title":"Rooted","type":"sermon","id":"p10","ageHours":28.5},{"audience":"Members only","churchId":"ch4","churchName":"New Life Fellowship","comments":33,"content":"Relief supplies for the flood-hit villages near Warangal leave Saturday 5am. We need eight volunteers with two-wheelers and anyone who can pack rice from Friday evening.","priority":"Important","reactions":{"amen":156,"bless":42,"fire":37,"love":88,"peace":19},"type":"broadcast","id":"p11","ageHours":16.75},{"churchId":"ch4","churchName":"New Life Fellowship","comments":52,"content":"Our eleventh village congregation meets under a tarpaulin in Warangal district. Pray for the roof before the next rains, and for Pastor Ramesh who walks 9km each Sunday to lead it.","reactions":{"amen":389,"bless":97,"fire":18,"love":121,"peace":63},"type":"prayer","id":"p12","ageHours":6.33},{"churchId":"ch5","churchName":"Living Hope Church","comments":38,"content":"On Matthew 11:28 and the difference between rest and collapse. If you only get one quiet hour this week, this is what to do with it.","duration":"31 min","reactions":{"amen":174,"bless":29,"fire":21,"love":63,"peace":118},"speaker":"Ps. Neil D'Souza","title":"Sabbath in a city that never rests","type":"sermon","id":"p13","ageHours":45.67},{"churchId":"ch5","churchName":"Living Hope Church","comments":11,"content":"Tonight at 7pm. Dinner, two short talks, and time to actually talk to each other. Childcare provided. Sixty seats, first come.","eventId":"e6","reactions":{"amen":63,"bless":17,"fire":6,"love":81,"peace":22},"title":"Marriage enrichment evening","type":"event","id":"p14","ageHours":4},{"churchId":"ch5","churchName":"Living Hope Church","comments":9,"content":"Four new small groups open this month — Andheri, Vashi, Thane and one online for people on night shifts. Ask in the group chat and we will connect you to a leader near you.","reactions":{"amen":47,"bless":9,"fire":8,"love":33,"peace":14},"type":"text","id":"p15","ageHours":86.92},{"churchId":"ch6","churchName":"Emmanuel Baptist","comments":17,"content":"Psalm 119 in Tamil, verse by verse. A lamp for the next step rather than a floodlight over the whole road.","duration":"47 min","reactions":{"amen":152,"bless":68,"fire":14,"love":41,"peace":39},"speaker":"Pr. Jeyaraj Manickam","title":"Vaarthaiyin Velicham — The Light of the Word","type":"sermon","id":"p16","ageHours":26.33},{"audience":"Everyone","churchId":"ch6","churchName":"Emmanuel Baptist","comments":6,"content":"Saturday fasting prayer at 6:00am as always. Thirty-two years without a break — come for the whole time or for ten minutes, both are welcome.","priority":"Normal","reactions":{"amen":118,"bless":33,"fire":12,"love":19,"peace":28},"type":"broadcast","id":"p17","ageHours":77.5},{"churchId":"ch6","churchName":"Emmanuel Baptist","comments":41,"content":"Sudha and Vimal were married here on Saturday, both raised in this Sunday school. Their parents met in this church too.","occasion":"Wedding","reactions":{"amen":143,"bless":76,"fire":18,"love":211,"peace":22},"type":"occasion","id":"p18","ageHours":43.83},{"churchId":"ch1","churchName":"Grace Cathedral","comments":22,"content":"We are arranging transport for elderly members who stopped coming after the bus route changed. If you drive past Mylapore on a Sunday morning, one seat is all it takes.","reactions":{"amen":88,"bless":21,"fire":5,"love":74,"peace":16},"type":"text","id":"p19","ageHours":4.83},{"audience":"Everyone","churchId":"ch1","churchName":"Grace Cathedral","comments":8,"content":"From this Sunday, the Tamil service moves to 7:00am and the English service to 9:30am. The 6:30pm midweek communion stays as it is.","priority":"Normal","reactions":{"amen":72,"bless":18,"fire":2,"love":14,"peace":9},"type":"broadcast","id":"p2","ageHours":42.33},{"churchId":"ch2","churchName":"Bethel Assembly","comments":36,"content":"Bethel turns 34 this month. It started with nine people in a garage on Hosur Road, and the same two families still set out the chairs every Sunday.","occasion":"Anniversary","reactions":{"amen":196,"bless":58,"fire":47,"love":134,"peace":33},"type":"occasion","id":"p20","ageHours":122},{"churchId":"ch1","churchName":"Grace Cathedral","comments":19,"content":"Three hours of worship in Tamil and English with the combined choirs. Doors at 6:30pm, no ticket needed, bring someone with you.","eventId":"e3","reactions":{"amen":96,"bless":24,"fire":74,"love":58,"peace":31},"title":"Night of Worship — Friday","type":"event","id":"p3","ageHours":50.67},{"churchId":"ch2","churchName":"Bethel Assembly","comments":24,"content":"Part two of our series in Hebrews. If your job, your rent and your city all changed this year, this one is for you.","duration":"36 min","reactions":{"amen":143,"bless":37,"fire":38,"love":61,"peace":52},"speaker":"Pr. Sam Abraham","title":"Anchored: faith in an unstable season","type":"sermon","id":"p4","ageHours":24.92},{"churchId":"ch2","churchName":"Bethel Assembly","comments":16,"content":"Youth camp registration closes Friday. 120 places, ₹1,800 including travel and food. Talk to Anitha if cost is the only thing stopping you — nobody is left behind for money.","reactions":{"amen":58,"bless":12,"fire":29,"love":44,"peace":7},"type":"text","id":"p5","ageHours":63.83},{"audience":"Everyone","churchId":"ch2","churchName":"Bethel Assembly","comments":67,"content":"Urgent prayer: Br. Immanuel was in a road accident last night and is in the ICU at St. John's. His family is with him. Please pray now, and keep Friday morning free if blood donors are needed.","priority":"Urgent","reactions":{"amen":412,"bless":88,"fire":9,"love":103,"peace":54},"type":"broadcast","id":"p6","ageHours":5.25},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":13,"content":"Sunday's homily in Malayalam, with an English transcript for those who asked. On grace as a road you walk, not a door you pass through once.","duration":"29 min","reactions":{"amen":121,"bless":74,"fire":11,"love":49,"peace":66},"speaker":"Fr. Thomas Varghese","title":"Kripayude Vazhi — The Way of Grace","type":"sermon","id":"p7","ageHours":47.5},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":48,"content":"Fourteen believers were baptised in the backwaters this morning, the youngest fifteen and the oldest seventy-one. The whole parish walked down together after Qurbana.","occasion":"Baptism","reactions":{"amen":268,"bless":142,"fire":31,"love":195,"peace":77},"type":"occasion","id":"p8","ageHours":74.17},{"churchId":"ch3","churchName":"St. Thomas Marthoma","comments":4,"content":"Choir practice moves to Thursday 7pm this week — the church hall is being repainted before the Harvest Festival.","reactions":{"amen":34,"bless":6,"fire":1,"love":9,"peace":11},"type":"text","id":"p9","ageHours":90},{"authorCity":"Bengaluru","authorId":"pe1","authorName":"Anitha Raj","authorType":"person","comments":3,"content":"Six months ago I could not pray out loud in a room of more than three people. Tonight I led the prayer at small group and my hands did not shake. Nobody there knew what it cost. He did.","reactions":{"amen":214,"bless":38,"fire":41,"love":96,"peace":27},"type":"testimony","verseRef":"2 Corinthians 12:9","id":"up1","ageHours":3.67},{"authorCity":"Kochi","authorId":"pe9","authorName":"Vinod Kurian","authorType":"person","comments":3,"content":"Twenty-eight years in the choir and I still get nervous before Harvest Festival. Does that ever go away, or is the nervousness part of taking it seriously?","reactions":{"amen":88,"bless":19,"fire":9,"love":63,"peace":44},"type":"question","id":"up10","ageHours":15.92},{"authorCity":"Bengaluru","authorId":"pe1","authorName":"Anitha Raj","authorType":"person","comments":2,"content":"Youth camp registration closes Friday and two kids in my street cannot afford it. If anyone wants to quietly cover a place, message me — no names will ever be mentioned.","reactions":{"amen":96,"bless":34,"fire":27,"love":118,"peace":12},"type":"text","id":"up11","ageHours":2.17},{"authorCity":"Mumbai","authorId":"pe4","authorName":"David Mathew","authorType":"person","comments":3,"content":"To whoever is reading the feed at 2am because sleeping means thinking: the Psalms were written for exactly this hour. Start at 42. You are not the first person to ask God where he went.","reactions":{"amen":377,"bless":68,"fire":31,"love":142,"peace":214},"type":"text","verseRef":"Psalm 46:10","id":"up12","ageHours":9.33},{"authorCity":"Mumbai","authorId":"pe4","authorName":"David Mathew","authorType":"person","comments":4,"content":"Six months sober tomorrow. I am posting this because a year ago I read someone else's post like this and it was the first time I believed it was possible. If that is you today — it is possible.","reactions":{"amen":892,"bless":141,"fire":96,"love":402,"peace":88},"type":"testimony","verseRef":"Lamentations 3:22","id":"up2","ageHours":14.83},{"authorCity":"Chennai","authorId":"pe6","authorName":"Ruth Anand","authorType":"person","comments":2,"content":"Practical question for Chennai people: we have four elderly members who stopped coming when the bus route changed. I can take two in my car. Does anyone drive past Mylapore around 6:45 on Sunday mornings?","reactions":{"amen":63,"bless":14,"fire":4,"love":71,"peace":8},"type":"question","id":"up3","ageHours":4.33},{"authorCity":"Hyderabad","authorId":"pe2","authorName":"Joseph Kumar","authorType":"person","comments":3,"content":"Third interview on Friday, eight months without work. I have stopped asking for the job and started asking to walk in without desperation on my face. Pray with me.","reactions":{"amen":448,"bless":62,"fire":12,"love":88,"peace":74},"type":"prayer","verseRef":"Philippians 4:6","id":"up4","ageHours":5.75},{"authorCity":"Kochi","authorId":"pe3","authorName":"Mercy Thomas","authorType":"person","comments":2,"content":"He called this morning. He found a Malayalam congregation ten minutes from his flat in Dubai and went alone last Friday. Twenty-two years old, first time away from Kerala, and he went alone.","reactions":{"amen":327,"bless":84,"fire":22,"love":288,"peace":61},"type":"praise","id":"up5","ageHours":2.92},{"authorCity":"Coimbatore","authorId":"pe5","authorName":"Priya Selvam","authorType":"person","comments":2,"content":"Day 251 of the Bible in a year. I have started this plan four times since 2019 and never got past March. Today I am in Jeremiah and I am still here.","reactions":{"amen":189,"bless":41,"fire":58,"love":122,"peace":33},"type":"praise","verseRef":"Psalm 119:105","id":"up6","ageHours":16.5},{"authorCity":"Bengaluru","authorId":"pe8","authorName":"Grace Mathew","authorType":"person","comments":4,"content":"Update on Br. Immanuel: he was moved out of the ICU this afternoon and opened his eyes when his wife spoke. Keep going, everyone. Thirty-one hours of prayer and counting.","reactions":{"amen":1204,"bless":218,"fire":47,"love":388,"peace":176},"type":"prayer","id":"up7","ageHours":1.5},{"authorCity":"Hyderabad","authorId":"pe7","authorName":"Samuel Prakash","authorType":"person","comments":3,"content":"Walked the 9km to Warangal with Pastor Ramesh yesterday. Under a tarpaulin, 180 people, no fans, no floor. I have never heard singing like that in a building with a roof.","reactions":{"amen":512,"bless":96,"fire":133,"love":204,"peace":58},"type":"testimony","id":"up8","ageHours":18.25},{"authorCity":"Chennai","authorId":"pe10","authorName":"Sarah Thomas","authorType":"person","comments":2,"content":"A five-year-old in my Sunday school class explained the parable of the lost sheep to me this morning and got it more right than my last three attempts at teaching it.","reactions":{"amen":143,"bless":22,"fire":14,"love":196,"peace":18},"type":"praise","id":"up9","ageHours":0.75}],"churches":[{"about":"Planted in 1908 and rebuilt twice, Grace Cathedral has stayed on the same corner of Anna Salai for four generations. Two Sunday services, a Tamil choir that has sung together for thirty years, and a midweek communion that anyone in the city is welcome to join.","address":"12 Anna Salai, Teynampet, Chennai 600018","city":"Chennai","followers":4820,"languages":["Tamil","English"],"ministries":["Choir","Youth","Prayer Cell","Sunday School","Outreach","Ushers"],"name":"Grace Cathedral","pastorName":"Rev. Daniel Selvam","serviceTimes":["Sun 7:00am Tamil","Sun 9:30am English","Wed 6:30pm Midweek"],"tagline":"A family finding grace in the heart of the city","verified":true,"id":"ch1"},{"about":"A young congregation shaped by the city that surrounds it — students, engineers, nurses and drivers in the same room. Small groups meet across eleven neighbourhoods through the week.","address":"48 Hosur Road, Koramangala, Bengaluru 560095","city":"Bengaluru","followers":3140,"languages":["English","Kannada","Tamil"],"ministries":["Worship Team","Youth","Small Groups","Media","Kids Church"],"name":"Bethel Assembly","pastorName":"Pr. Sam Abraham","serviceTimes":["Sun 9:30am English","Sun 11:30am Kannada","Fri 7:00pm Youth"],"tagline":"Ordinary people, extraordinary God","verified":true,"id":"ch2"},{"about":"One of the oldest congregations on the Malabar coast, with a liturgy carried in Malayalam for a hundred and fifty years. Baptisms are still held in the backwaters behind the church.","address":"Church Road, Fort Kochi, Ernakulam 682001","city":"Kochi","followers":2610,"languages":["Malayalam","English"],"ministries":["Choir","Altar Servers","Women's Fellowship","Youth League"],"name":"St. Thomas Marthoma","pastorName":"Fr. Thomas Varghese","serviceTimes":["Sun 7:30am Malayalam Holy Qurbana","Sun 10:00am English","Sat 5:00pm Evening Prayer"],"tagline":"By the backwaters, since 1876","verified":true,"id":"ch3"},{"about":"A sending church with eleven village congregations planted in the last six years. Tuesday intercession runs for two hours and is streamed for those who cannot travel in.","address":"7-2-1 Kukatpally, Hyderabad 500072","city":"Hyderabad","followers":5390,"languages":["Telugu","Hindi","English"],"ministries":["Church Planting","Intercession","Relief Team","Women's Ministry","Youth"],"name":"New Life Fellowship","pastorName":"Pr. Prasad Rao","serviceTimes":["Sun 8:00am Telugu","Sun 10:30am English","Tue 7:00pm Intercession"],"tagline":"Reaching the villages beyond the ring road","verified":true,"id":"ch4"},{"about":"A congregation of commuters. Everything is built around people who work six days a week — short services, midweek prayer online, and small groups that meet close to where people live.","address":"Linking Road, Bandra West, Mumbai 400050","city":"Mumbai","followers":2870,"languages":["English","Hindi","Marathi"],"ministries":["Small Groups","Counselling","Worship","Marriage Ministry","Kids"],"name":"Living Hope Church","pastorName":"Ps. Neil D'Souza","serviceTimes":["Sun 10:00am English","Sun 12:30pm Hindi","Thu 8:00pm Prayer"],"tagline":"Rest for a city that never stops","verified":true,"id":"ch5"},{"about":"Expository preaching in two languages, a Saturday fasting prayer that has met without a break since 1994, and a small library open to the neighbourhood on weekday evenings.","address":"5 Race Course Road, Coimbatore 641018","city":"Coimbatore","followers":1980,"languages":["Tamil","English"],"ministries":["Bible Study","Fasting Prayer","Library","Choir","Men's Fellowship"],"name":"Emmanuel Baptist","pastorName":"Pr. Jeyaraj Manickam","serviceTimes":["Sun 8:00am Tamil","Sun 10:30am English","Sat 6:00am Fasting Prayer"],"tagline":"The word, plainly taught, in Tamil and English","verified":true,"id":"ch6"}],"comments":[{"amens":34,"authorId":"pe8","authorName":"Grace Mathew","postId":"up1","text":"I was in that room. It did not sound like someone who was afraid.","id":"cm1","ageHours":3.08},{"amens":77,"authorId":"pe3","authorName":"Mercy Thomas","postId":"up10","text":"Twenty-eight years is not nervousness. It is reverence that never got comfortable.","id":"cm10","ageHours":15.33},{"amens":118,"authorId":"pe8","authorName":"Grace Mathew","postId":"p6","text":"Blood donors: St. John's needs B negative. I am going at 7am if anyone wants to come together.","id":"cm11","ageHours":4.5},{"amens":246,"authorId":"pe9","authorName":"Vinod Kurian","postId":"p8","text":"The seventy-one year old is my uncle. He waited a long time for this morning.","id":"cm12","ageHours":72.67},{"amens":12,"authorId":"pe2","authorName":"Joseph Kumar","postId":"up1","text":"Six months of small, unglamorous obedience. This is what it produces.","id":"cm2","ageHours":2.8},{"amens":7,"authorId":"pe5","authorName":"Priya Selvam","postId":"up1","text":"Saving this for the next time I have to speak in front of the school assembly.","id":"cm3","ageHours":1.97},{"amens":88,"authorId":"pe1","authorName":"Anitha Raj","postId":"up2","text":"Six months. Tomorrow we celebrate, and then we start on the seventh.","id":"cm4","ageHours":14.33},{"amens":156,"authorId":"pe7","authorName":"Samuel Prakash","postId":"up2","text":"My brother is four days in. I am reading this to him tonight.","id":"cm5","ageHours":13.75},{"amens":41,"authorId":"pe10","authorName":"Sarah Thomas","postId":"up2","text":"The friends who answered at 2am deserve a post of their own.","id":"cm6","ageHours":5.17},{"amens":22,"authorId":"pe10","authorName":"Sarah Thomas","postId":"up3","text":"I pass Mylapore at 6:30. I can take two. Sending you my number.","id":"cm7","ageHours":3.92},{"amens":63,"authorId":"pe4","authorName":"David Mathew","postId":"up4","text":"Praying at 9am Friday. Tell us what happens either way.","id":"cm8","ageHours":4.97},{"amens":204,"authorId":"pe2","authorName":"Joseph Kumar","postId":"up7","text":"Out of the ICU. I have refreshed this post eleven times today.","id":"cm9","ageHours":1.2}],"events":[{"capacity":400,"churchId":"ch1","churchName":"Grace Cathedral","description":"Our Wednesday communion, open to anyone in the city. Tamil and English liturgy side by side, forty minutes, streamed for those who cannot travel in.","isLive":true,"location":"Main sanctuary, Anna Salai","locationType":"onsite","rsvpCount":148,"title":"Midweek Communion Service","id":"e1","dayOffset":0,"time":"18:30"},{"capacity":0,"churchId":"ch4","churchName":"New Life Fellowship","description":"Two hours of intercession for our village congregations, the relief work near Warangal, and requests sent in through the prayer chain.","isLive":true,"location":"Online stream","locationType":"online","rsvpCount":92,"title":"Telugu Intercession Hour","id":"e2","dayOffset":0,"time":"19:00"},{"capacity":600,"churchId":"ch1","churchName":"Grace Cathedral","description":"Three hours of worship with the combined Tamil and English choirs, and a short word from Rev. Daniel Selvam. Doors at 6:30pm.","isLive":false,"location":"Main sanctuary, Anna Salai","locationType":"onsite","rsvpCount":214,"title":"Night of Worship","id":"e3","dayOffset":1,"time":"19:00"},{"capacity":120,"churchId":"ch2","churchName":"Bethel Assembly","description":"Three days in the Nandi Hills for ages 14 to 24. Travel, food and accommodation included. Registration closes Friday.","isLive":false,"location":"Nandi Hills Retreat Centre","locationType":"onsite","rsvpCount":78,"title":"Youth Camp — Ridge Retreat","id":"e4","dayOffset":9,"time":"07:00"},{"capacity":500,"churchId":"ch3","churchName":"St. Thomas Marthoma","description":"The parish Harvest Festival with the full choir, followed by the auction of harvest gifts in aid of the parish school.","isLive":false,"location":"Church Road, Fort Kochi","locationType":"onsite","rsvpCount":320,"title":"Harvest Festival Service","id":"e5","dayOffset":3,"time":"08:00"},{"capacity":60,"churchId":"ch5","churchName":"Living Hope Church","description":"Dinner, two short talks and unhurried time to talk to each other. Childcare provided on site.","isLive":false,"location":"Linking Road, Bandra West","locationType":"onsite","rsvpCount":41,"title":"Marriage Enrichment Evening","id":"e6","dayOffset":0,"time":"19:00"},{"capacity":0,"churchId":"ch6","churchName":"Emmanuel Baptist","description":"Thirty-two unbroken years of Saturday morning prayer. Come for the whole three hours or for ten minutes.","isLive":false,"location":"Race Course Road, Coimbatore","locationType":"onsite","rsvpCount":130,"title":"Saturday Fasting Prayer","id":"e7","dayOffset":2,"time":"06:00"},{"capacity":700,"churchId":"ch2","churchName":"Bethel Assembly","description":"English at 9:30am and Kannada at 11:30am, with kids church running alongside both.","isLive":false,"location":"Hosur Road, Koramangala","locationType":"onsite","rsvpCount":410,"title":"Sunday Celebration Service","id":"e8","dayOffset":3,"time":"09:30"}],"people":[{"bio":"Worship team at Bethel. Learning to trust slowly, out loud.","city":"Bengaluru","followers":412,"following":88,"homeChurchId":"ch2","joinedAt":"2026-03-02T10:00:00+05:30","name":"Anitha Raj","id":"pe1"},{"bio":"Sunday school, second standard. Twenty-two small theologians and a lot of glitter.","city":"Chennai","followers":205,"following":119,"homeChurchId":"ch1","joinedAt":"2026-06-01T10:00:00+05:30","name":"Sarah Thomas","id":"pe10"},{"bio":"Engineer. Hosts a Tuesday small group in Kukatpally. Eight months job hunting and still here.","city":"Hyderabad","followers":230,"following":140,"homeChurchId":"ch4","joinedAt":"2026-04-11T10:00:00+05:30","name":"Joseph Kumar","id":"pe2"},{"bio":"Nurse. Sunday school teacher for eleven years. Mother of one, now in Dubai.","city":"Kochi","followers":318,"following":96,"homeChurchId":"ch3","joinedAt":"2026-02-25T10:00:00+05:30","name":"Mercy Thomas","id":"pe3"},{"bio":"Six months sober tomorrow. Counting days out loud so someone else can too.","city":"Mumbai","followers":1240,"following":210,"homeChurchId":"ch5","joinedAt":"2026-01-30T10:00:00+05:30","name":"David Mathew","id":"pe4"},{"bio":"Teacher. Reading the Bible in a year for the first time — day 251 and I have never made it this far.","city":"Coimbatore","followers":176,"following":132,"homeChurchId":"ch6","joinedAt":"2026-01-08T10:00:00+05:30","name":"Priya Selvam","id":"pe5"},{"bio":"Drives the Sunday morning route for our elderly members. Ask me for a seat.","city":"Chennai","followers":289,"following":74,"homeChurchId":"ch1","joinedAt":"2026-03-19T10:00:00+05:30","name":"Ruth Anand","id":"pe6"},{"bio":"Walks with Pastor Ramesh to the Warangal congregation most Sundays.","city":"Hyderabad","followers":521,"following":188,"homeChurchId":"ch4","joinedAt":"2026-02-14T10:00:00+05:30","name":"Samuel Prakash","id":"pe7"},{"bio":"Youth leader. Camp is my favourite three days of the year.","city":"Bengaluru","followers":634,"following":301,"homeChurchId":"ch2","joinedAt":"2026-04-02T10:00:00+05:30","name":"Grace Mathew","id":"pe8"},{"bio":"Choir tenor since 1998. Still nervous before every Harvest Festival.","city":"Kochi","followers":143,"following":61,"homeChurchId":"ch3","joinedAt":"2026-05-06T10:00:00+05:30","name":"Vinod Kurian","id":"pe9"}],"readingPlans":[{"category":"Whole Bible","days":365,"description":"Genesis to Revelation in twelve months, roughly fifteen minutes a day, with a Psalm alongside each reading so the week never becomes only history.","title":"The Bible in a Year","todayRef":"Genesis 12 · Psalm 9","id":"rp1"},{"category":"Psalms","days":30,"description":"Five psalms a day for a month. Built for a season when words are hard to find — lament, praise and honesty in the same breath.","title":"Psalms in 30 Days","todayRef":"Psalm 23","id":"rp2"},{"category":"Gospels","days":50,"description":"Matthew, Mark, Luke and John end to end. A good first plan if you are new, or returning after a long time away.","title":"The Gospels in 50 Days","todayRef":"Luke 5:1-16","id":"rp3"}]};
 const SEED_EXTRA={
+  /* Communities belong to a church. Only its admins create them, only its followers see them,
+     and every member is let in by an admin. */
   communities:[
-    {id:'cm-youth',name:'Youth',tagline:'Ages 14 to 24 across every church on the ark',about:'Camps, exams, first jobs, faith that is yours and not only your parents’. Moderated by youth leaders from four churches.',members:2840,hue:280,icon:'sparkle',mods:['Grace Mathew','Anitha Raj']},
-    {id:'cm-worship',name:'Worship leaders',tagline:'Choirs, bands, sound desks and the people behind them',about:'Set lists, chord charts, nerves before the big service, and how to lead a room of tired people into rest.',members:1190,hue:40,icon:'music',mods:['Vinod Kurian']},
-    {id:'cm-parents',name:'Parents',tagline:'Raising children in faith, one ordinary week at a time',about:'Sunday school, board exams, children leaving home. Practical, honest and kind.',members:3410,hue:340,icon:'users',mods:['Mercy Thomas','Sarah Thomas']},
-    {id:'cm-bible',name:'Bible study',tagline:'Reading plans, hard passages and good questions',about:'For anyone working through Scripture — first time or fortieth. No question is too small.',members:4620,hue:200,icon:'book',mods:['Priya Selvam']},
-    {id:'cm-missions',name:'Missions & outreach',tagline:'Village congregations, relief teams and the people who go',about:'Church planting, relief work and the practical needs behind them. Requests for help are welcome here.',members:1560,hue:160,icon:'globe',mods:['Samuel Prakash']},
-    {id:'cm-testimony',name:'Prayer & testimony',tagline:'What we are asking for, and what has been answered',about:'A place to be honest. Anonymous posting is allowed; unkind replies are removed.',members:6180,hue:20,icon:'hands',mods:['David Mathew','Joseph Kumar']}
+    {id:'cm-ch1-care',churchId:'ch1',name:'Grace Care & Transport',tagline:'Lifts, visits and meals for members who need a hand',about:'Drivers, visitors and cooks from Grace Cathedral. Post a need or offer a seat for Sunday.',members:64,hue:200,icon:'hands',mods:['Ruth Anand']},
+    {id:'cm-ch1-kids',churchId:'ch1',name:'Grace Sunday School',tagline:'Teachers and parents of our Sunday school',about:'Lesson plans, memory verses and the funny things children say about God.',members:38,hue:340,icon:'users',mods:['Sarah Thomas']},
+    {id:'cm-ch2-youth',churchId:'ch2',name:'Bethel Youth',tagline:'Ages 14 to 24 at Bethel Assembly',about:'Camps, exams, first jobs, and faith that is yours and not only your parents’.',members:212,hue:280,icon:'sparkle',mods:['Grace Mathew','Anitha Raj']},
+    {id:'cm-ch2-worship',churchId:'ch2',name:'Bethel Worship Team',tagline:'Singers, band and sound desk',about:'Set lists, chord charts, rehearsal times and nerves before the big service.',members:47,hue:40,icon:'music',mods:['Anitha Raj']},
+    {id:'cm-ch2-prayer',churchId:'ch2',name:'Bethel Prayer Chain',tagline:'Urgent requests and answered prayer',about:'When something happens, this is where the church starts praying.',members:318,hue:20,icon:'hands',mods:['Grace Mathew']},
+    {id:'cm-ch3-choir',churchId:'ch3',name:'Marthoma Choir',tagline:'The Malayalam and English choirs',about:'Practice times, Harvest Festival songs and the tenors who still get nervous.',members:52,hue:40,icon:'music',mods:['Vinod Kurian']},
+    {id:'cm-ch3-parents',churchId:'ch3',name:'Marthoma Parents',tagline:'Raising children in faith, one week at a time',about:'Board exams, children leaving home, and praying for the ones far away.',members:146,hue:340,icon:'users',mods:['Mercy Thomas']},
+    {id:'cm-ch4-missions',churchId:'ch4',name:'New Life Missions',tagline:'The eleven village congregations and the people who go',about:'Church planting, relief work and the long road to Warangal.',members:189,hue:160,icon:'globe',mods:['Samuel Prakash']},
+    {id:'cm-ch4-prayer',churchId:'ch4',name:'New Life Intercessors',tagline:'Tuesday intercession, all week long',about:'Requests from the city and the villages, prayed for by name.',members:274,hue:20,icon:'hands',mods:['Joseph Kumar']},
+    {id:'cm-ch5-recovery',churchId:'ch5',name:'Living Hope Recovery',tagline:'For anyone walking out of addiction, and those walking with them',about:'Honest, anonymous if you need it, and never judged. Counsellors read along.',members:83,hue:200,icon:'hands',mods:['David Mathew']},
+    {id:'cm-ch6-bible',churchId:'ch6',name:'Emmanuel Bible Study',tagline:'Reading plans, hard passages and good questions',about:'Verse by verse, in Tamil and English. No question is too small.',members:121,hue:200,icon:'book',mods:['Priya Selvam']}
+  ],
+  /* Membership lives in these requests: pending until a church admin approves. */
+  communityRequests:[
+    {id:'cr1',communityId:'cm-ch1-care',churchId:'ch1',userKey:'pe10',userName:'Sarah Thomas',userCity:'Chennai',status:'approved',ageHours:2000},
+    {id:'cr2',communityId:'cm-ch1-care',churchId:'ch1',userKey:'pe6',userName:'Ruth Anand',userCity:'Chennai',status:'approved',ageHours:2400},
+    {id:'cr3',communityId:'cm-ch1-kids',churchId:'ch1',userKey:'pe10',userName:'Sarah Thomas',userCity:'Chennai',status:'approved',ageHours:1900},
+    {id:'cr4',communityId:'cm-ch1-kids',churchId:'ch1',userKey:'guest-joel',userName:'Joel Daniel',userCity:'Chennai',status:'pending',ageHours:5},
+    {id:'cr5',communityId:'cm-ch1-care',churchId:'ch1',userKey:'guest-leela',userName:'Leela Samuel',userCity:'Chennai',status:'pending',ageHours:20},
+    {id:'cr6',communityId:'cm-ch2-youth',churchId:'ch2',userKey:'pe1',userName:'Anitha Raj',userCity:'Bengaluru',status:'approved',ageHours:3000},
+    {id:'cr7',communityId:'cm-ch2-youth',churchId:'ch2',userKey:'guest-aaron',userName:'Aaron Paul',userCity:'Bengaluru',status:'pending',ageHours:9},
+    {id:'cr8',communityId:'cm-ch2-worship',churchId:'ch2',userKey:'pe1',userName:'Anitha Raj',userCity:'Bengaluru',status:'approved',ageHours:3100},
+    {id:'cr9',communityId:'cm-ch2-prayer',churchId:'ch2',userKey:'pe8',userName:'Grace Mathew',userCity:'Bengaluru',status:'approved',ageHours:2600},
+    {id:'cr10',communityId:'cm-ch3-choir',churchId:'ch3',userKey:'pe9',userName:'Vinod Kurian',userCity:'Kochi',status:'approved',ageHours:3000},
+    {id:'cr11',communityId:'cm-ch3-parents',churchId:'ch3',userKey:'pe3',userName:'Mercy Thomas',userCity:'Kochi',status:'approved',ageHours:2800},
+    {id:'cr12',communityId:'cm-ch4-missions',churchId:'ch4',userKey:'pe7',userName:'Samuel Prakash',userCity:'Hyderabad',status:'approved',ageHours:2700},
+    {id:'cr13',communityId:'cm-ch4-prayer',churchId:'ch4',userKey:'pe2',userName:'Joseph Kumar',userCity:'Hyderabad',status:'approved',ageHours:2500},
+    {id:'cr14',communityId:'cm-ch5-recovery',churchId:'ch5',userKey:'pe4',userName:'David Mathew',userCity:'Mumbai',status:'approved',ageHours:2300},
+    {id:'cr15',communityId:'cm-ch6-bible',churchId:'ch6',userKey:'pe5',userName:'Priya Selvam',userCity:'Coimbatore',status:'approved',ageHours:2900},
+    {id:'cr16',communityId:'cm-ch6-bible',churchId:'ch6',userKey:'guest-kavi',userName:'Kavitha R.',userCity:'Coimbatore',status:'pending',ageHours:30}
   ],
   stories:[
     {id:'st1',type:'story',churchId:'ch1',churchName:'Grace Cathedral',content:'Choir warm-up done. Doors open at 6:30 for the midweek communion — come as you are.',verseRef:'Psalm 46:10',ageHours:1.2},
@@ -378,21 +428,23 @@ const SEED_EXTRA={
   ]
 };
 /* Believer posts live inside communities (the feed itself is church-only) */
-const COMMUNITY_OF={up1:'cm-worship',up2:'cm-testimony',up3:'cm-missions',up4:'cm-testimony',up5:'cm-parents',up6:'cm-bible',up7:'cm-testimony',up8:'cm-missions',up9:'cm-parents',up10:'cm-worship',up11:'cm-youth',up12:'cm-bible'};
+const COMMUNITY_OF={up1:'cm-ch2-worship',up2:'cm-ch5-recovery',up3:'cm-ch1-care',up4:'cm-ch4-prayer',up5:'cm-ch3-parents',up6:'cm-ch6-bible',up7:'cm-ch2-prayer',up8:'cm-ch4-missions',up9:'cm-ch1-kids',up10:'cm-ch3-choir',up11:'cm-ch2-youth',up12:'cm-ch5-recovery'};
 /* Photographs, embedded as data URIs because the viewer blocks external image hosts.
    Sourced from Unsplash, whose licence permits free use and redistribution. */
-const PHOTOS={b1:'assets/photos/b1.jpg',b2:'assets/photos/b2.jpg',b3:'assets/photos/b3.jpg',c1:'assets/photos/c1.jpg',c3:'assets/photos/c3.jpg',k1:'assets/photos/k1.jpg',k2:'assets/photos/k2.jpg',k3:'assets/photos/k3.jpg',m1:'assets/photos/m1.jpg',t1:'assets/photos/t1.jpg',t2:'assets/photos/t2.jpg',v1:'assets/photos/v1.jpg',v2:'assets/photos/v2.jpg',v3:'assets/photos/v3.jpg',w10:'assets/photos/w10.jpg',w12:'assets/photos/w12.jpg',w2:'assets/photos/w2.jpg',w3:'assets/photos/w3.jpg',w5:'assets/photos/w5.jpg',w6:'assets/photos/w6.jpg',w7:'assets/photos/w7.jpg',w8:'assets/photos/w8.jpg',w9:'assets/photos/w9.jpg'};
+const PHOTOS={b1:'assets/photos/b1.jpg',b2:'assets/photos/b2.jpg',b3:'assets/photos/b3.jpg',c1:'assets/photos/c1.jpg',c3:'assets/photos/c3.jpg',k1:'assets/photos/k1.jpg',k2:'assets/photos/k2.jpg',k3:'assets/photos/k3.jpg',ci1:'assets/photos/ci1.jpg',t1:'assets/photos/t1.jpg',t2:'assets/photos/t2.jpg',v1:'assets/photos/v1.jpg',v2:'assets/photos/v2.jpg',v3:'assets/photos/v3.jpg',w10:'assets/photos/w10.jpg',w12:'assets/photos/w12.jpg',w2:'assets/photos/w2.jpg',w3:'assets/photos/w3.jpg',w5:'assets/photos/w5.jpg',w6:'assets/photos/w6.jpg',w7:'assets/photos/w7.jpg',w8:'assets/photos/w8.jpg',w9:'assets/photos/w9.jpg'};
 const PHOTO_OF={
   ch1:'w3',ch2:'w5',ch3:'k1',ch4:'v1',ch5:'c1',ch6:'b3',
-  p1:'b2',p3:'w2',p4:'w10',p5:'w8',p7:'k2',p8:'k3',p10:'v3',p11:'v2',p12:'v1',p13:'c3',p14:'t1',p16:'b1',p18:'m1',p20:'w9',
+  p1:'b2',p3:'w2',p4:'w10',p5:'w8',p7:'k2',p8:'k3',p10:'v3',p11:'v2',p12:'v1',p13:'c3',p14:'t1',p16:'b1',p18:'ci1',p20:'w9',
   e1:'w7',e2:'w12',e3:'w2',e4:'w6',e5:'k1',e6:'t1',e7:'w12',e8:'w5',
-  st1:'w9',st2:'v2',st3:'w12',st4:'k1',st5:'t2',st6:'b3',
-  gc1:'v1'
+  st1:'w9',st2:'v2',st3:'w12',st4:'k1',st5:'t2',st6:'b3'
 };
 function photoFor(id){const k=PHOTO_OF[id];return (k&&PHOTOS[k])||null;}
 function hydrate(o){
   o=Object.assign({},o);
   if(!o.photo&&PHOTO_OF[o.id])o.photo=photoFor(o.id);
+  if('denomination' in o)delete o.denomination;
+  if(INVITE_CODES[o.id]&&!o.inviteCode)o.inviteCode=INVITE_CODES[o.id];
+  if(o.id==='rp3'){o.days=50;o.title='The Gospels in 50 Days';o.description='Matthew, Mark, Luke and John end to end, at an unhurried pace. A good first plan if you are new, or returning after a long time away.';}
   const now=Date.now();
   if(o.ageHours!=null&&o.ageHours!=='')o.createdAt=new Date(now-Number(o.ageHours)*3600e3).toISOString();
   if(o.dayOffset!=null){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+Number(o.dayOffset));
@@ -418,12 +470,12 @@ function postMedia(p){
 
 /* ---------- db layer ---------- */
 let DB=null;
-const COLS=['churches','posts','events','readingPlans','prayerRequests','givingCampaigns','people','comments','communities','churchThreads','churchConnections'];
-/* Communities, church threads and connections are device-local: they carry the seeded
-   conversation history, so a shared store must never replace it with a partial copy. */
-const LOCAL_ONLY={communities:1,churchThreads:1,churchConnections:1};
-const MAP={churches:'churches',posts:'posts',events:'events',readingPlans:'plans',prayerRequests:'prayers',givingCampaigns:'campaigns',people:'people',comments:'comments',
-  communities:'communities',churchThreads:'threads',churchConnections:'connections'};
+const COLS=['churches','posts','events','readingPlans','prayerRequests','people','comments','communities','communityRequests','churchThreads','churchConnections'];
+/* Communities, their join requests, church threads and connections are device-local: they carry
+   the seeded history, so a shared store must never replace it with a partial copy. */
+const LOCAL_ONLY={communities:1,communityRequests:1,churchThreads:1,churchConnections:1};
+const MAP={churches:'churches',posts:'posts',events:'events',readingPlans:'plans',prayerRequests:'prayers',people:'people',comments:'comments',
+  communities:'communities',communityRequests:'cmRequests',churchThreads:'threads',churchConnections:'connections'};
 function seedFor(c){
   if(c==='posts')return (SEED.posts||[]).concat(SEED_EXTRA.stories);
   return SEED[c]||SEED_EXTRA[c]||[];
@@ -495,9 +547,10 @@ async function dbUpdate(col,id,patch){
 async function saveProfile(){
   const s=state.session;
   if(!s||!s.key)return;
-  const doc={name:s.name,city:s.city||'',lang:s.lang||'English',denom:s.denom||'',bio:s.bio||'',role:s.role,
+  const doc={name:s.name,city:s.city||'',country:s.country||'',lang:s.lang||'English',gender:s.gender||'',phone:s.phone||'',email:s.email||'',
+    memberOf:s.memberOf||[],goals:s.goals||[],bio:s.bio||'',role:s.role,
     handle:s.handle||'',avatarSeed:s.avatarSeed||s.id,homeChurchId:s.homeChurchId||null,churchId:s.churchId||null,verified:!!s.verified,
-    follows:state.local.follows||[],communities:state.local.communities||[],
+    follows:state.local.follows||[],
     planId:s.planId||null,planDay:state.local.planDay||0,streak:state.local.streak||0,lastRead:state.local.lastRead||null,
     followers:s.followers||0,provider:s.provider||'email',photo:s.photo||null,updatedAt:new Date().toISOString()};
   lsSet('profile.'+s.key,doc);
@@ -510,12 +563,12 @@ async function loadProfile(key){
 }
 function applyProfile(key,p){
   const meta=state.ui.authMeta||{};
-  state.session={id:p.avatarSeed||('u_'+key),key:key,role:p.role||'believer',name:p.name,city:p.city,lang:p.lang,denom:p.denom,
-    bio:p.bio||'',handle:p.handle||'',avatarSeed:p.avatarSeed||('u_'+key),email:state.ui.authId,planId:p.planId,
+  state.session={id:p.avatarSeed||('u_'+key),key:key,role:p.role||'believer',name:p.name,city:p.city,country:p.country||'',lang:p.lang,
+    gender:p.gender||'',phone:p.phone||'',memberOf:(p.memberOf||[]).slice(),goals:(p.goals||[]).slice(),
+    bio:p.bio||'',handle:p.handle||'',avatarSeed:p.avatarSeed||('u_'+key),email:p.email||state.ui.authId,planId:p.planId,
     homeChurchId:p.homeChurchId||null,churchId:p.churchId||null,verified:!!p.verified,followers:p.followers||0,
     provider:meta.provider||p.provider||'email',photo:meta.photo||p.photo||null};
   state.local.follows=(p.follows||[]).slice();
-  state.local.communities=(p.communities||[]).slice();
   state.local.planDay=p.planDay||0;state.local.streak=p.streak||0;state.local.lastRead=p.lastRead||null;
   saveSession();saveLocal();
 }
@@ -524,8 +577,20 @@ function applyProfile(key,p){
 function churchById(id){return state.data.churches.find(function(c){return c.id===id;})||null;}
 function personById(id){return state.data.people.find(function(p){return p.id===id;})||null;}
 function myChurchIds(){return state.local.follows||[];}
-function myCommunityIds(){return state.local.communities||[];}
 function communityById(id){return state.data.communities.find(function(c){return c.id===id;})||null;}
+/* community membership: a request per (community, person); the latest one decides */
+function myKey(){return state.session&&(state.session.key||state.session.id)||null;}
+function myRequest(cid){
+  const k=myKey();if(!k)return null;
+  const list=state.data.cmRequests.filter(function(r){return r.communityId===cid&&r.userKey===k;});
+  return list.sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);})[0]||null;
+}
+function memberStatus(cid){const r=myRequest(cid);return r?r.status:'none';}
+function myCommunityIds(){return state.data.communities.filter(function(c){return memberStatus(c.id)==='approved';}).map(function(c){return c.id;});}
+function visibleCommunities(){const f=myChurchIds();return state.data.communities.filter(function(c){return f.indexOf(c.churchId)>-1;});}
+function pendingCommunityRequests(churchId){return state.data.cmRequests.filter(function(r){return r.churchId===churchId&&r.status==='pending';});}
+function communityMemberCount(c){return (c.members||0)+state.data.cmRequests.filter(function(r){return r.communityId===c.id&&r.status==='approved'&&!/^cr\d+$/.test(r.id);}).length;}
+function isMemberOf(churchId){const s=state.session;return !!(s&&(s.memberOf||[]).indexOf(churchId)>-1);}
 function isMe(id){return !!(state.session&&(state.session.id===id||state.session.key===id));}
 function isChurchSession(){return !!(state.session&&state.session.role==='church');}
 function authorOf(p){
@@ -544,12 +609,43 @@ function commentCount(p){const n=commentsFor(p.id).length;return n||p.comments||
 function reactionTotal(p){const r=p.reactions||{};return Object.keys(r).reduce(function(a,k){return a+(Number(r[k])||0);},0);}
 /* The home feed is church content only. Believers speak inside communities. */
 function churchPosts(){return state.data.posts.filter(function(p){return p.authorType!=='person'&&p.type!=='story';});}
-function feedPosts(){
+/* Updates from the churches you follow come first, newest on top, with urgent prayer pinned. */
+function followedPosts(){
   const f=myChurchIds();
-  const list=churchPosts().sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);});
-  const score=function(p){return f.indexOf(p.churchId)>-1?2:0;};
-  return list.sort(function(a,b){return score(b)-score(a)||dt(b.createdAt)-dt(a.createdAt);});
+  return churchPosts().filter(function(p){return f.indexOf(p.churchId)>-1;})
+    .sort(function(a,b){
+      const ua=a.type==='broadcast'&&a.priority==='Urgent'?1:0,ub=b.type==='broadcast'&&b.priority==='Urgent'?1:0;
+      return ub-ua||dt(b.createdAt)-dt(a.createdAt);});
 }
+/* What this person leans towards, learned from their reactions, saves and followed churches. */
+function interestProfile(){
+  const byId={};state.data.posts.forEach(function(p){byId[p.id]=p;});
+  const types={},churches={},langs={},cities={};
+  const bump=function(o,k,w){if(k)o[k]=(o[k]||0)+w;};
+  Object.keys(state.local.reacted||{}).forEach(function(id){const p=byId[id];if(p){bump(types,p.type,2);bump(churches,p.churchId,1);}});
+  (state.local.saved||[]).forEach(function(id){const p=byId[id];if(p){bump(types,p.type,3);bump(churches,p.churchId,1);}});
+  myChurchIds().forEach(function(id){const c=churchById(id);if(!c)return;(c.languages||[]).forEach(function(l){bump(langs,l,1);});bump(cities,c.city,1);});
+  const s=state.session||{};
+  if(s.lang)bump(langs,s.lang,2);if(s.city)bump(cities,s.city,2);
+  return {types:types,churches:churches,langs:langs,cities:cities};
+}
+/* Once the followed feed runs out: posts from other churches, ranked by those interests. */
+function suggestedPosts(){
+  const f=myChurchIds(),ip=interestProfile(),now=Date.now();
+  return churchPosts().filter(function(p){return f.indexOf(p.churchId)<0;}).map(function(p){
+    const c=churchById(p.churchId)||{};
+    let score=(ip.types[p.type]||0)*3+(ip.churches[p.churchId]||0)*2+(ip.cities[c.city]||0)*2;
+    (c.languages||[]).forEach(function(l){score+=(ip.langs[l]||0);});
+    score+=Math.min(6,reactionTotal(p)/150);
+    score+=Math.max(0,4-(now-dt(p.createdAt).getTime())/864e5);
+    let why='Popular on the ark';
+    if(ip.cities[c.city])why='Near you in '+c.city;
+    else if((c.languages||[]).some(function(l){return ip.langs[l];}))why='Services in '+(c.languages||[]).filter(function(l){return ip.langs[l];})[0];
+    if(ip.types[p.type]>=2)why='Because you engage with '+(p.type==='sermon'?'sermons':p.type==='event'?'events':p.type==='occasion'?'occasions':p.type==='prayer'?'prayer':'posts like this');
+    return {p:p,score:score,why:why};
+  }).sort(function(a,b){return b.score-a.score;});
+}
+function feedPosts(){return followedPosts().concat(suggestedPosts().map(function(x){return x.p;}));}
 function communityThreads(id){
   return state.data.posts.filter(function(p){return p.authorType==='person'&&(!id||p.communityId===id);})
     .sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);});
@@ -606,7 +702,6 @@ function upcomingEvents(){return state.data.events.slice().filter(function(e){re
 function urgentBroadcasts(){return state.data.posts.filter(function(p){return p.type==='broadcast'&&p.priority==='Urgent';});}
 function myPlan(){const id=state.session&&state.session.planId;return state.data.plans.find(function(p){return p.id===id;})||state.data.plans[0]||null;}
 function planPct(){const p=myPlan();if(!p)return 0;return Math.min(100,Math.round(((state.local.planDay||0)/(p.days||30))*100));}
-function totalGiven(){return (state.local.giving||[]).reduce(function(s,g){return s+g.amount;},0);}
 /* ---------- shared chrome ---------- */
 function arkGlyph(size){
   const s=size||34;
@@ -621,8 +716,24 @@ function arkGlyph(size){
 function wordmark(size){
   return '<span style="font-family:var(--sans);font-weight:800;letter-spacing:-.02em;font-size:'+(size||18)+'px">believers<span class="accent" style="font-weight:800">Ark</span></span>';
 }
-function toast(msg){state.ui.toast=msg;render();clearTimeout(toast._t);toast._t=setTimeout(function(){state.ui.toast=null;render();},2400);}
-function go(route,params){state.route=route;state.params=params||{};state.ui.sheet=null;window.scrollTo({top:0,behavior:'instant'});render();}
+/* Toasts and full-screen overlays live in their own layers, so showing one never re-draws the
+   page underneath: typing, scroll position and playing audio or video are all left alone. */
+function layer(id){let el=document.getElementById(id);if(!el){el=document.createElement('div');el.id=id;document.body.appendChild(el);}return el;}
+function renderToast(){layer('toast-root').innerHTML=state.ui.toast?'<div class="toast" role="status">'+esc(state.ui.toast)+'</div>':'';}
+function toast(msg){state.ui.toast=msg;renderToast();clearTimeout(toast._t);toast._t=setTimeout(function(){state.ui.toast=null;renderToast();},2600);}
+function go(route,params){
+  if(state.ui.story||state.ui.news){state.ui.story=null;state.ui.news=null;stopStory();syncOverlay();}
+  state.route=route;state.params=params||{};state.ui.sheet=null;window.scrollTo({top:0,behavior:'instant'});render();
+}
+/* BibleGPT's mark: an open book with a speech tail and a spark of light. */
+function bibleGptMark(size){
+  const s=size||22;
+  return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" aria-hidden="true">'
+    +'<path d="M12 7.2c-1.7-1.3-4.1-1.9-6.9-1.9v10.6c2.8 0 5.2.6 6.9 1.9 1.7-1.3 4.1-1.9 6.9-1.9V5.3c-2.8 0-5.2.6-6.9 1.9Z" fill="currentColor" fill-opacity=".14" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>'
+    +'<path d="M12 7.2v10.6" stroke="currentColor" stroke-width="1.5"/>'
+    +'<path d="M8.4 17.8 6.6 20.6l3.6-1.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    +'<path d="m18.2 1.6.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6.6-1.7Z" fill="currentColor"/></svg>';
+}
 function openSheet(kind,params){state.ui.sheet={kind:kind,params:params||{}};render();}
 function closeSheet(){state.ui.sheet=null;render();}
 
@@ -633,10 +744,12 @@ function navRoot(r){
   if(r==='live'||r==='soon'||r==='event'||r==='post')return state.params.from&&state.params.from!==r?navRoot(state.params.from):(isChurchSession()?'console':'home');
   if(r.indexOf('church-profile')===0||r==='person-profile')return isChurchSession()?'console-c2c':'churches';
   if(r==='saved'||r==='notifications')return r==='saved'?'me':(isChurchSession()?'console':'home');
-  if(r==='biblegpt'||r==='campaign'||r.indexOf('community-')===0)return 'community';
+  if(r==='biblegpt'||r==='settings')return r;
+  if(r.indexOf('community-')===0)return 'community';
   if(r==='console-thread')return 'console-c2c';
+  if(r==='console-communities')return 'console';
   if(r.indexOf('console')===0)return r==='console'?'console':r;
-  if(r==='settings'||r==='giving-history'||r==='family')return 'me';
+  if(r==='family')return 'me';
   if(r==='plan'||r==='prayer-new')return 'journey';
   return r;
 }
@@ -648,7 +761,14 @@ function renderNav(){
       const badge=(n.k==='console-c2c'&&state.session&&state.session.churchId)?(unreadThreads(state.session.churchId)+pendingFor(state.session.churchId).length):0;
       return '<button class="nav-item'+(root===n.k?' on':'')+'" data-go="'+n.k+'" aria-current="'+(root===n.k?'page':'false')+'" style="position:relative">'+ico(n.i,22)+'<span>'+n.l+'</span>'
         +(badge?'<span class="pill-count num" style="top:4px;right:10px">'+badge+'</span>':'')+'</button>';
-    }).join('')+'</nav>';
+    }).join('')
+    /* desktop rail foot: BibleGPT and Settings sit apart from the main destinations */
+    +'<div class="nav-foot">'
+    +'<button class="nav-item nav-gpt'+(root==='biblegpt'?' on':'')+'" data-go="biblegpt" aria-current="'+(root==='biblegpt'?'page':'false')+'">'+bibleGptMark(22)+'<span>BibleGPT</span></button>'
+    +'<button class="nav-item'+(root==='settings'?' on':'')+'" data-go="settings" aria-current="'+(root==='settings'?'page':'false')+'">'+ico('settings',22)+'<span>Settings &amp; privacy</span></button>'
+    +'</div></nav>'
+    /* phones: BibleGPT opens from a floating chat launcher */
+    +(root!=='biblegpt'&&!isChurchSession()?'<button class="gpt-launcher" data-go="biblegpt" aria-label="Open BibleGPT">'+bibleGptMark(26)+'</button>':'');
 }
 function topbar(title,sub,opts){
   opts=opts||{};
@@ -694,18 +814,18 @@ function viewWelcome(){
     +'<div class="stack gap-16 stagger">'
     +'<div class="row gap-10">'+arkGlyph(40)+wordmark(21)+'</div>'
     +'<h1 class="display">One ark.<br>Every church.<br><span class="accent">Every believer.</span></h1>'
-    +'<p class="body" style="max-width:34ch">The whole life of the church in one calm place — services, sermons, prayer, giving and the people you walk with.</p>'
+    +'<p class="body" style="max-width:34ch">The whole life of the church in one calm place — services, sermons, prayer and the people you walk with.</p>'
     +'</div>'
     +'<div class="stack gap-12 mt-32 stagger">'
     +'<button class="glass press pad row between gap-16" data-go="auth" data-role="believer" style="text-align:left">'
-    +'<span class="stack gap-4"><span class="h2">I\'m a believer</span><span class="cap">Follow churches, journey, pray, give</span></span>'
+    +'<span class="stack gap-4"><span class="h2">I\'m a believer</span><span class="cap">Follow churches, keep a journey, pray together</span></span>'
     +'<span class="icon-btn active">'+ico('chevR',20)+'</span></button>'
     +'<button class="glass press pad row between gap-16" data-go="auth" data-role="church" style="text-align:left">'
-    +'<span class="stack gap-4"><span class="h2">I represent a church</span><span class="cap">Publish, broadcast, host events, receive giving</span></span>'
+    +'<span class="stack gap-4"><span class="h2">I represent a church</span><span class="cap">Publish, broadcast, host events, connect with churches</span></span>'
     +'<span class="icon-btn">'+ico('chevR',20)+'</span></button>'
     +'</div>'
     +'<div class="row center mt-24"><button class="btn btn-sm btn-ghost" data-act="guest">Explore as a guest '+ico('chevR',15)+'</button></div>'
-    +'<div class="row center gap-8 mt-24 cap" style="opacity:.75">'+ico('lock',14)+'<span>Prototype build — no real payments or SMS are sent</span></div>'
+    +'<div class="row center gap-8 mt-24 cap" style="opacity:.75">'+ico('lock',14)+'<span>Prototype build — no real SMS is sent</span></div>'
     +'</div></div>';
 }
 
@@ -782,52 +902,150 @@ function viewOtp(){
     +'</div></div>';
 }
 
-/* ---------- onboarding: believer ---------- */
+/* ---------- onboarding: believer ----------
+   1 About you (required details, optional gender and photo, terms)  2 Your church (invite code, no skip)
+   3 Your goals (multi-select tiles, skippable) */
+const OB_STEPS=['About you','Your church','Your goals'];
+function obField(id,label,control,error,hint,optional){
+  return '<div class="field'+(error?' has-error':'')+'">'
+    +'<label class="label" for="'+id+'">'+label+(optional?' <span class="opt">optional</span>':' <span class="req" aria-hidden="true">*</span>')+'</label>'
+    +control
+    +(error?'<span class="field-error" role="alert">'+ico('x',12)+esc(error)+'</span>':hint?'<span class="field-hint">'+esc(hint)+'</span>':'')
+    +'</div>';
+}
+function suggestHandle(name){
+  return String(name||'').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9]+/g,'.').replace(/^\.+|\.+$/g,'').slice(0,20);
+}
+/* Handles already taken: seeded believers and any profile saved on this device (except your own). */
+function takenHandles(){
+  const own=accountKey(state.ui.authId),out={};
+  state.data.people.forEach(function(p){out[suggestHandle(p.name)]=1;});
+  try{Object.keys(localStorage).forEach(function(k){
+    if(k.indexOf(LS+'profile.')!==0||k===LS+'profile.'+own)return;
+    const p=lsGet(k.slice(LS.length),null);if(p&&p.handle)out[p.handle]=1;});}catch(e){}
+  return out;
+}
+/* Anything typed on an onboarding step survives re-renders (chip taps, photo upload, terms). */
+function captureOnboard(){
+  const o=state.ui.onboard,g=function(id){const el=document.getElementById(id);return el?el.value:undefined;};
+  const map={obUser:'user',obEmail:'email',obDial:'dial',obPhone:'phone',obCity:'city',obCountry:'country',obLang:'lang',obCode:'code'};
+  Object.keys(map).forEach(function(id){const v=g(id);if(v!==undefined)o[map[id]]=v;});
+  const t=document.getElementById('obTerms');if(t)o.terms=t.checked;
+}
 function viewOnboardBeliever(){
-  const s=state.ui.step,o=state.ui.onboard;
-  const steps=['You','Churches','Rhythm'];
+  const s=state.ui.step,o=state.ui.onboard,err=state.ui.obErrors||{};
+  const fromProvider=!!(state.ui.authMeta&&state.ui.authMeta.provider&&o.emailLocked);
   let body='';
   if(s===0){
-    body='<div class="glass pad stack gap-18">'
-      +'<div class="field"><label class="label" for="obName">Your name</label><input class="input" id="obName" placeholder="Rakesh" value="'+esc(o.name||'')+'"></div>'
-      +'<div class="field mt-16"><label class="label" for="obCity">City</label><input class="input" id="obCity" placeholder="Bengaluru" value="'+esc(o.city||'')+'"></div>'
-      +'<div class="field mt-16"><label class="label" for="obLang">Preferred language</label><select class="select" id="obLang">'
-      +LANGS.map(function(l){return '<option'+(o.lang===l?' selected':'')+'>'+l+'</option>';}).join('')+'</select></div>'
-      +'<div class="field mt-16"><label class="label" for="obDenom">Denomination <span style="text-transform:none;letter-spacing:0;font-weight:500">(optional)</span></label>'
-      +'<select class="select" id="obDenom"><option value="">Prefer not to say</option>'
-      +DENOMS.map(function(d){return '<option'+(o.denom===d?' selected':'')+'>'+d+'</option>';}).join('')+'</select></div></div>';
+    const pic=o.photo;
+    body='<div class="glass pad stack gap-18" id="obForm">'
+      +'<div class="row gap-16 ob-photo">'
+      +'<button class="ob-avatar" data-act="pick-avatar" data-target="onboard" aria-label="'+(pic?'Change':'Upload')+' profile photo">'
+      +(pic?'<img src="'+esc(pic)+'" alt="" referrerpolicy="no-referrer">':'<span class="ob-avatar-empty">'+ico('me',30)+'</span>')
+      +'<span class="ob-avatar-edit">'+ico(pic?'edit':'plus',14)+'</span></button>'
+      +'<div class="stack gap-4" style="min-width:0"><span class="h3">Profile photo <span class="opt">optional</span></span>'
+      +'<span class="cap">Square works best. You can crop it after choosing.</span>'
+      +'<div class="row gap-8 mt-4 wrap"><button class="chip" data-act="pick-avatar" data-target="onboard">'+ico('upload',14)+(pic?'Change photo':'Upload photo')+'</button>'
+      +(pic?'<button class="chip" data-act="ob-clear-photo">'+ico('x',13)+'Remove</button>':'')+'</div></div></div>'
+      +obField('obUser','Username','<div class="input-group"><span class="ig-pre">@</span><input class="input" id="obUser" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="24" placeholder="rakesh.sd" value="'+esc(o.user||'')+'"></div>',err.user,'Letters, numbers, dots and underscores. This is how people find you.')
+      +obField('obEmail','Email address','<input class="input" id="obEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="'+esc(o.email||'')+'"'+(fromProvider?' readonly':'')+'>',err.email,fromProvider?'Verified by your sign-in provider':'')
+      +obField('obPhone','Contact number','<div class="input-group"><select class="select ig-select" id="obDial" aria-label="Country code">'
+        +DIAL_CODES.map(function(d){return '<option'+((o.dial||'+91')===d?' selected':'')+'>'+d+'</option>';}).join('')+'</select>'
+        +'<input class="input" id="obPhone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="98765 43210" value="'+esc(o.phone||'')+'"></div>',err.phone,'Only your church admins can see this.')
+      +'<div class="grid-2">'
+      +obField('obCity','City','<input class="input" id="obCity" autocomplete="address-level2" placeholder="Chennai" value="'+esc(o.city||'')+'">',err.city)
+      +obField('obCountry','Country','<select class="select" id="obCountry" autocomplete="country-name"><option value="">Choose…</option>'
+        +COUNTRIES.map(function(c){return '<option'+((o.country||'India')===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>',err.country)
+      +'</div>'
+      +obField('obLang','Preferred language','<select class="select" id="obLang">'
+        +LANGS.map(function(l){return '<option'+((o.lang||'English')===l?' selected':'')+'>'+l+'</option>';}).join('')+'</select>',err.lang,'Sermons and broadcasts are translated into it where possible.')
+      +'<div class="field"><span class="label">Gender <span class="opt">optional</span></span><div class="row gap-8 wrap">'
+        +GENDERS.map(function(g){return '<button class="chip'+(o.gender===g?' on':'')+'" data-act="ob-gender" data-v="'+g+'" aria-pressed="'+(o.gender===g)+'">'+g+'</button>';}).join('')+'</div></div>'
+      +'<label class="terms-row'+(err.terms?' has-error':'')+'"><input type="checkbox" id="obTerms"'+(o.terms?' checked':'')+'>'
+      +'<span class="terms-box" aria-hidden="true">'+ico('check',14)+'</span>'
+      +'<span class="body" style="font-size:14px;color:var(--text-2)">I have read and agree to the <button type="button" class="link" data-act="open-terms">Terms &amp; Conditions</button> and <button type="button" class="link" data-act="open-terms">Privacy Policy</button>.</span></label>'
+      +(err.terms?'<span class="field-error" role="alert">'+ico('x',12)+esc(err.terms)+'</span>':'')
+      +'</div>';
   }else if(s===1){
-    const list=state.data.churches;
-    body=list.length?'<div class="stack gap-10">'+list.map(function(c){
-        const on=(o.follows||[]).indexOf(c.id)>-1;
-        return '<button class="glass press pad-sm row between gap-12" data-act="ob-follow" data-id="'+c.id+'" style="text-align:left;'+(on?'border-color:rgba(0,163,225,.42)':'')+'">'
-          +'<span class="row gap-12" style="min-width:0"><span class="avatar" style="background:'+grad(c.id)+'">'+initials(c.name)+'</span>'
-          +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.name)+'</span>'
-          +'<span class="cap">'+esc(c.city||'')+' · '+esc((c.languages||[]).slice(0,2).join(', '))+'</span></span></span>'
-          +'<span class="icon-btn'+(on?' active':'')+'">'+ico(on?'check':'plus',18)+'</span></button>';
-      }).join('')+'</div>':empty('church','Directory is loading','Verified churches near you will appear here in a moment.');
+    const c=o.churchId?churchById(o.churchId):null;
+    body='<div class="glass pad stack gap-16" id="obForm">'
+      +obField('obCode','Church invite code','<div class="row gap-10"><input class="input code-input grow" id="obCode" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" placeholder="e.g. GRACE-7291" value="'+esc(o.code||'')+'">'
+        +'<button class="btn btn-primary" data-act="ob-verify-code" style="height:52px">Verify</button></div>',err.code,'Your church office or pastor shares this code with members.')
+      +(c?'<div class="joined-church">'
+        +'<div class="jc-cover">'+(photoFor(c.id)?'<img src="'+esc(photoFor(c.id))+'" alt="">':coverArt(c.id))+'<span class="badge badge-mint">'+ico('check',12)+'Code accepted</span></div>'
+        +'<div class="row gap-12 jc-body"><span class="avatar" style="background:'+grad(c.id)+'">'+initials(c.name)+'</span>'
+        +'<div class="stack gap-2" style="min-width:0"><span class="row gap-6"><span class="h3">'+esc(c.name)+'</span>'+ico('shield',14,'accent')+'</span>'
+        +'<span class="cap">'+esc(c.city||'')+' · '+esc((c.serviceTimes||[])[0]||'')+'</span></div>'
+        +'</div></div>':'')
+      +'<div class="note-box">'+ico('users',18)+'<span>Belong to more than one church? Once you\'re in, add each one from <b>Me → Join another church</b> with that church\'s own invite code.</span></div>'
+      +'<p class="cap">Prototype codes to try: <button class="link" data-act="ob-fill-code" data-v="GRACE-7291">GRACE-7291</button> (Grace Cathedral), <button class="link" data-act="ob-fill-code" data-v="BETHEL-3304">BETHEL-3304</button> (Bethel Assembly).</p>'
+      +'</div>';
   }else{
-    const plans=state.data.plans;
-    body=plans.length?'<div class="stack gap-10">'+plans.map(function(p){
-        const on=o.planId===p.id;
-        return '<button class="glass press pad-sm stack gap-8" data-act="ob-plan" data-id="'+p.id+'" style="text-align:left;'+(on?'border-color:rgba(0,163,225,.42)':'')+'">'
-          +'<span class="row between gap-12"><span class="h3">'+esc(p.title)+'</span>'
-          +'<span class="badge '+(on?'badge-accent':'badge-ice')+'">'+(on?'Chosen':p.days+' days')+'</span></span>'
-          +'<span class="cap">'+esc(p.description)+'</span></button>';
-      }).join('')+'</div>':empty('book','Plans loading','Your reading plans will appear here shortly.');
+    const goals=o.goals||[];
+    body='<div class="goal-grid">'+GOALS.map(function(g){const on=goals.indexOf(g.k)>-1;
+        return '<button class="goal-tile'+(on?' on':'')+'" data-act="ob-goal" data-k="'+g.k+'" aria-pressed="'+on+'">'
+          +'<span class="goal-ico">'+ico(g.icon,22)+'</span><span class="goal-check">'+ico('check',13)+'</span>'
+          +'<span class="h3">'+esc(g.t)+'</span><span class="cap">'+esc(g.d)+'</span></button>';}).join('')+'</div>'
+      +'<p class="cap mt-12" style="text-align:center">'+(goals.length?goals.length+' selected · ':'')+'Pick as many as you like. You can change these later.</p>';
   }
+  const titles=['Tell us about you','Join your church','What are your goals?'];
+  const subs=['Fields marked * are needed to continue. Only your username is shown publicly.',
+    'Enter the invite code your church gave you. It connects you to your church family.',
+    'Choose what you want from believersArk. We\'ll shape your journey around it.'];
   return '<div class="view stack" style="padding-top:36px;padding-bottom:120px;position:relative">'
     +'<div class="aurora" style="height:40vh"></div><div style="position:relative;z-index:2">'
-    +'<div class="row gap-6 mt-4">'+steps.map(function(t,i){
-      return '<div class="stack gap-6 grow"><div style="height:3px;border-radius:9px;background:'+(i<=s?'linear-gradient(90deg,var(--brand),var(--brand-2))':'var(--surface-3)')+';'+(i<=s?'box-shadow:0 0 10px rgba(0,163,225,.45)':'')+'"></div>'
-      +'<span class="cap" style="font-size:11px;color:'+(i<=s?'var(--brand)':'var(--text-3)')+'">'+t+'</span></div>';}).join('')+'</div>'
-    +'<div class="stack gap-8 mt-24"><h1 class="h1">'+(s===0?'Let\'s make this yours':s===1?'Follow your churches':'Choose your rhythm')+'</h1>'
-    +'<p class="body">'+(s===0?'Only your name is shown to others. Everything else stays private until you share it.':s===1?'Pick the churches you belong to or want to hear from. You can change this any time.':'A reading plan sets the daily pulse of your journey. Start light — you can switch later.')+'</p></div>'
+    +'<div class="row gap-6 mt-4">'+OB_STEPS.map(function(t,i){
+      return '<div class="stack gap-6 grow"><div style="height:3px;border-radius:9px;background:'+(i<=s?'linear-gradient(90deg,var(--brand),var(--brand-2))':'var(--surface-3)')+'"></div>'
+      +'<span class="cap" style="font-size:11px;color:'+(i<=s?'var(--brand)':'var(--text-3)')+'">'+(i+1)+'. '+t+'</span></div>';}).join('')+'</div>'
+    +'<div class="stack gap-8 mt-24"><h1 class="h1">'+titles[s]+'</h1><p class="body">'+subs[s]+'</p></div>'
     +'<div class="mt-24">'+body+'</div>'
     +'<div class="row gap-10 mt-24">'+(s>0?'<button class="btn btn-ghost" data-act="ob-back">Back</button>':'')
     +'<button class="btn btn-primary grow" data-act="ob-next">'+(s===2?'Enter believersArk':'Continue')+ico('chevR',18)+'</button></div>'
-    +(s===1?'<button class="cap mt-16" data-act="ob-next" style="width:100%;text-align:center">Skip for now</button>':'')
+    +(s===2?'<button class="cap mt-16" data-act="ob-skip" style="width:100%;text-align:center">Skip for now</button>':'')
     +'</div></div>';
+}
+
+/* ---------- avatar cropping (1:1) ---------- */
+const CROP={img:null,nw:0,nh:0,zoom:1,x:0,y:0,V:280,drag:null,target:'onboard'};
+function cropScale(){return (CROP.V/Math.min(CROP.nw,CROP.nh))*CROP.zoom;}
+function clampCrop(){
+  const s=cropScale(),mx=Math.max(0,(CROP.nw*s-CROP.V)/2),my=Math.max(0,(CROP.nh*s-CROP.V)/2);
+  CROP.x=Math.max(-mx,Math.min(mx,CROP.x));CROP.y=Math.max(-my,Math.min(my,CROP.y));
+}
+function applyCrop(){
+  const img=document.getElementById('cropImg'),box=document.getElementById('cropBox');if(!img||!box||!CROP.nw)return;
+  CROP.V=box.clientWidth||280;clampCrop();
+  const s=cropScale();
+  img.style.width=(CROP.nw*s)+'px';img.style.height=(CROP.nh*s)+'px';
+  img.style.left=(CROP.V/2-CROP.nw*s/2+CROP.x)+'px';img.style.top=(CROP.V/2-CROP.nh*s/2+CROP.y)+'px';
+  const z=document.getElementById('cropZoom');if(z&&Number(z.value)!==CROP.zoom)z.value=CROP.zoom;
+}
+function openCrop(file,target){
+  if(!file||!/^image\//.test(file.type||'')){toast('That file is not an image');return;}
+  if(file.size>15*1024*1024){toast('That image is over 15 MB. Try a smaller one.');return;}
+  const fr=new FileReader();
+  fr.onerror=function(){toast('Could not read that file');};
+  fr.onload=function(){
+    const img=new Image();
+    img.onerror=function(){toast('Could not read that image');};
+    img.onload=function(){
+      Object.assign(CROP,{img:img,nw:img.naturalWidth,nh:img.naturalHeight,zoom:1,x:0,y:0,target:target||'onboard'});
+      state.ui.sheetBeforeCrop=state.ui.sheet&&state.ui.sheet.kind;
+      openSheet('crop');requestAnimationFrame(applyCrop);
+    };
+    img.src=fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+function finishCrop(){
+  if(!CROP.img)return null;
+  applyCrop();
+  const s=cropScale(),left=CROP.V/2-CROP.nw*s/2+CROP.x,top=CROP.V/2-CROP.nh*s/2+CROP.y;
+  const c=document.createElement('canvas');c.width=c.height=480;
+  const ctx=c.getContext('2d');ctx.imageSmoothingQuality='high';
+  ctx.drawImage(CROP.img,(0-left)/s,(0-top)/s,CROP.V/s,CROP.V/s,0,0,480,480);
+  try{return c.toDataURL('image/jpeg',0.86);}catch(e){return null;}
 }
 
 /* ---------- onboarding: church ---------- */
@@ -839,7 +1057,6 @@ function viewOnboardChurch(){
     +'<p class="body">This becomes your public profile. A platform reviewer checks your details before the verified badge appears.</p></div>'
     +'<div class="glass pad stack gap-16 mt-24">'
     +'<div class="field"><label class="label" for="cName">Church name</label><input class="input" id="cName" placeholder="Grace Cathedral" value="'+esc(o.name||'')+'"></div>'
-    +'<div class="field"><label class="label" for="cDenom">Denomination</label><select class="select" id="cDenom">'+DENOMS.map(function(d){return '<option>'+d+'</option>';}).join('')+'</select></div>'
     +'<div class="field"><label class="label" for="cCity">City</label><input class="input" id="cCity" placeholder="Chennai" value="'+esc(o.city||'')+'"></div>'
     +'<div class="field"><label class="label" for="cAddr">Address</label><input class="input" id="cAddr" placeholder="12 Anna Salai, Teynampet"></div>'
     +'<div class="field"><label class="label" for="cTimes">Service times</label><input class="input" id="cTimes" placeholder="Sun 7:00am Tamil · Sun 9:30am English"></div>'
@@ -961,6 +1178,7 @@ function postCard(p,opts){
   const topReacts=REACTIONS.filter(function(r){return (p.reactions&&p.reactions[r.k])>0;})
     .sort(function(x,y){return p.reactions[y.k]-p.reactions[x.k];}).slice(0,3);
   return '<article class="glass pad stack gap-13"'+(isBroadcast&&p.priority==='Urgent'?' style="border-color:rgba(232,145,154,.3)"':'')+'>'
+    +(opts.reason?'<div class="suggest-why">'+ico('sparkle',12)+'<span>Suggested · '+esc(opts.reason)+'</span></div>':'')
     +authorHeader(a,p,{follow:opts.follow})
     +(typeTag?'<div class="row gap-8 wrap" style="margin-top:-3px">'+typeTag+'</div>':'')
     +(p.title?'<h3 class="h2" style="font-size:21px">'+esc(p.title)+'</h3>':'')
@@ -993,73 +1211,216 @@ function postCard(p,opts){
       +'<span class="cap" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b style="color:var(--text-2)">'+esc(cmts[cmts.length-1].authorName)+'</b> '+esc(cmts[cmts.length-1].text)+'</span></button>':'')
     +'</article>';
 }
+/* ---------- newsroom ----------
+   Stories published by the believersArk team, not by a church or a person. They carry the
+   ark's own mark, can hold text, pictures, audio and short video, and can be shared but not
+   reacted to or commented on. */
+const NEWS=[
+  {id:'n1',cat:'Worship',title:'Song of the week: “Amazing Grace”',dek:'Two and a half centuries on, John Newton’s hymn is still the one congregations reach for. Listen to a public-domain recording and read how it came to be.',
+    cover:'w7',readMins:3,ageHours:5,media:'audio',
+    blocks:[
+      {t:'p',x:'John Newton wrote the words in 1772 for a New Year’s Day service in Olney, a small English market town. He had captained slave ships before his conversion, and the hymn is his own account of being found.'},
+      {t:'audio',src:'assets/media/amazing-grace.mp3',title:'Amazing Grace — vocalist with guitar',credit:'United States Air Force Reserve Band, Southern Aire · public domain'},
+      {t:'h',x:'Why it lasts'},
+      {t:'p',x:'The melody most churches sing, “New Britain”, was paired with Newton’s words in America in 1835. Its range is narrow and its rhythm forgiving, so a room full of people who would never call themselves singers can still carry it together.'},
+      {t:'quote',x:'I once was lost, but now am found; was blind, but now I see.',by:'John Newton, 1772'},
+      {t:'p',x:'When worship music arrives on believersArk, you will find it in the song library with lyrics and chords. For now, play it on the way to church on Sunday.'}
+    ]},
+  {id:'n2',cat:'Around the world',title:'Why church bells still ring',dek:'A short film from the Gesù Church in Miami, and the long story of a sound that has called people to prayer for fifteen centuries.',
+    cover:'w3',readMins:2,ageHours:26,media:'video',
+    blocks:[
+      {t:'p',x:'Bells entered Christian worship around the fifth century, when Paulinus of Nola is said to have hung one to call his town to prayer. Before clocks, the bell was the clock: morning, noon and evening, the whole parish knew it was time to stop and pray.'},
+      {t:'video',srcs:[{src:'assets/media/church-bells.webm',type:'video/webm'},{src:'assets/media/church-bells.mov',type:'video/quicktime'}],cap:'The bells of the Gesù Church, Miami.',credit:'Video: Fallaner, CC BY-SA 4.0, via Wikimedia Commons',portrait:true},
+      {t:'p',x:'Many churches in India still ring before the Sunday service, and in Kerala some towers carry bells cast more than a century ago. If yours rings, record ten seconds of it next Sunday — we would love to feature it here.'}
+    ]},
+  {id:'n3',cat:'On believersArk',title:'Every church now has an invite code',dek:'Joining your church takes one code, so the people in your feed are the people in your pews.',
+    cover:'w5',readMins:2,ageHours:30,media:'',
+    blocks:[
+      {t:'p',x:'From this week, each verified church on believersArk has its own invite code. Your church office or pastor can share it with you, and entering it connects you straight to your church family: its updates, its events and its communities.'},
+      {t:'p',x:'Belong to more than one church? Many families do. After you have joined, add another from your profile with that church’s code.'},
+      {t:'h',x:'For church admins'},
+      {t:'p',x:'Your code sits at the top of the church console. Share it in your bulletin, on the screen before service, or in your members’ group. You can also approve who joins each of your communities.'},
+      {t:'img',src:'w9',cap:'Members joining their church on a Sunday morning.'}
+    ]},
+  {id:'n4',cat:'Stories',title:'A roof for the tarpaulin church',dek:'In Warangal district, 180 believers have met under plastic sheeting for two monsoons. This month the walls went up.',
+    cover:'v1',readMins:4,ageHours:52,media:'',
+    blocks:[
+      {t:'p',x:'The eleventh village congregation of New Life Fellowship began in a courtyard with six families. Two years later it fills a tarpaulin shelter every Sunday, and its pastor still walks nine kilometres to lead the service.'},
+      {t:'img',src:'v3',cap:'The road out to the village congregation.'},
+      {t:'quote',x:'We sang louder in the rain than we ever did indoors. But the children deserve a dry floor.',by:'Pastor Ramesh, Warangal district'},
+      {t:'p',x:'Volunteers from three churches laid the foundation over four weekends. The roof goes on before the next rains, and the first service under it is planned for the harvest festival.'}
+    ]},
+  {id:'n5',cat:'Devotional',title:'Five minutes with Psalm 23',dek:'The best-known psalm is also one of the shortest. A slow reading for a busy morning.',
+    cover:'b1',readMins:5,ageHours:76,media:'',
+    blocks:[
+      {t:'quote',x:'The LORD is my shepherd; I shall not want.',by:'Psalm 23:1'},
+      {t:'p',x:'Read the first line again, slowly. The psalm does not begin with what the shepherd gives but with who he is. Everything after it — the still waters, the valley, the table — flows from that one claim.'},
+      {t:'p',x:'Try this today: before you check your phone, say the first verse aloud once. Then carry one phrase with you into the day and notice where it meets you.'}
+    ]}
+];
+function newsById(id){return NEWS.find(function(n){return n.id===id;})||null;}
+function newsImg(key){return PHOTOS[key]||key;}
+function newsMediaIcon(n){return n.media==='audio'?ico('mic',12):n.media==='video'?ico('play',12):'';}
+function newsroomMark(){return '<span class="nr-mark">'+arkGlyph(18)+'<span>believers<b>Ark</b> Newsroom</span></span>';}
+function railNews(){
+  const list=state.ui.railAll?NEWS:NEWS.slice(0,3),lead=list[0];
+  return '<section class="rail-card rail-news" aria-label="News from believersArk">'
+    +'<div class="rail-head">'+newsroomMark()+'<span class="cap">Editor’s picks</span></div>'
+    +'<button class="nr-lead" data-act="open-news" data-id="'+lead.id+'">'
+      +'<span class="nr-lead-img"><img src="'+esc(newsImg(lead.cover))+'" alt="" loading="lazy">'
+      +(lead.media?'<span class="nr-media">'+newsMediaIcon(lead)+(lead.media==='audio'?'Listen':'Watch')+'</span>':'')+'</span>'
+      +'<span class="nr-cat">'+esc(lead.cat)+'</span><span class="nr-title">'+esc(lead.title)+'</span>'
+      +'<span class="nr-meta">'+lead.readMins+' min read · '+ago(new Date(Date.now()-lead.ageHours*3600e3).toISOString())+'</span></button>'
+    +list.slice(1).map(function(n){
+      return '<button class="nr-row" data-act="open-news" data-id="'+n.id+'">'
+        +'<span class="nr-thumb"><img src="'+esc(newsImg(n.cover))+'" alt="" loading="lazy"></span>'
+        +'<span class="stack gap-2" style="min-width:0"><span class="nr-cat">'+esc(n.cat)+(n.media?' · '+newsMediaIcon(n):'')+'</span>'
+        +'<span class="nr-title sm">'+esc(n.title)+'</span><span class="nr-meta">'+n.readMins+' min read</span></span></button>';}).join('')
+    +'<button class="nr-more" data-act="rail-more">'+(state.ui.railAll?'Show fewer':'More stories')+ico(state.ui.railAll?'chevD':'chevR',14)+'</button>'
+    +'</section>';
+}
+/* narrow screens: the newsroom becomes a swipeable strip inside the feed */
+function newsStrip(){
+  return '<section class="home-inline mt-24" aria-label="News from believersArk">'
+    +'<div class="sec-title">'+newsroomMark()+'<span class="cap">Swipe for more</span></div>'
+    +'<div class="scroll-x nr-strip">'+NEWS.map(function(n){
+      return '<button class="nr-card" data-act="open-news" data-id="'+n.id+'">'
+        +'<span class="nr-lead-img"><img src="'+esc(newsImg(n.cover))+'" alt="" loading="lazy">'
+        +(n.media?'<span class="nr-media">'+newsMediaIcon(n)+(n.media==='audio'?'Listen':'Watch')+'</span>':'')+'</span>'
+        +'<span class="nr-cat">'+esc(n.cat)+'</span><span class="nr-title sm">'+esc(n.title)+'</span></button>';}).join('')+'</div></section>';
+}
+
+/* ---------- my calendar (home) ----------
+   Everything I have said yes to, plus what my churches have coming up — like a pocket Google Calendar. */
+function calendarEvents(){
+  const going=state.local.rsvps||[],f=myChurchIds();
+  return state.data.events.filter(function(e){return going.indexOf(e.id)>-1||f.indexOf(e.churchId)>-1;})
+    .map(function(e){return {e:e,going:going.indexOf(e.id)>-1};})
+    .sort(function(a,b){return dt(a.e.datetime)-dt(b.e.datetime);});
+}
+function dayKey(d){return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();}
+function railCalendar(compact){
+  const base=state.ui.railMonth?new Date(state.ui.railMonth):new Date();
+  const y=base.getFullYear(),m=base.getMonth(),today=new Date();
+  const start=(new Date(y,m,1).getDay()+6)%7,days=new Date(y,m+1,0).getDate();
+  const evs=calendarEvents(),marks={};
+  evs.forEach(function(x){const k=dayKey(dt(x.e.datetime));marks[k]=marks[k]||{going:false,church:false};if(x.going)marks[k].going=true;else marks[k].church=true;});
+  (state.local.milestones||[]).forEach(function(ms){const k=dayKey(dt(ms.date));marks[k]=marks[k]||{};marks[k].ms=true;});
+  const sel=state.ui.railDay;
+  let cells='';
+  for(let i=0;i<start;i++)cells+='<span></span>';
+  for(let d=1;d<=days;d++){
+    const k=y+'-'+m+'-'+d,mk=marks[k],isT=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d;
+    cells+='<button class="mc-day'+(isT?' today':'')+(sel===k?' on':'')+(mk?' has':'')+'" data-act="rail-day" data-v="'+k+'" aria-label="'+d+' '+MONTHS[m]+(mk?', has events':'')+'">'+d
+      +(mk?'<span class="mc-dots">'+(mk.going?'<i class="g"></i>':'')+(mk.church?'<i class="c"></i>':'')+(mk.ms?'<i class="m"></i>':'')+'</span>':'')+'</button>';
+  }
+  let agenda=evs.filter(function(x){return dt(x.e.datetime)>=new Date(Date.now()-3*3600e3);});
+  let heading='Coming up';
+  if(sel){const p=sel.split('-').map(Number);agenda=evs.filter(function(x){return dayKey(dt(x.e.datetime))===sel;});heading=fmtDate(new Date(p[0],p[1],p[2]).toISOString());}
+  agenda=agenda.slice(0,3);
+  return '<section class="rail-card rail-cal" aria-label="My calendar">'
+    +'<div class="rail-head"><span class="h3" style="font-size:15px">My calendar</span>'
+    +'<span class="row gap-4"><button class="mc-nav" data-act="rail-cal" data-v="-1" aria-label="Previous month">'+ico('chevL',14)+'</button>'
+    +'<span class="mc-month">'+MONTHS[m]+' '+y+'</span>'
+    +'<button class="mc-nav" data-act="rail-cal" data-v="1" aria-label="Next month">'+ico('chevR',14)+'</button></span></div>'
+    +'<div class="mcal">'+['M','T','W','T','F','S','S'].map(function(d){return '<span class="mc-dow">'+d+'</span>';}).join('')+cells+'</div>'
+    +'<div class="mc-legend"><span><i class="g"></i>Going</span><span><i class="c"></i>My churches</span><span><i class="m"></i>Milestones</span></div>'
+    +'<div class="mc-agenda"><span class="eyebrow">'+esc(heading)+'</span>'
+    +(agenda.length?agenda.map(function(x){const e=x.e,d=dt(e.datetime);
+      return '<button class="mc-item'+(x.going?' going':'')+'" data-go="event" data-id="'+e.id+'">'
+        +'<span class="mc-date"><b>'+d.getDate()+'</b>'+MONTHS[d.getMonth()]+'</span>'
+        +'<span class="stack gap-2" style="min-width:0"><span class="mc-title">'+esc(e.title)+'</span>'
+        +'<span class="mc-sub">'+(e.isLive?'<span class="live-txt">Live now</span> · ':fmtTime(e.datetime)+' · ')+esc(e.churchName||'')+'</span></span>'
+        +(x.going?'<span class="badge badge-mint mc-badge">Going</span>':'')+'</button>';}).join('')
+      :'<p class="cap">'+(sel?'Nothing on this day.':'Nothing scheduled yet. RSVP to an event and it shows up here.')+'</p>')
+    +'</div></section>';
+}
+
+/* ---------- stories strip ---------- */
 function momentsStrip(){
   const src=momentSources();
   if(!src.length)return '';
   const seen=state.local.seenMoments||[];
-  return '<div class="scroll-x" style="gap:12px;padding:2px 0 6px;margin-bottom:6px">'
+  return '<div class="scroll-x stories-strip">'
     +src.slice(0,14).map(function(m,i){
       const key=m.author.type+':'+m.author.id;
       const isSeen=seen.indexOf(key)>-1&&!m.live;
       const pic=photoFor(m.author.id);
-      return '<button class="moment" data-act="open-moment" data-i="'+i+'" aria-label="'+esc(m.author.name)+(m.live?' is live':' story')+'">'
-        +'<span class="moment-ring'+(m.live?' live':isSeen?' seen':'')+'">'
-        +'<span class="moment-inner" style="background:'+(pic?'#282828 url('+pic+') center/cover':grad(m.author.seed))+'">'+(pic?'':initials(m.author.name))+'</span></span>'
-        +'<span class="moment-name"'+(m.live?' style="color:var(--live);font-weight:700"':'')+'>'+esc(m.live?'LIVE':m.author.name.split(' ')[0])+'</span></button>';
+      return '<button class="moment'+(m.live?' is-live':isSeen?' is-seen':'')+'" data-act="open-moment" data-i="'+i+'" aria-label="'+esc(m.author.name)+(m.live?' is live':' story')+'">'
+        +'<span class="moment-ring"><span class="moment-inner" style="background:'+(pic?'#282828 url('+pic+') center/cover':grad(m.author.seed))+'">'+(pic?'':initials(m.author.name))+'</span></span>'
+        +(m.live?'<span class="moment-live">Live</span>':'')
+        +'<span class="moment-name">'+esc(m.author.name.split(' ')[0])+'</span></button>';
     }).join('')+'</div>';
 }
 function unreadNotifs(){return notifItems().filter(function(n){return !state.local.notifSeen||dt(n.t)>dt(state.local.notifSeen);}).length;}
+function feedTabFilter(t){
+  return function(p){
+    if(t==='Sermons')return p.type==='sermon';
+    if(t==='Events')return p.type==='event';
+    if(t==='Prayer')return p.type==='prayer'||(p.type==='broadcast'&&p.priority==='Urgent');
+    if(t==='Occasions')return p.type==='occasion';
+    return true;
+  };
+}
 function viewHome(){
   const name=(state.session&&state.session.name)||'friend';
-  const filters=['All','Following','Sermons','Events','Prayer','Occasions'];
-  let posts=feedPosts();
-  const t=state.ui.tab,cf=myChurchIds();
-  if(t==='Following')posts=posts.filter(function(p){return cf.indexOf(p.churchId)>-1;});
-  else if(t==='Sermons')posts=posts.filter(function(p){return p.type==='sermon';});
-  else if(t==='Events')posts=posts.filter(function(p){return p.type==='event';});
-  else if(t==='Prayer')posts=posts.filter(function(p){return p.type==='prayer'||(p.type==='broadcast'&&p.priority==='Urgent');});
-  else if(t==='Occasions')posts=posts.filter(function(p){return p.type==='occasion';});
-  const digest=state.prefs.digest,unread=unreadNotifs();
+  const filters=['All','Sermons','Events','Prayer','Occasions'];
+  const t=filters.indexOf(state.ui.tab)>-1?state.ui.tab:'All',keep=feedTabFilter(t);
+  const followed=followedPosts().filter(keep);
+  const sugg=suggestedPosts().filter(function(x){return keep(x.p);}).slice(0,12);
+  const digest=state.prefs.digest,unread=unreadNotifs(),hasFollows=myChurchIds().length>0;
   const cards=[];
-  posts.slice(0,25).forEach(function(p,i){
+  followed.slice(0,30).forEach(function(p,i){
     cards.push(postCard(p));
-    if(i===2)cards.push(communityRail());
-    if(i===5)cards.push(journeyRingCard());
+    if(i===2){const r=communityRail();if(r)cards.push(r);}
+    if(i===4)cards.push(journeyRingCard());
   });
-  return topbar(greeting()+', <span class="accent">'+esc(String(name).split(' ')[0])+'</span>',todayLabel(),{
+  let feed='';
+  if(digest)feed=digestCard(followed);
+  else{
+    feed='<div class="stack gap-14 stagger">'+cards.join('')+'</div>';
+    if(hasFollows&&followed.length)feed+='<div class="caught-up"><span class="cu-ring">'+ico('check',20)+'</span>'
+      +'<span class="h3">You\'re all caught up</span><span class="cap">You\'ve seen the latest from your churches'+(t!=='All'?' in '+t.toLowerCase():'')+'.</span></div>';
+    else if(hasFollows)feed+=empty('church','Nothing new here yet','Your churches haven\'t posted '+(t==='All'?'yet':t.toLowerCase()+' yet')+'. Here is what others are sharing.');
+    if(sugg.length)feed+='<div class="sec-title"><span class="eyebrow accent">Suggested for you</span><span class="cap">'+(hasFollows?'Based on what you engage with':'Follow a church to fill your feed')+'</span></div>'
+      +'<div class="stack gap-14">'+sugg.map(function(x){return postCard(x.p,{reason:x.why});}).join('')+'</div>';
+  }
+  return '<div class="home-grid"><div class="home-main">'
+    +topbar(greeting()+', <span class="accent">'+esc(String(name).split(' ')[0])+'</span>',todayLabel(),{
     actions:'<div class="row gap-8">'
       +'<button class="icon-btn" data-go="notifications" aria-label="Notifications" style="position:relative">'+ico('bell',18)
       +(unread?'<span class="pill-count num">'+(unread>9?'9+':unread)+'</span>':'')+'</button>'
-      +'<button class="icon-btn" data-go="churches" aria-label="Search">'+ico('search',18)+'</button></div>',
+      +'<button class="icon-btn" data-go="churches" aria-label="Search churches">'+ico('search',18)+'</button>'
+      +'<button class="icon-btn mobile-only" data-go="settings" aria-label="Settings and privacy">'+ico('settings',18)+'</button></div>',
     extra:'<div class="mt-16">'+momentsStrip()+'</div>'})
     +'<div class="view stack">'
     +verseCard()
+    +newsStrip()
     +priorityStrip()
+    +'<div class="home-inline mt-24">'+railCalendar(true)+'</div>'
     +'<div class="sec-title"><span class="eyebrow accent">From your churches</span>'
     +'<button class="chip'+(digest?' on':'')+'" data-act="toggle-digest">'+ico('list',14)+'Digest</button></div>'
     +'<div class="scroll-x" style="margin-bottom:14px">'+filters.map(function(f){
         return '<button class="chip'+(t===f?' on':'')+'" data-act="tab" data-v="'+f+'">'+f+'</button>';}).join('')+'</div>'
-    +(digest?digestCard(posts):'<div class="stack gap-14 stagger">'
-      +(cards.length?cards.join('')
-        :empty('church',state.ui.ready?'Nothing here yet':'Gathering your feed',
-          t==='Following'?'Follow a church and its posts, events and sermons land here.':'Churches you follow will fill this space.',
-          '<button class="btn btn-sm btn-primary" data-go="churches">Find churches</button>'))+'</div>')
-    +'<div style="height:30px"></div></div>';
+    +feed
+    +'<div style="height:30px"></div></div></div>'
+    +'<aside class="home-rail">'+railNews()+railCalendar(false)+'</aside>'
+    +'</div>';
 }
+/* communities from my churches that I have not joined or asked to join yet */
 function communityRail(){
-  const joined=myCommunityIds();
-  const list=state.data.communities.filter(function(c){return joined.indexOf(c.id)<0;}).slice(0,6);
-  if(!list.length)return '';
+  const list=visibleCommunities().filter(function(c){return memberStatus(c.id)==='none';}).slice(0,6);
+  if(!list.length||!state.session)return '';
   return '<section class="glass pad stack gap-14">'
-    +'<div class="row between"><span class="eyebrow accent">Communities to join</span>'
+    +'<div class="row between"><span class="eyebrow accent">Communities at your churches</span>'
     +'<button class="cap" data-go="community">See all</button></div>'
-    +'<div class="scroll-x" style="gap:12px">'+list.map(function(c){
-      return '<div class="glass pad-sm stack gap-10" style="min-width:176px;max-width:176px">'
+    +'<div class="scroll-x" style="gap:12px">'+list.map(function(c){const ch=churchById(c.churchId)||{};
+      return '<div class="glass pad-sm stack gap-10" style="min-width:184px;max-width:184px">'
         +'<button class="stack gap-8" data-go="community-page" data-id="'+c.id+'" style="text-align:left">'
-        +'<span class="icon-btn" style="color:hsl('+c.hue+',80%,74%);border-color:hsla('+c.hue+',80%,70%,.4);background:hsla('+c.hue+',80%,70%,.12)">'+ico(c.icon||'users',18)+'</span>'
+        +'<span class="icon-btn" style="color:hsl('+c.hue+',60%,42%);border-color:hsla('+c.hue+',60%,50%,.35);background:hsla('+c.hue+',70%,60%,.12)">'+ico(c.icon||'users',18)+'</span>'
         +'<span class="stack gap-2"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span>'
-        +'<span class="cap num" style="font-size:11px">'+Number(c.members||0).toLocaleString('en-IN')+' members</span></span></button>'
-        +'<button class="btn btn-xs btn-outline btn-block" data-act="join-community" data-id="'+c.id+'">Join</button></div>';
+        +'<span class="cap" style="font-size:11px">'+esc(ch.name||'')+' · '+communityMemberCount(c)+' members</span></span></button>'
+        +'<button class="btn btn-xs btn-outline btn-block" data-act="join-community" data-id="'+c.id+'">Request to join</button></div>';
     }).join('')+'</div></section>';
 }
 function digestCard(posts){
@@ -1078,39 +1439,187 @@ function digestCard(posts){
 }
 
 /* ---------- churches directory ---------- */
+const DAY_ABBR=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DAY_FULL={Sun:'Sunday',Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday'};
+const TIME_SLOTS=['Morning','Afternoon','Evening'];
+/* "Sun 7:00am Tamil" → {day:'Sun',h:7}. Unreadable service strings are simply skipped. */
+function parseServices(c){
+  return (c.serviceTimes||[]).map(function(s){
+    const m=String(s).match(/^(sun|mon|tue|wed|thu|fri|sat)[a-z]*\.?\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+    if(!m)return null;
+    let h=Number(m[2])%12;if((m[4]||'').toLowerCase()==='pm')h+=12;
+    const d=m[1].charAt(0).toUpperCase()+m[1].slice(1,3).toLowerCase();
+    return {day:d,h:h,label:s};
+  }).filter(Boolean);
+}
+function timeSlot(h){return h<12?'Morning':h<17?'Afternoon':'Evening';}
+function churchHay(c){
+  const svc=parseServices(c);
+  return [c.name,c.city,c.address,c.pastorName,c.tagline,(c.languages||[]).join(' '),(c.ministries||[]).join(' '),(c.serviceTimes||[]).join(' '),
+    svc.map(function(x){const h12=x.h%12||12;return DAY_FULL[x.day]+' '+h12+(x.h<12?'am':'pm')+' '+timeSlot(x.h);}).join(' ')].join(' ').toLowerCase();
+}
+const QUERY_NOISE={near:1,me:1,service:1,services:1,church:1,churches:1,at:1,in:1,on:1,the:1,a:1,for:1};
+function matchesQuery(c,q){
+  const words=String(q||'').toLowerCase().split(/[\s,]+/).filter(function(w){return w&&!QUERY_NOISE[w];});
+  if(!words.length)return true;
+  const hay=churchHay(c);
+  return words.every(function(w){return hay.indexOf(w)>-1;});
+}
+function allMinistries(){const out={};state.data.churches.forEach(function(c){(c.ministries||[]).forEach(function(m){out[m]=1;});});return Object.keys(out).sort();}
+function allCities(){return Array.from(new Set(state.data.churches.map(function(c){return c.city;}).filter(Boolean))).sort();}
+function allLangs(){return Array.from(new Set(state.data.churches.reduce(function(a,c){return a.concat(c.languages||[]);},[]))).sort();}
+function activeFilterCount(f){return f.cities.length+f.langs.length+f.days.length+f.times.length+f.ministries.length+(f.live?1:0)+(f.following!=='any'?1:0);}
+function filteredChurches(f){
+  const liveIds=liveEvents().map(function(e){return e.churchId;}),fol=myChurchIds();
+  let list=state.data.churches.filter(function(c){
+    if(f.q&&!matchesQuery(c,f.q))return false;
+    if(f.cities.length&&f.cities.indexOf(c.city)<0)return false;
+    if(f.langs.length&&!(c.languages||[]).some(function(l){return f.langs.indexOf(l)>-1;}))return false;
+    if(f.ministries.length&&!(c.ministries||[]).some(function(m){return f.ministries.indexOf(m)>-1;}))return false;
+    const svc=parseServices(c);
+    if(f.days.length&&!svc.some(function(x){return f.days.indexOf(x.day)>-1&&(!f.times.length||f.times.indexOf(timeSlot(x.h))>-1);}))return false;
+    if(!f.days.length&&f.times.length&&!svc.some(function(x){return f.times.indexOf(timeSlot(x.h))>-1;}))return false;
+    if(f.live&&liveIds.indexOf(c.id)<0)return false;
+    if(f.following==='yes'&&fol.indexOf(c.id)<0)return false;
+    if(f.following==='no'&&fol.indexOf(c.id)>-1)return false;
+    return true;
+  });
+  const by={popular:function(a,b){return (b.followers||0)-(a.followers||0);},
+    az:function(a,b){return String(a.name).localeCompare(String(b.name));},
+    connected:function(a,b){return myConnections(b.id).length-myConnections(a.id).length;},
+    live:function(a,b){return (liveIds.indexOf(b.id)>-1?1:0)-(liveIds.indexOf(a.id)>-1?1:0)||(b.followers||0)-(a.followers||0);}};
+  return list.sort(by[f.sort]||by.popular);
+}
 function viewChurches(){
   const f=state.ui.dirFilters;
-  let list=state.data.churches.slice();
   const liveIds=liveEvents().map(function(e){return e.churchId;});
-  if(f.q){const q=f.q.toLowerCase();list=list.filter(function(c){
-    return (c.name+' '+(c.city||'')+' '+(c.languages||[]).join(' ')+' '+(c.denomination||'')+' '+(c.serviceTimes||[]).join(' ')).toLowerCase().indexOf(q)>-1;});}
-  if(f.denom)list=list.filter(function(c){return c.denomination===f.denom;});
-  if(f.lang)list=list.filter(function(c){return (c.languages||[]).indexOf(f.lang)>-1;});
-  if(f.live)list=list.filter(function(c){return liveIds.indexOf(c.id)>-1;});
-  const langs=Array.from(new Set(state.data.churches.reduce(function(a,c){return a.concat(c.languages||[]);},[])));
-  const denoms=Array.from(new Set(state.data.churches.map(function(c){return c.denomination;}).filter(Boolean)));
-  const cities=Array.from(new Set(state.data.churches.map(function(c){return c.city;}).filter(Boolean)));
+  const list=filteredChurches(f),n=activeFilterCount(f);
   const church=isChurchSession();
-  return topbar(church?'Churches on the ark':'Churches',state.data.churches.length+' verified churches · '+cities.length+' cities',{
-    actions:'<button class="icon-btn'+(state.ui.dir==='map'?' active':'')+'" data-act="dir-view" aria-label="Toggle map">'+ico(state.ui.dir==='map'?'list':'pin',18)+'</button>',
+  const chips=[];
+  f.cities.forEach(function(v){chips.push(['cities',v,v]);});
+  f.langs.forEach(function(v){chips.push(['langs',v,v]);});
+  f.days.forEach(function(v){chips.push(['days',v,DAY_FULL[v]]);});
+  f.times.forEach(function(v){chips.push(['times',v,v]);});
+  f.ministries.forEach(function(v){chips.push(['ministries',v,v]);});
+  if(f.live)chips.push(['live','1','Live now']);
+  if(f.following!=='any')chips.push(['following',f.following,f.following==='yes'?'Following':'Not following yet']);
+  return topbar(church?'Churches on the ark':'Churches',state.data.churches.length+' verified churches · '+allCities().length+' cities',{
+    actions:'<button class="icon-btn'+(state.ui.dir==='map'?' active':'')+'" data-act="dir-view" aria-label="'+(state.ui.dir==='map'?'Show list':'Show map')+'">'+ico(state.ui.dir==='map'?'list':'pin',18)+'</button>',
     back:church?'console-c2c':null,
     extra:'<div class="mt-16"><div class="row gap-10">'
-      +'<div class="glass row gap-10" style="flex:1;padding:0 16px;height:52px;border-radius:var(--r-pill)">'+ico('search',18,'dim')
-      +'<input class="grow" id="dirQ" placeholder="Tamil service near me, Sunday 9am" value="'+esc(f.q)+'" style="background:none;border:0;outline:none;height:100%;min-width:0">'
-      +(f.q?'<button data-act="dir-clear" aria-label="Clear">'+ico('x',16)+'</button>':'')+'</div>'
-      +'<button class="btn btn-primary btn-sm" data-act="dir-search" style="height:52px;padding:0 20px">Search</button></div>'
-      +'<div class="scroll-x mt-12">'
-      +'<button class="chip'+(f.live?' on':'')+'" data-act="dir-live"><i class="dot-live"></i>Live now</button>'
-      +langs.map(function(l){return '<button class="chip'+(f.lang===l?' on':'')+'" data-act="dir-lang" data-v="'+esc(l)+'">'+esc(l)+'</button>';}).join('')
-      +denoms.map(function(d){return '<button class="chip'+(f.denom===d?' on':'')+'" data-act="dir-denom" data-v="'+esc(d)+'">'+esc(d)+'</button>';}).join('')
-      +'</div></div>'})
+      +'<div class="dir-search" id="dirSearch">'
+        +'<div class="glass row gap-10 dir-input">'+ico('search',18,'dim')
+        +'<input class="grow" id="dirQ" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="dirSuggest" autocomplete="off" placeholder="Search by name, city, language or ‘Sunday 9am’" value="'+esc(f.q)+'">'
+        +(f.q?'<button data-act="dir-clear" aria-label="Clear search">'+ico('x',16)+'</button>':'')+'</div>'
+        +'<div class="dir-suggest" id="dirSuggest" role="listbox" hidden></div>'
+      +'</div>'
+      +'<button class="btn btn-ghost btn-sm filter-btn" data-act="open-filters" aria-label="Filters">'+ico('filter',16)+'<span class="hide-sm">Filters</span>'+(n?'<span class="filter-count num">'+n+'</span>':'')+'</button></div>'
+      +(chips.length?'<div class="scroll-x mt-12">'+chips.map(function(c){
+          return '<button class="chip on" data-act="df-remove" data-g="'+c[0]+'" data-v="'+esc(c[1])+'" aria-label="Remove filter '+esc(c[2])+'">'+esc(c[2])+ico('x',12)+'</button>';}).join('')
+        +'<button class="chip" data-act="df-reset">Clear all</button></div>':'')
+      +'<div class="row between mt-12 cap"><span class="num">'+list.length+' church'+(list.length===1?'':'es')+(f.q?' for “'+esc(f.q)+'”':'')+'</span>'
+      +'<span>Sorted by '+({popular:'most followed',az:'name',connected:'most connected',live:'live first'})[f.sort]+'</span></div>'
+      +'</div>'})
     +'<div class="view stack">'
     +(state.ui.dir==='map'?mapPanel(list):'')
     +'<div class="stack gap-12 stagger mt-8">'
     +(list.length?list.map(function(c){return churchCard(c,liveIds.indexOf(c.id)>-1);}).join('')
-      :empty('search',state.ui.ready?'No churches match':'Loading directory','Try clearing a filter or searching a different language or city.',
-        '<button class="btn btn-sm btn-ghost" data-act="dir-reset">Clear all filters</button>'))+'</div>'
+      :empty('search',state.ui.ready?'No churches match':'Loading directory','Try a different search, or loosen a filter.',
+        '<button class="btn btn-sm btn-ghost" data-act="dir-reset">Clear search and filters</button>'))+'</div>'
     +'<div style="height:30px"></div></div>';
+}
+/* Dropdown recommendations while typing: churches first, then quick filters and a plain search. */
+function hl(text,q){
+  const t=String(text||''),words=String(q||'').toLowerCase().split(/\s+/).filter(function(w){return w.length>1&&!QUERY_NOISE[w];});
+  let out=esc(t);
+  words.forEach(function(w){const i=out.toLowerCase().indexOf(w);if(i>-1)out=out.slice(0,i)+'<mark>'+out.slice(i,i+w.length)+'</mark>'+out.slice(i+w.length);});
+  return out;
+}
+function suggestItems(q){
+  q=String(q||'').trim();
+  const items=[],liveIds=liveEvents().map(function(e){return e.churchId;});
+  const ql=q.toLowerCase();
+  const chRow=function(c,sub){items.push({kind:'church',id:c.id,html:'<span class="sg-thumb">'+(photoFor(c.id)?'<img src="'+esc(photoFor(c.id))+'" alt="">':'<span class="avatar avatar-sm" style="background:'+grad(c.id)+'">'+initials(c.name)+'</span>')+'</span>'
+    +'<span class="stack gap-2" style="min-width:0"><span class="sg-title">'+hl(c.name,q)+(liveIds.indexOf(c.id)>-1?' <span class="live-txt">· Live</span>':'')+'</span>'
+    +'<span class="sg-sub">'+(sub||esc(c.city||'')+' · '+esc((c.serviceTimes||[])[0]||''))+'</span></span>'});};
+  if(!q){
+    items.push({kind:'head',html:'Popular on the ark'});
+    state.data.churches.slice().sort(function(a,b){return (b.followers||0)-(a.followers||0);}).slice(0,3).forEach(function(c){chRow(c,esc(c.city||'')+' · '+Number(c.followers||0).toLocaleString('en-IN')+' following');});
+    const s=state.session;
+    if(s&&s.city&&allCities().indexOf(s.city)>-1)items.push({kind:'filter',g:'cities',v:s.city,html:ico('pin',15)+'<span>Churches near you in <b>'+esc(s.city)+'</b></span>'});
+    if(liveIds.length)items.push({kind:'filter',g:'live',v:'1',html:'<i class="dot-live"></i><span>Streaming live now</span>'});
+    return items;
+  }
+  const churches=state.data.churches.filter(function(c){return matchesQuery(c,q);}).slice(0,5);
+  if(churches.length){items.push({kind:'head',html:'Churches'});churches.forEach(function(c){chRow(c);});}
+  const quick=[];
+  allCities().forEach(function(v){if(v.toLowerCase().indexOf(ql)===0)quick.push({g:'cities',v:v,label:'Churches in <b>'+esc(v)+'</b>',icon:'pin'});});
+  allLangs().forEach(function(v){if(v.toLowerCase().indexOf(ql)===0)quick.push({g:'langs',v:v,label:'<b>'+esc(v)+'</b> services',icon:'globe'});});
+  DAY_ABBR.forEach(function(v){if(DAY_FULL[v].toLowerCase().indexOf(ql)===0&&ql.length>=2)quick.push({g:'days',v:v,label:'Services on <b>'+DAY_FULL[v]+'</b>',icon:'cal'});});
+  allMinistries().forEach(function(v){if(v.toLowerCase().indexOf(ql)>-1)quick.push({g:'ministries',v:v,label:'Churches with <b>'+esc(v)+'</b>',icon:'users'});});
+  if(quick.length){items.push({kind:'head',html:'Filters'});quick.slice(0,4).forEach(function(x){items.push({kind:'filter',g:x.g,v:x.v,html:ico(x.icon,15)+'<span>'+x.label+'</span>'});});}
+  items.push({kind:'search',html:ico('search',15)+'<span>Search all churches for “'+esc(q)+'”</span>'});
+  return items;
+}
+function buildSuggest(){
+  const box=document.getElementById('dirSuggest'),inp=document.getElementById('dirQ');if(!box||!inp)return;
+  const items=suggestItems(inp.value);
+  state.ui.sgItems=items;state.ui.sgIndex=-1;
+  let n=0;
+  box.innerHTML=items.map(function(it){
+    if(it.kind==='head')return '<div class="sg-head">'+it.html+'</div>';
+    const i=n++;
+    return '<button type="button" class="sg-item" role="option" id="sg-'+i+'" data-sg="'+i+'">'+it.html+'</button>';
+  }).join('');
+  box.hidden=!items.length;inp.setAttribute('aria-expanded',String(!box.hidden));
+}
+function hideSuggest(){const box=document.getElementById('dirSuggest'),inp=document.getElementById('dirQ');if(box)box.hidden=true;if(inp)inp.setAttribute('aria-expanded','false');}
+function pickSuggest(i){
+  const items=(state.ui.sgItems||[]).filter(function(x){return x.kind!=='head';}),it=items[i];if(!it)return;
+  const f=state.ui.dirFilters,inp=document.getElementById('dirQ');
+  hideSuggest();
+  if(it.kind==='church'){state.ui.churchTab='Posts';go('church-profile',{id:it.id,from:'churches'});return;}
+  if(it.kind==='filter'){
+    if(it.g==='live')f.live=true;else if(f[it.g].indexOf(it.v)<0)f[it.g].push(it.v);
+    f.q='';render();return;
+  }
+  f.q=inp?inp.value.trim():'';render();
+}
+function moveSuggest(d){
+  const opts=document.querySelectorAll('#dirSuggest .sg-item');if(!opts.length)return;
+  let i=(state.ui.sgIndex==null?-1:state.ui.sgIndex)+d;
+  if(i<0)i=opts.length-1;if(i>=opts.length)i=0;
+  state.ui.sgIndex=i;
+  opts.forEach(function(o,k){o.classList.toggle('on',k===i);o.setAttribute('aria-selected',String(k===i));});
+  const inp=document.getElementById('dirQ');if(inp)inp.setAttribute('aria-activedescendant','sg-'+i);
+  opts[i].scrollIntoView({block:'nearest'});
+}
+function restoreDirSearch(){
+  if(!state.ui.dirRefocus)return;state.ui.dirRefocus=false;
+  const inp=document.getElementById('dirQ');if(inp){inp.focus();const n=inp.value.length;inp.setSelectionRange(n,n);}
+}
+function filterSheet(){
+  const f=state.ui.draftFilters||state.ui.dirFilters;
+  const group=function(title,g,values,labels){
+    return '<div class="fs-group"><span class="label">'+title+'</span><div class="row gap-8 wrap">'+values.map(function(v,i){
+      const on=f[g].indexOf(v)>-1;
+      return '<button class="chip'+(on?' on':'')+'" data-act="df-toggle" data-g="'+g+'" data-v="'+esc(v)+'" aria-pressed="'+on+'">'+esc(labels?labels[i]:v)+'</button>';}).join('')+'</div></div>';
+  };
+  const count=filteredChurches(f).length;
+  return '<div class="row between"><span class="h2">Filter churches</span><button class="cap" data-act="df-draft-reset">Reset</button></div>'
+    +'<div class="fs-group mt-16"><span class="label">Sort by</span><div class="row gap-8 wrap">'
+    +[['popular','Most followed'],['az','Name A–Z'],['connected','Most connected'],['live','Live first']].map(function(s){
+      return '<button class="chip'+(f.sort===s[0]?' on':'')+'" data-act="df-sort" data-v="'+s[0]+'">'+s[1]+'</button>';}).join('')+'</div></div>'
+    +group('City','cities',allCities())
+    +group('Service language','langs',allLangs())
+    +group('Service day','days',DAY_ABBR,DAY_ABBR.map(function(d){return DAY_FULL[d];}))
+    +group('Time of day','times',TIME_SLOTS)
+    +group('Ministries','ministries',allMinistries())
+    +'<div class="fs-group"><span class="label">Show</span><div class="row gap-8 wrap">'
+    +'<button class="chip'+(f.live?' on':'')+'" data-act="df-live"><i class="dot-live"></i>Live now</button>'
+    +[['any','All churches'],['yes','Following'],['no','Not following yet']].map(function(x){
+      return '<button class="chip'+(f.following===x[0]?' on':'')+'" data-act="df-following" data-v="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div>'
+    +'<button class="btn btn-primary btn-block mt-16" data-act="df-apply"'+(count?'':' disabled')+'>'+(count?'Show '+count+' church'+(count===1?'':'es'):'No churches match')+'</button>';
 }
 function mapPanel(list){
   return '<div class="glass" style="height:210px;overflow:hidden;position:relative;margin-bottom:14px">'
@@ -1123,28 +1632,43 @@ function mapPanel(list){
     +list.slice(0,6).map(function(c,i){
       const x=14+((Math.abs(hash(c.id))%78)),y=16+((Math.abs(hash(c.name))%62));
       return '<button data-go="church-profile" data-id="'+c.id+'" style="position:absolute;left:'+x+'%;top:'+y+'%;transform:translate(-50%,-100%)" aria-label="'+esc(c.name)+'">'
-        +'<span style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;background:rgba(12,17,40,.85);border:1px solid rgba(0,163,225,.4);color:var(--brand);font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4)">'
+        +'<span style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;background:rgba(12,17,40,.85);border:1px solid rgba(0,163,225,.4);color:#38BDF1;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4)">'
         +ico('pin',13)+esc(c.name.split(' ')[0])+'</span></button>';}).join('')
-    +'<div style="position:absolute;left:14px;bottom:12px" class="cap">Prototype map · '+list.length+' churches in view</div></div>';
+    +'<div style="position:absolute;left:14px;bottom:12px;color:#B4BDCA" class="cap">Prototype map · '+list.length+' churches in view</div></div>';
 }
+/* Hovering a church lifts the card and opens its banner with timings, following and connections. */
 function churchCard(c,isLive){
-  const following=myChurchIds().indexOf(c.id)>-1;
   if(isChurchSession())return churchCardC2C(c,isLive);
-  return '<article class="glass press pad stack gap-14" data-go="church-profile" data-id="'+c.id+'">'
-    +'<div class="row between gap-12">'
-    +'<div class="row gap-14" style="min-width:0">'
+  const following=myChurchIds().indexOf(c.id)>-1,member=isMemberOf(c.id);
+  const conns=myConnections(c.id).length,comms=state.data.communities.filter(function(x){return x.churchId===c.id;}).length;
+  const pic=photoFor(c.id),svc=parseServices(c);
+  const next=svc.length?svc[0].label:((c.serviceTimes||[])[0]||'Service times inside');
+  return '<article class="church-card glass press" data-go="church-profile" data-id="'+c.id+'">'
+    +'<div class="cc-banner" aria-hidden="true"><div class="cc-banner-in">'
+      +'<div class="cc-img">'+(pic?'<img src="'+esc(pic)+'" alt="" loading="lazy">':coverArt(c.id))+'</div>'
+      +'<div class="cc-info">'
+        +'<div class="cc-times">'+(c.serviceTimes||[]).slice(0,3).map(function(t){return '<span>'+ico('clock',12)+esc(t)+'</span>';}).join('')+'</div>'
+        +'<div class="cc-stats"><span><b class="num">'+Number((c.followers||0)+(following?1:0)).toLocaleString('en-IN')+'</b> following</span>'
+        +'<span><b class="num">'+conns+'</b> connected '+(conns===1?'church':'churches')+'</span>'
+        +'<span><b class="num">'+comms+'</b> '+(comms===1?'community':'communities')+'</span></div>'
+      +'</div>'
+      +(isLive?'<span class="badge badge-live cc-live"><i class="dot-live"></i>Live now</span>':'')
+    +'</div></div>'
+    +'<div class="pad stack gap-14">'
+    +'<div class="row between gap-12"><div class="row gap-14" style="min-width:0">'
     +'<div class="avatar avatar-lg" style="background:'+grad(c.id)+';border-radius:20px">'+initials(c.name)+'</div>'
     +'<div class="stack gap-6" style="min-width:0">'
     +'<div class="row gap-6 wrap"><h3 class="h2" style="font-size:20px">'+esc(c.name)+'</h3>'+(c.verified!==false?'<span class="accent" style="display:flex;align-self:center">'+ico('shield',15)+'</span>':'')+'</div>'
-    +'<span class="cap">'+esc(c.denomination||'')+' · '+esc(c.city||'')+'</span>'
+    +'<span class="cap">'+esc(c.city||'')+(c.pastorName?' · '+esc(c.pastorName):'')+'</span>'
     +'<div class="row gap-6 wrap">'+(isLive?'<span class="badge badge-live"><i class="dot-live"></i>Live</span>':'')
+    +(member?'<span class="badge badge-mint">'+ico('check',11)+'Member</span>':'')
     +(c.languages||[]).slice(0,3).map(function(l){return '<span class="badge badge-ice">'+esc(l)+'</span>';}).join('')+'</div>'
     +'</div></div></div>'
     +'<p class="body" style="font-size:14.5px">'+esc(c.tagline||'')+'</p>'
     +'<div class="row between gap-12">'
-    +'<span class="cap row gap-6">'+ico('clock',14)+esc((c.serviceTimes||[])[0]||'Service times inside')+'</span>'
+    +'<span class="cap row gap-6">'+ico('clock',14)+esc(next)+'</span>'
     +'<button class="btn btn-xs '+(following?'btn-ghost':'btn-outline')+'" data-act="follow" data-id="'+c.id+'">'+(following?ico('check',14)+'Following':ico('plus',14)+'Follow')+'</button>'
-    +'</div></article>';
+    +'</div></div></article>';
 }
 /* the same card seen through a church account: connect / message instead of follow */
 function c2cButtons(c,size){
@@ -1165,7 +1689,7 @@ function churchCardC2C(c,isLive){
     +'<div class="avatar avatar-lg" style="background:'+grad(c.id)+';border-radius:20px">'+initials(c.name)+'</div>'
     +'<div class="stack gap-6" style="min-width:0">'
     +'<div class="row gap-6 wrap"><h3 class="h2" style="font-size:20px">'+esc(c.name)+'</h3>'+(c.verified!==false?'<span class="accent" style="display:flex;align-self:center">'+ico('shield',15)+'</span>':'')+'</div>'
-    +'<span class="cap">'+esc(c.denomination||'')+' · '+esc(c.city||'')+' · '+esc(c.pastorName||'')+'</span>'
+    +'<span class="cap">'+esc(c.city||'')+' · '+esc(c.pastorName||'')+'</span>'
     +'<div class="row gap-6 wrap">'+(isLive?'<span class="badge badge-live"><i class="dot-live"></i>Live</span>':'')
     +'<span class="badge badge-ice num">'+myConnections(c.id).length+' connections</span>'+(shared?'<span class="badge badge-accent num">'+shared+' shared</span>':'')+'</div>'
     +'</div></div></div>'
@@ -1184,7 +1708,6 @@ function viewChurchProfile(){
   const conns=myConnections(c.id).map(churchById).filter(Boolean);
   const evs=upcomingEvents().filter(function(e){return e.churchId===c.id;});
   const serms=posts.filter(function(p){return p.type==='sermon';});
-  const camps=state.data.campaigns.filter(function(g){return g.churchId===c.id;});
   const live=liveEvents().filter(function(e){return e.churchId===c.id;})[0];
   let body='';
   if(tab==='Posts')body=posts.length?'<div class="stack gap-14 stagger">'+posts.map(function(p){return postCard(p);}).join('')+'</div>':empty('edit','No posts yet','When this church publishes, it will appear here.');
@@ -1195,13 +1718,12 @@ function viewChurchProfile(){
         +'<span class="stack gap-3" style="min-width:0"><span class="h3">'+esc(p.title||'Message')+'</span>'
         +'<span class="cap">'+esc(p.speaker||c.pastorName||'')+' · '+fmtDate(p.createdAt)+' · '+esc(p.duration||'38 min')+'</span></span></span>'
         +ico('chevR',18)+'</button>';}).join('')+'</div>':empty('mic','Sermon library is filling up','Recorded messages appear here with transcript and summary.');
-  else if(tab==='Groups')body='<div class="stack gap-12">'+(c.ministries||['Worship','Youth','Prayer']).map(function(m,i){
-      return '<div class="glass pad-sm row between gap-12"><span class="row gap-12">'
-        +'<span class="avatar avatar-sm" style="background:'+grad(m+i)+'">'+initials(m)+'</span>'
-        +'<span class="stack gap-2"><span class="h3">'+esc(m)+'</span><span class="cap num">'+(12+(Math.abs(hash(m))%40))+' members · meets weekly</span></span></span>'
-        +'<button class="btn btn-xs btn-ghost" data-act="join-group" data-v="'+esc(m)+'">Request</button></div>';}).join('')+'</div>';
-  else if(tab==='Giving')body=camps.length?'<div class="stack gap-12">'+camps.map(campaignCard).join('')+'</div>'
-      :empty('gift','No active campaigns','This church has not opened a giving campaign yet.');
+  else if(tab==='Communities'){
+    const comms=state.data.communities.filter(function(x){return x.churchId===c.id;});
+    body=comms.length?'<div class="stack gap-12">'+comms.map(communityCard).join('')+'</div>'
+      +(following||church?'':'<p class="cap mt-12">Follow '+esc(c.name)+' to ask to join its communities.</p>')
+      :empty('users','No communities yet','When '+c.name+' starts a community, it appears here.');
+  }
   else body='<div class="stack gap-14">'
       +'<div class="glass pad stack gap-12"><span class="eyebrow accent">About</span><p class="body">'+esc(c.about||c.tagline||'')+'</p></div>'
       +'<div class="glass pad stack gap-14"><span class="eyebrow accent">Service times</span>'
@@ -1243,9 +1765,8 @@ function viewChurchProfile(){
         +'<button class="btn btn-sm btn-ghost" data-act="home-church" data-id="'+c.id+'">'+ico(home?'check':'star',16)+(home?'Home church':'Set as home')+'</button>'
         +'<button class="icon-btn" data-act="church-msg" data-id="'+c.id+'" aria-label="Message">'+ico('msg',17)+'</button>'
         +'<button class="icon-btn" data-act="share-church" data-id="'+c.id+'" aria-label="Share">'+ico('share',17)+'</button></div>')
-    +(camps.length?'<button class="btn btn-sm btn-outline btn-block" data-go="campaign" data-id="'+camps[0].id+'">'+ico('gift',16)+'Give to '+esc(camps[0].title)+'</button>':'')
     +'</div>'
-    +'<div class="tabs mt-16">'+['Posts','Events','Sermons','Groups','Giving','About'].map(function(t){
+    +'<div class="tabs mt-16">'+['Posts','Events','Sermons','Communities','About'].map(function(t){
         return '<button class="tab'+(tab===t?' on':'')+'" data-act="church-tab" data-v="'+t+'">'+t+'</button>';}).join('')+'</div>'
     +'<div class="mt-16">'+body+'</div><div style="height:36px"></div></div></div>';
 }
@@ -1377,39 +1898,128 @@ function meAsPerson(){
     following:myChurchIds().length,joinedAt:s.createdAt};
 }
 
-/* ---------- moments (stories) ---------- */
-function viewMoment(){
-  const src=momentSources(),m=src[state.ui.momentIndex||0];
-  if(!m)return '';
-  const i=state.ui.momentPost||0,p=m.posts[Math.min(i,m.posts.length-1)];
-  const a=m.author,reacted=state.local.reacted[p.id];
-  return '<div class="story">'
-    +'<div class="story-bars">'+m.posts.map(function(x,k){
-      return '<span class="story-bar'+(k<i?' done':k===i?' now':'')+'"><i></i></span>';}).join('')+'</div>'
-    +'<div class="row between gap-12" style="padding:6px 16px 0">'
-    +'<button class="row gap-10" data-go="'+(a.type==='person'?'person-profile':'church-profile')+'" data-id="'+esc(a.id)+'" style="text-align:left">'
-    +'<span class="avatar avatar-sm" style="background:'+grad(a.seed)+'">'+initials(a.name)+'</span>'
-    +'<span class="stack gap-2"><span class="h3" style="font-size:14px">'+esc(a.name)+'</span>'
-    +'<span class="cap">'+ago(p.createdAt)+'</span></span></button>'
-    +'<div class="row gap-8">'+(m.live?'<span class="badge badge-live"><i class="dot-live"></i>Live</span>':'')
-    +'<button class="icon-btn" data-act="close-moment" aria-label="Close">'+ico('x',18)+'</button></div></div>'
-    +'<div class="story-body">'
-    +(hasMedia(p)?'<div style="position:absolute;inset:0;opacity:.5">'+mediaInner(p)+'</div>'
-      +'<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,8,19,.55),rgba(5,8,19,.9))"></div>':'')
-    +'<div class="story-nav"><button data-act="moment-prev" aria-label="Previous"></button><button data-act="moment-next" aria-label="Next"></button></div>'
-    +'<div class="aurora" style="height:60vh;opacity:.5"></div>'
-    +'<div class="stack gap-18" style="position:relative;z-index:2;max-width:560px;margin:0 auto;width:100%">'
-    +(p.title?'<h1 class="display" style="font-size:32px">'+esc(p.title)+'</h1>':'')
-    +'<p class="scripture" style="font-size:21px">'+esc(p.content||'')+'</p>'
-    +(p.verseRef?'<span class="verse-ref">'+esc(p.verseRef)+'</span>':'')
-    +(p.live?'':'<div class="row gap-8 wrap" style="position:relative;z-index:3">'
-    +REACTIONS.map(function(r){
-      return '<button class="react'+(reacted===r.k?' on':'')+'" data-act="react" data-id="'+p.id+'" data-k="'+r.k+'"><span class="em">'+r.e+'</span></button>';}).join('')
-    +'</div>')+'</div></div>'
-    +'<div class="row gap-10" style="padding:14px 16px calc(16px + env(safe-area-inset-bottom));position:relative;z-index:3">'
-    +(p.live?'':'<button class="btn btn-ghost btn-sm grow" data-go="church-profile" data-id="'+esc(a.id)+'">'+ico('church',16)+'Visit church</button>')
-    +(m.live?'<button class="btn btn-primary btn-sm grow" data-act="join-live" data-id="'+esc(p.eventId||(liveEvents().find(function(e){return e.churchId===a.id;})||{}).id||'')+'">'+ico('play',16)+'Join the stream</button>':'')
-    +'</div></div>';
+/* ---------- overlays: stories and news articles ----------
+   Both open above the current screen, which stays in place behind a soft blur. They render into
+   their own layer and only redraw when what they show changes, so a toast or a reaction never
+   restarts a story's progress or stops an article's audio mid-song. */
+const STORY_MS=6000;
+const STORY={elapsed:0,last:0,raf:0,paused:false,held:false};
+function currentStory(){
+  const st=state.ui.story;if(!st)return null;
+  const src=momentSources(),m=src[st.i];if(!m)return null;
+  const p=m.posts[Math.min(st.p,m.posts.length-1)];
+  return {src:src,m:m,p:p};
+}
+function markSeen(m){const k=m.author.type+':'+m.author.id;if((state.local.seenMoments||[]).indexOf(k)<0){state.local.seenMoments.push(k);saveLocal();}}
+function storyTick(now){
+  if(!state.ui.story){STORY.raf=0;return;}
+  const dtms=STORY.last?Math.min(100,now-STORY.last):0;STORY.last=now;
+  if(!STORY.paused&&!STORY.held&&!document.hidden)STORY.elapsed+=dtms;
+  const bar=document.querySelector('.story-bar.now i');
+  if(bar)bar.style.width=Math.min(100,STORY.elapsed/STORY_MS*100)+'%';
+  if(STORY.elapsed>=STORY_MS){storyStep(1);}
+  STORY.raf=requestAnimationFrame(storyTick);
+}
+function startStory(){STORY.elapsed=0;STORY.last=0;if(!STORY.raf)STORY.raf=requestAnimationFrame(storyTick);}
+function stopStory(){if(STORY.raf)cancelAnimationFrame(STORY.raf);STORY.raf=0;STORY.paused=false;STORY.held=false;}
+function storyStep(dir){
+  const cur=currentStory();if(!cur)return closeStory();
+  const st=state.ui.story;
+  if(dir>0){
+    if(st.p+1<cur.m.posts.length)st.p++;
+    else if(st.i+1<cur.src.length){st.i++;st.p=0;markSeen(cur.src[st.i]);}
+    else return closeStory();
+  }else{
+    if(STORY.elapsed>1500){STORY.elapsed=0;return;}
+    if(st.p>0)st.p--;
+    else if(st.i>0){st.i--;st.p=0;}
+  }
+  STORY.elapsed=0;syncOverlay();
+}
+function closeStory(){stopStory();state.ui.story=null;state.ui.fx=null;syncOverlay();render();}
+function viewStoryOverlay(){
+  const cur=currentStory();if(!cur)return '';
+  const m=cur.m,p=cur.p,a=m.author,st=state.ui.story,reacted=state.local.reacted[p.id];
+  const pic=photoFor(a.id);
+  return '<div class="ov ov-story'+(state.ui.fx==='story'?' enter':'')+'" role="dialog" aria-modal="true" aria-label="'+esc(a.name)+' story">'
+    +'<div class="ov-bg" data-act="close-story"></div>'
+    +'<button class="story-arrow prev" data-act="story-prev" aria-label="Previous story"'+(st.i===0&&st.p===0?' disabled':'')+'>'+ico('chevL',22)+'</button>'
+    +'<div class="story-card" id="storyCard">'
+      +'<div class="story-media">'+(hasMedia(p)?mediaInner(p):coverArt(p.id))+'</div><div class="story-shade"></div>'
+      +'<div class="story-top"><div class="story-bars">'+m.posts.map(function(x,k){
+          return '<span class="story-bar'+(k<st.p?' done':k===st.p?' now':'')+'"><i'+(k===st.p?' style="width:'+Math.min(100,STORY.elapsed/STORY_MS*100).toFixed(2)+'%"':'')+'></i></span>';}).join('')+'</div>'
+        +'<div class="row between gap-10">'
+        +'<button class="row gap-10 story-author" data-go="church-profile" data-id="'+esc(a.id)+'">'
+        +'<span class="avatar avatar-sm" style="background:'+(pic?'#282828 url('+pic+') center/cover':grad(a.seed))+'">'+(pic?'':initials(a.name))+'</span>'
+        +'<span class="stack gap-2" style="text-align:left"><span class="story-name">'+esc(a.name)+(a.verified?' '+ico('shield',13):'')+'</span>'
+        +'<span class="story-time">'+(p.live?'Streaming now':ago(p.createdAt))+'</span></span></button>'
+        +'<span class="row gap-6">'+(m.live?'<span class="badge badge-live"><i class="dot-live"></i>Live</span>':'')
+        +'<button class="story-icon" data-act="story-pause" aria-label="'+(STORY.paused?'Play':'Pause')+'">'+(STORY.paused?ico('play',17):'<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1"/><rect x="13.5" y="5" width="4" height="14" rx="1"/></svg>')+'</button>'
+        +'<button class="story-icon" data-act="close-story" aria-label="Close">'+ico('x',18)+'</button></span></div></div>'
+      +'<div class="story-tap" aria-hidden="true"><span data-act="story-prev"></span><span data-act="story-next"></span></div>'
+      +'<div class="story-content">'
+        +(p.title?'<h2 class="story-title">'+esc(p.title)+'</h2>':'')
+        +'<p class="story-text">'+esc(p.content||'')+'</p>'
+        +(p.verseRef?'<span class="story-verse">'+esc(p.verseRef)+'</span>':'')
+      +'</div>'
+      +'<div class="story-actions">'
+        +(p.live
+          ?'<button class="btn btn-primary btn-sm grow" data-act="join-live" data-id="'+esc(p.eventId||'')+'">'+ico('play',16)+'Join the stream</button>'
+          :'<div class="story-reacts">'+REACTIONS.map(function(r){
+              return '<button class="sr'+(reacted===r.k?' on':'')+'" data-act="react" data-id="'+esc(p.id)+'" data-k="'+r.k+'" aria-label="'+r.l+'" aria-pressed="'+(reacted===r.k)+'">'+r.e+'</button>';}).join('')+'</div>')
+        +'<button class="story-icon share" data-act="share-story" data-id="'+esc(p.id)+'" aria-label="Share">'+ico('share',18)+'</button>'
+      +'</div>'
+    +'</div>'
+    +'<button class="story-arrow next" data-act="story-next" aria-label="Next story">'+ico('chevR',22)+'</button>'
+    +'</div>';
+}
+function viewNewsOverlay(){
+  const n=newsById(state.ui.news);if(!n)return '';
+  const when=new Date(Date.now()-n.ageHours*3600e3).toISOString();
+  const block=function(b){
+    if(b.t==='p')return '<p class="art-p">'+esc(b.x)+'</p>';
+    if(b.t==='h')return '<h2 class="art-h">'+esc(b.x)+'</h2>';
+    if(b.t==='quote')return '<blockquote class="art-quote"><p>“'+esc(b.x)+'”</p><cite>'+esc(b.by||'')+'</cite></blockquote>';
+    if(b.t==='img')return '<figure class="art-fig"><img src="'+esc(newsImg(b.src))+'" alt="'+esc(b.cap||'')+'" loading="lazy">'+(b.cap?'<figcaption>'+esc(b.cap)+'</figcaption>':'')+'</figure>';
+    if(b.t==='audio')return '<figure class="art-audio"><div class="row gap-12"><span class="art-audio-ico">'+ico('music',20)+'</span>'
+      +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:15px">'+esc(b.title||'Listen')+'</span><span class="cap">'+esc(b.credit||'')+'</span></span></div>'
+      +'<audio controls preload="metadata" src="'+esc(b.src)+'">Your browser cannot play this audio.</audio></figure>';
+    if(b.t==='video')return '<figure class="art-fig art-video'+(b.portrait?' portrait':'')+'"><video controls playsinline preload="metadata">'
+      +(b.srcs||[]).map(function(s){return '<source src="'+esc(s.src)+'" type="'+esc(s.type)+'">';}).join('')
+      +'Your browser cannot play this video.</video><figcaption>'+esc(b.cap||'')+(b.credit?' <span class="art-credit">'+esc(b.credit)+'</span>':'')+'</figcaption></figure>';
+    return '';
+  };
+  return '<div class="ov ov-article'+(state.ui.fx==='news'?' enter':'')+'" role="dialog" aria-modal="true" aria-label="'+esc(n.title)+'">'
+    +'<div class="ov-bg" data-act="close-news"></div>'
+    +'<article class="art">'
+      +'<div class="art-bar">'+newsroomMark()
+      +'<span class="row gap-8"><button class="icon-btn" data-act="share-news" data-id="'+n.id+'" aria-label="Share this story">'+ico('share',17)+'</button>'
+      +'<button class="icon-btn" data-act="close-news" aria-label="Close">'+ico('x',18)+'</button></span></div>'
+      +'<div class="art-scroll" id="artScroll">'
+        +'<div class="art-cover"><img src="'+esc(newsImg(n.cover))+'" alt=""></div>'
+        +'<div class="art-body">'
+          +'<span class="eyebrow accent">'+esc(n.cat)+'</span>'
+          +'<h1 class="art-title">'+esc(n.title)+'</h1>'
+          +'<p class="art-dek">'+esc(n.dek)+'</p>'
+          +'<div class="art-byline">'+arkGlyph(22)+'<span><b>believersArk Newsroom</b><br>'+fmtDate(when)+' · '+n.readMins+' min read</span></div>'
+          +n.blocks.map(block).join('')
+          +'<div class="art-foot"><button class="btn btn-primary" data-act="share-news" data-id="'+n.id+'">'+ico('share',16)+'Share this story</button>'
+          +'<p class="cap">Published by the believersArk team. Reactions and comments are off for newsroom stories.</p></div>'
+        +'</div>'
+      +'</div>'
+    +'</article></div>';
+}
+/* Redraws the overlay layer only when its content key changes. */
+function syncOverlay(){
+  const root=layer('overlay-root');
+  let key='',html='';
+  const cur=currentStory();
+  if(state.ui.story&&cur){key='s:'+state.ui.story.i+':'+state.ui.story.p+':'+(state.local.reacted[cur.p.id]||'')+':'+(STORY.paused?1:0);html=viewStoryOverlay();}
+  else if(state.ui.news){key='n:'+state.ui.news;html=viewNewsOverlay();}
+  if(root.dataset.key===key)return;
+  root.dataset.key=key;root.innerHTML=html;
+  document.documentElement.classList.toggle('ov-open',!!key);
+  if(state.ui.fx&&key)setTimeout(function(){state.ui.fx=null;},450);
 }
 
 /* ---------- notifications ---------- */
@@ -1485,7 +2095,6 @@ function journeyItems(){
   (state.local.milestones||[]).forEach(function(m){items.push({t:m.date,k:'milestone',title:m.title,sub:m.note||'Milestone'});});
   (state.local.rsvps||[]).forEach(function(id){const e=state.data.events.find(function(x){return x.id===id;});
     if(e)items.push({t:e.datetime,k:'event',title:e.title,sub:'RSVP · '+(e.churchName||''),id:e.id});});
-  (state.local.giving||[]).forEach(function(g){items.push({t:g.date,k:'giving',title:'Gave '+money(g.amount),sub:g.campaign});});
   (state.local.journal||[]).slice(0,6).forEach(function(j){items.push({t:j.date,k:'journal',title:j.answered?'Answered prayer':'Journal entry',sub:j.text.slice(0,70)});});
   if(state.local.lastRead)items.push({t:state.local.lastRead,k:'read',title:'Daily reading complete',sub:(myPlan()||{}).title||'Reading plan'});
   return items.sort(function(a,b){return dt(b.t)-dt(a.t);});
@@ -1500,7 +2109,7 @@ function calendarCard(items){
   const marks={};
   items.forEach(function(i){const k=key(dt(i.t));marks[k]=marks[k]||[];if(marks[k].indexOf(i.k)<0)marks[k].push(i.k);});
   upcomingEvents().forEach(function(e){if(myChurchIds().indexOf(e.churchId)<0)return;const k=key(dt(e.datetime));marks[k]=marks[k]||[];if(marks[k].indexOf('church')<0)marks[k].push('church');});
-  const tone={event:'var(--brand)',church:'var(--ice)',read:'var(--mint)',journal:'var(--rose)',milestone:'var(--brand)',giving:'var(--mint)'};
+  const tone={event:'var(--brand)',church:'var(--ice)',read:'var(--mint)',journal:'var(--rose)',milestone:'var(--brand)'};
   const sel=state.ui.calDay;
   let cells='';
   for(let i=0;i<start;i++)cells+='<span class="day dim">'+(prevDays-start+i+1)+'</span>';
@@ -1528,7 +2137,7 @@ function calendarCard(items){
     +'<span class="h3">'+['January','February','March','April','May','June','July','August','September','October','November','December'][m]+' <span class="dim num">'+y+'</span></span>'
     +'<button class="icon-btn" data-act="cal-nav" data-v="1" aria-label="Next month" style="width:34px;height:34px">'+ico('chevR',16)+'</button></div>'
     +'<div class="cal">'+['M','T','W','T','F','S','S'].map(function(d){return '<span class="dow">'+d+'</span>';}).join('')+cells+'</div>'
-    +'<div class="row gap-12 wrap cap" style="font-size:11px">'+[['var(--brand)','Going'],['var(--ice)','Your churches'],['var(--mint)','Reading · giving'],['var(--rose)','Journal']].map(function(l){
+    +'<div class="row gap-12 wrap cap" style="font-size:11px">'+[['var(--brand)','Going'],['var(--ice)','Your churches'],['var(--mint)','Reading'],['var(--rose)','Journal']].map(function(l){
       return '<span class="row gap-6"><i style="width:7px;height:7px;border-radius:50%;background:'+l[0]+'"></i>'+l[1]+'</span>';}).join('')+'</div>'
     +dayList+'</div>';
 }
@@ -1647,42 +2256,52 @@ function journeyFamily(){
       return '<div style="min-width:140px;padding:16px;border-radius:var(--r-md);background:'+grad('kid'+i)+';color:#FFFFFF">'
         +'<div style="opacity:.85">'+ico(k[1],20)+'</div><div class="h3" style="margin-top:8px;color:#FFFFFF">'+k[0]+'</div></div>';}).join('')+'</div></div></div>';
 }
-/* ---------- community ---------- */
+/* ---------- community ----------
+   Communities are made by church admins. Believers see only the communities of churches they
+   follow, ask to join, and are let in when an admin approves. */
+function joinButton(c,size){
+  const st=memberStatus(c.id),cls='btn '+(size||'btn-xs');
+  if(st==='approved')return '<button class="'+cls+' btn-ghost" data-act="leave-community" data-id="'+c.id+'">'+ico('check',13)+'Joined</button>';
+  if(st==='pending')return '<button class="'+cls+' btn-ghost pending" data-act="cancel-community" data-id="'+c.id+'" title="Tap to withdraw your request">'+ico('clock',13)+'Requested</button>';
+  return '<button class="'+cls+' btn-outline" data-act="join-community" data-id="'+c.id+'">'+ico('plus',13)+'Request to join</button>';
+}
+function communityIcon(c,size){
+  const s=size||48;
+  return '<span class="cm-ico" style="width:'+s+'px;height:'+s+'px;color:hsl('+c.hue+',60%,42%);background:hsla('+c.hue+',70%,60%,.13);border-color:hsla('+c.hue+',60%,50%,.3)">'+ico(c.icon||'users',Math.round(s*.44))+'</span>';
+}
 function communityCard(c){
-  const joined=myCommunityIds().indexOf(c.id)>-1;
-  const n=communityThreads(c.id).length;
+  const ch=churchById(c.churchId)||{},n=communityThreads(c.id).length,st=memberStatus(c.id);
   return '<article class="glass press pad row between gap-14" data-go="community-page" data-id="'+c.id+'" style="overflow:hidden">'
-    +'<div class="row gap-14" style="min-width:0">'
-    +'<span class="icon-btn" style="flex:none;width:48px;height:48px;border-radius:16px;color:hsl('+c.hue+',80%,74%);border-color:hsla('+c.hue+',80%,70%,.4);background:hsla('+c.hue+',80%,70%,.12)">'+ico(c.icon||'users',21)+'</span>'
+    +'<div class="row gap-14" style="min-width:0">'+communityIcon(c,48)
     +'<div class="stack gap-3" style="min-width:0"><span class="h3">'+esc(c.name)+'</span>'
     +'<span class="cap" style="display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">'+esc(c.tagline||'')+'</span>'
-    +'<span class="cap num" style="font-size:11px">'+Number(c.members||0).toLocaleString('en-IN')+' members · '+n+' conversation'+(n===1?'':'s')+'</span></div></div>'
-    +'<button class="btn btn-xs '+(joined?'btn-ghost':'btn-outline')+'" data-act="join-community" data-id="'+c.id+'" style="flex:none">'+(joined?ico('check',13)+'Joined':'Join')+'</button></article>';
+    +'<span class="cap num" style="font-size:11px">'+ico('church',11)+' '+esc(ch.name||'')+' · '+communityMemberCount(c)+' members'+(st==='approved'?' · '+n+' conversation'+(n===1?'':'s'):'')+'</span></div></div>'
+    +'<span style="flex:none">'+joinButton(c)+'</span></article>';
 }
 function viewCommunity(){
-  const camps=state.data.campaigns,joined=myCommunityIds();
-  const mine=state.data.communities.filter(function(c){return joined.indexOf(c.id)>-1;});
-  const others=state.data.communities.filter(function(c){return joined.indexOf(c.id)<0;});
-  const recent=communityThreads().filter(function(p){return joined.indexOf(p.communityId)>-1;}).slice(0,3);
+  const vis=visibleCommunities();
+  const joined=vis.filter(function(c){return memberStatus(c.id)==='approved';});
+  const pending=vis.filter(function(c){return memberStatus(c.id)==='pending';});
+  const others=vis.filter(function(c){return memberStatus(c.id)==='none'||memberStatus(c.id)==='withdrawn'||memberStatus(c.id)==='left'||memberStatus(c.id)==='declined';});
+  const recent=communityThreads().filter(function(p){return joined.some(function(c){return c.id===p.communityId;});}).slice(0,3);
+  const byChurch={};others.forEach(function(c){(byChurch[c.churchId]=byChurch[c.churchId]||[]).push(c);});
   const tiles=[
-    {i:'news',l:'Christian news',d:'Curated sources · the underreported section'},
     {i:'music',l:'Worship music',d:'Lyrics, chords, transpose, set-list builder'},
     {i:'bag',l:'Marketplace',d:'Verified businesses, speakers, AV and sound'}
   ];
-  return topbar('Community','Beyond your four walls',{
-    extra:'<button class="glass press pad row between gap-16 mt-16" data-go="biblegpt" style="text-align:left;border-color:rgba(192,143,208,.34)">'
-      +'<span class="row gap-14"><span class="icon-btn" style="color:var(--lavender);border-color:rgba(192,143,208,.4);background:rgba(192,143,208,.12)">'+ico('sparkle',20)+'</span>'
-      +'<span class="stack gap-3"><span class="h2" style="font-size:20px">BibleGPT</span><span class="cap">Ask, study, summarise, translate — always with sources</span></span></span>'
-      +ico('chevR',20)+'</button>'})
+  const noChurch=!myChurchIds().length;
+  return topbar('Community','Your churches, gathered',{})
     +'<div class="view stack">'
-    +(mine.length?'<div class="sec-title"><span class="eyebrow accent">Your communities</span><span class="cap num">'+mine.length+' joined</span></div>'
-      +'<div class="stack gap-12 stagger">'+mine.map(communityCard).join('')+'</div>':'')
+    +(noChurch?empty('church','Follow a church to see its communities','Communities are started by church admins and open to the people who follow that church.','<button class="btn btn-sm btn-primary" data-go="churches">Find your church</button>'):'')
+    +(joined.length?'<div class="sec-title"><span class="eyebrow accent">Your communities</span><span class="cap num">'+joined.length+' joined</span></div>'
+      +'<div class="stack gap-12 stagger">'+joined.map(communityCard).join('')+'</div>':'')
+    +(pending.length?'<div class="sec-title"><span class="eyebrow accent">Waiting for approval</span><span class="cap">A church admin will review your request</span></div>'
+      +'<div class="stack gap-12">'+pending.map(communityCard).join('')+'</div>':'')
     +(recent.length?'<div class="sec-title"><span class="eyebrow accent">New in your communities</span></div><div class="stack gap-14 stagger">'+recent.map(function(p){return postCard(p);}).join('')+'</div>':'')
-    +'<div class="sec-title"><span class="eyebrow accent">'+(mine.length?'More communities':'Communities')+'</span><span class="cap">Believers talk here</span></div>'
-    +(others.length?'<div class="stack gap-12 stagger">'+others.map(communityCard).join('')+'</div>':'<p class="cap">You have joined every community on the ark.</p>')
-    +'<div class="sec-title"><span class="eyebrow accent">Giving campaigns · across churches</span></div>'
-    +(camps.length?'<div class="stack gap-12 stagger">'+camps.map(campaignCard).join('')+'</div>'
-      :empty('gift','No campaigns yet','Cross-church campaigns will appear here.'))
+    +Object.keys(byChurch).map(function(cid){const ch=churchById(cid)||{};
+      return '<div class="sec-title"><span class="eyebrow accent">At '+esc(ch.name||'your church')+'</span><button class="cap" data-go="church-profile" data-id="'+cid+'">View church</button></div>'
+        +'<div class="stack gap-12 stagger">'+byChurch[cid].map(communityCard).join('')+'</div>';}).join('')
+    +(!noChurch&&!vis.length?empty('users','No communities yet','Your churches haven\'t started any communities. Church admins can create them from their console.'):'')
     +'<div class="sec-title"><span class="eyebrow accent">Coming to the ark</span></div>'
     +'<div class="stack gap-12">'+tiles.map(function(t){
       return '<button class="glass press pad row between gap-14" data-act="soon" data-v="'+esc(t.l)+'" style="text-align:left;overflow:hidden">'
@@ -1694,71 +2313,60 @@ function viewCommunity(){
 function viewCommunityPage(){
   const c=communityById(state.params.id);
   if(!c)return '<div class="view screen-pad">'+empty('users','Community not found','It may have been archived.','<button class="btn btn-sm btn-ghost" data-go="community">Communities</button>')+'</div>';
-  const joined=myCommunityIds().indexOf(c.id)>-1;
+  const ch=churchById(c.churchId)||{},follows=myChurchIds().indexOf(c.churchId)>-1;
+  const st=memberStatus(c.id),joined=st==='approved';
   const threads=communityThreads(c.id);
   const sort=state.ui.threadSort||'Latest';
   const list=sort==='Most amen'?threads.slice().sort(function(a,b){return reactionTotal(b)-reactionTotal(a);}):threads;
-  return '<div class="view" style="padding-top:14px">'
+  const head='<div class="view" style="padding-top:14px">'
     +'<button class="row gap-6 cap mt-8" data-go="community" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+'Communities</button>'
-    +'<div class="cover" style="height:140px">'+coverArt(c.id)+'</div>'
+    +'<div class="cover" style="height:140px">'+(photoFor(c.churchId)?'<img src="'+esc(photoFor(c.churchId))+'" alt="" style="width:100%;height:100%;object-fit:cover;display:block">':coverArt(c.id))+'</div>'
     +'<div class="glass pad stack gap-16" style="margin-top:-34px;position:relative">'
-    +'<div class="row between gap-12" style="margin-top:-44px"><span class="icon-btn" style="width:66px;height:66px;border-radius:22px;border:3px solid var(--bg-1);color:hsl('+c.hue+',80%,74%);background:hsla('+c.hue+',60%,40%,.9)">'+ico(c.icon||'users',28)+'</span>'
-    +'<span class="badge badge-ice num">'+Number(c.members||0).toLocaleString('en-IN')+' members</span></div>'
+    +'<div class="row between gap-12" style="margin-top:-44px"><span class="cm-ico lg" style="color:hsl('+c.hue+',60%,42%);background:var(--bg-0);border-color:hsla('+c.hue+',60%,50%,.35)">'+ico(c.icon||'users',28)+'</span>'
+    +'<span class="badge badge-ice num">'+communityMemberCount(c)+' members</span></div>'
     +'<div class="stack gap-8"><h1 class="h1">'+esc(c.name)+'</h1><p class="body">'+esc(c.about||c.tagline||'')+'</p>'
-    +'<div class="row gap-8 wrap cap">'+ico('shield',14,'accent')+'<span>Moderated by '+esc((c.mods||[]).join(', ')||'community leaders')+'</span></div></div>'
-    +'<div class="row gap-10">'
-    +'<button class="btn btn-sm '+(joined?'btn-ghost':'btn-primary')+' grow" data-act="join-community" data-id="'+c.id+'">'+(joined?ico('check',16)+'Joined':ico('plus',16)+'Join community')+'</button>'
-    +(joined?'<button class="btn btn-sm btn-outline" data-act="new-thread" data-id="'+c.id+'">'+ico('edit',16)+'Start a conversation</button>':'')+'</div></div>'
-    +'<div class="sec-title"><span class="eyebrow accent">Conversations · '+threads.length+'</span>'
-    +'<span class="row gap-6">'+['Latest','Most amen'].map(function(s){return '<button class="chip'+(sort===s?' on':'')+'" data-act="thread-sort" data-v="'+s+'" style="height:28px;padding:0 10px;font-size:11.5px">'+s+'</button>';}).join('')+'</span></div>'
-    +(list.length?'<div class="stack gap-14 stagger">'+list.map(function(p){return postCard(p);}).join('')+'</div>'
-      :empty('msg','Quiet for now',joined?'Start the first conversation — a question is a fine way to begin.':'Join to start the first conversation.',
-        joined?'<button class="btn btn-sm btn-primary" data-act="new-thread" data-id="'+c.id+'">Start a conversation</button>':''))
-    +'<div style="height:36px"></div></div>';
-}
-function campaignCard(g){
-  const pct=Math.min(100,Math.round((g.raised/g.goal)*100));
-  return '<article class="glass press pad stack gap-14" data-go="campaign" data-id="'+g.id+'">'
-    +'<div class="row between gap-12"><div class="stack gap-4" style="min-width:0">'
-    +'<span class="eyebrow accent">'+esc(g.category||'Campaign')+'</span>'
-    +'<h3 class="h2" style="font-size:20px">'+esc(g.title)+'</h3>'
-    +'<span class="cap">'+esc(g.churchName||'')+'</span></div>'
-    +'<span class="badge badge-mint num">'+pct+'%</span></div>'
-    +'<div class="progress"><i style="width:'+pct+'%"></i></div>'
-    +'<div class="row between"><span class="h3 accent num">'+money(g.raised)+'</span><span class="cap num">of '+money(g.goal)+'</span></div></article>';
-}
-function viewCampaign(){
-  const g=state.data.campaigns.find(function(x){return x.id===state.params.id;})||state.data.campaigns[0];
-  if(!g)return '<div class="view screen-pad">'+empty('gift','Campaign not found','It may have closed.','<button class="btn btn-sm btn-ghost" data-go="community">Community</button>')+'</div>';
-  const pct=Math.min(100,Math.round((g.raised/g.goal)*100));
-  const amounts=[500,1000,2500,5000];
-  const mine=(state.local.giving||[]).filter(function(x){return x.campaignId===g.id;});
-  return '<div class="view" style="padding-top:14px">'
-    +'<button class="row gap-6 cap mt-8" data-go="community" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+'Back</button>'
-    +'<div class="cover" style="height:170px">'+(photoFor(g.id)?'<img src="'+esc(photoFor(g.id))+'" alt="'+esc(g.title)+'" style="width:100%;height:100%;object-fit:cover;display:block">':coverArt(g.id))+'</div>'
-    +'<div class="glass pad stack gap-16 mt-16">'
-    +'<div class="stack gap-8"><span class="eyebrow accent">'+esc(g.category||'Campaign')+'</span>'
-    +'<h1 class="h1">'+esc(g.title)+'</h1>'
-    +'<button class="cap row gap-6" data-go="church-profile" data-id="'+esc(g.churchId)+'">'+ico('church',14)+esc(g.churchName||'')+ico('chevR',13)+'</button></div>'
-    +'<div class="stack gap-10"><div class="progress" style="height:9px"><i style="width:'+pct+'%"></i></div>'
-    +'<div class="row between"><span class="h2 accent num">'+money(g.raised)+'</span><span class="cap num">raised of '+money(g.goal)+' · '+pct+'%</span></div></div>'
-    +'<p class="body">'+esc(g.description||'')+'</p>'
-    +'<hr class="divider">'
-    +'<span class="eyebrow accent">Choose an amount</span>'
-    +'<div class="row gap-8 wrap">'+amounts.map(function(a){
-      return '<button class="chip'+(state.ui.giveAmt===a?' on':'')+'" data-act="give-amt" data-v="'+a+'">'+money(a)+'</button>';}).join('')
-    +'<button class="chip'+(amounts.indexOf(state.ui.giveAmt)<0?' on':'')+'" data-act="give-custom">Other</button></div>'
-    +'<button class="btn btn-primary btn-block" data-act="give" data-id="'+g.id+'">'+ico('gift',18)+'Give '+money(state.ui.giveAmt)+'</button>'
-    +'<div class="row gap-8 center cap">'+ico('lock',13)+'Prototype — no payment is processed and no card details are collected.</div>'
+    +'<button class="row gap-6 cap" data-go="church-profile" data-id="'+esc(c.churchId)+'" style="text-align:left">'+ico('church',14,'accent')+'<span>A community of <b>'+esc(ch.name||'')+'</b> · moderated by '+esc((c.mods||[]).join(', ')||'church admins')+'</span></button></div>';
+  if(!follows&&!isChurchSession())return head
+    +'<div class="note-box">'+ico('lock',18)+'<span>Communities are open to people who follow <b>'+esc(ch.name||'this church')+'</b>. Follow the church to ask to join.</span></div>'
+    +'<button class="btn btn-sm btn-primary" data-act="follow" data-id="'+esc(c.churchId)+'">'+ico('plus',16)+'Follow '+esc(ch.name||'church')+'</button></div><div style="height:36px"></div></div>';
+  return head
+    +'<div class="row gap-10 wrap">'+(isChurchSession()?'':joinButton(c,'btn-sm grow'))
+    +(joined?'<button class="btn btn-sm btn-primary" data-act="new-thread" data-id="'+c.id+'">'+ico('edit',16)+'Start a conversation</button>':'')+'</div>'
+    +(st==='pending'?'<div class="note-box">'+ico('clock',18)+'<span>Your request is with the admins of '+esc(ch.name||'the church')+'. You\'ll see the conversations here as soon as they approve it.</span></div>':'')
     +'</div>'
-    +'<div class="glass pad stack gap-12 mt-14"><span class="eyebrow accent">Transparency</span>'
-    +[['Building materials',48],['Local labour',32],['Furnishing & sound',20]].map(function(r){
-      return '<div class="stack gap-6"><div class="row between"><span class="body" style="font-size:14.5px">'+r[0]+'</span><span class="cap num">'+r[1]+'%</span></div>'
-        +'<div class="progress" style="height:5px"><i style="width:'+r[1]+'%"></i></div></div>';}).join('')
-    +'<p class="cap">Every campaign publishes where the money went, with receipts. 80G-ready receipts are issued automatically.</p></div>'
-    +(mine.length?'<div class="glass pad stack gap-10 mt-14"><span class="eyebrow accent">Your gifts to this campaign</span>'
-      +mine.map(function(x){return '<div class="row between"><span class="cap">'+fmtDate(x.date)+'</span><span class="h3 num">'+money(x.amount)+'</span></div>';}).join('')+'</div>':'')
+    +(joined||isChurchSession()
+      ?'<div class="sec-title"><span class="eyebrow accent">Conversations · '+threads.length+'</span>'
+        +'<span class="row gap-6">'+['Latest','Most amen'].map(function(s){return '<button class="chip'+(sort===s?' on':'')+'" data-act="thread-sort" data-v="'+s+'" style="height:28px;padding:0 10px;font-size:11.5px">'+s+'</button>';}).join('')+'</span></div>'
+        +(list.length?'<div class="stack gap-14 stagger">'+list.map(function(p){return postCard(p);}).join('')+'</div>'
+          :empty('msg','Quiet for now','Start the first conversation — a question is a fine way to begin.',joined?'<button class="btn btn-sm btn-primary" data-act="new-thread" data-id="'+c.id+'">Start a conversation</button>':''))
+      :'<div class="glass pad stack gap-10 mt-16" style="text-align:center;align-items:center">'+ico('lock',22,'dim')
+        +'<span class="h3">Members only</span><span class="cap">'+threads.length+' conversation'+(threads.length===1?'':'s')+' inside. Join to read and take part.</span></div>')
     +'<div style="height:36px"></div></div>';
+}
+/* church console: create communities and approve who joins */
+function viewConsoleCommunities(){
+  const me=state.session&&state.session.churchId;
+  const mine=state.data.communities.filter(function(c){return c.churchId===me;});
+  const pend=pendingCommunityRequests(me);
+  return topbar('Communities','Your church’s groups and who joins them',{back:'console',
+    actions:'<button class="icon-btn active" data-act="new-community" aria-label="New community">'+ico('plus',18)+'</button>'})
+    +'<div class="view stack gap-14">'
+    +'<div class="glass pad stack gap-12"><div class="row between"><span class="eyebrow accent">Requests to join · '+pend.length+'</span></div>'
+    +(pend.length?pend.map(function(r){const c=communityById(r.communityId)||{};
+      return '<div class="row between gap-12"><span class="row gap-10" style="min-width:0"><span class="avatar avatar-sm" style="background:'+grad(r.userKey)+'">'+initials(r.userName)+'</span>'
+        +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(r.userName)+'</span>'
+        +'<span class="cap">'+esc(c.name||'')+' · '+esc(r.userCity||'')+' · '+ago(r.createdAt)+'</span></span></span>'
+        +'<span class="row gap-6" style="flex:none"><button class="btn btn-xs btn-primary" data-act="cm-approve" data-id="'+r.id+'">'+ico('check',13)+'Approve</button>'
+        +'<button class="icon-btn" data-act="cm-decline" data-id="'+r.id+'" aria-label="Decline" style="width:32px;height:32px">'+ico('x',14)+'</button></span></div>';}).join('')
+      :'<p class="cap">No one is waiting. New requests appear here.</p>')+'</div>'
+    +'<div class="sec-title"><span class="eyebrow accent">Your communities · '+mine.length+'</span><button class="cap" data-act="new-community">New community</button></div>'
+    +(mine.length?'<div class="stack gap-12">'+mine.map(function(c){const p=pend.filter(function(r){return r.communityId===c.id;}).length;
+      return '<article class="glass press pad row between gap-14" data-go="community-page" data-id="'+c.id+'">'
+        +'<div class="row gap-14" style="min-width:0">'+communityIcon(c,44)
+        +'<div class="stack gap-3" style="min-width:0"><span class="h3">'+esc(c.name)+'</span><span class="cap">'+communityMemberCount(c)+' members · '+communityThreads(c.id).length+' conversations</span></div></div>'
+        +(p?'<span class="badge badge-accent num">'+p+' waiting</span>':ico('chevR',16))+'</article>';}).join('')+'</div>'
+      :empty('users','No communities yet','Start one for your choir, youth, parents or prayer team. Only people who follow your church can ask to join.','<button class="btn btn-sm btn-primary" data-act="new-community">Create a community</button>'))
+    +'<div style="height:30px"></div></div>';
 }
 
 /* ---------- BibleGPT ---------- */
@@ -1771,59 +2379,77 @@ const KB=[
   {k:['pray','prayer','how to pray','praying'],a:'Prayer in Scripture is startlingly ordinary: requests made known, thanksgiving mixed in, and stillness that lets God be God. The pattern across the Psalms is honesty first — lament, question and praise all sit side by side without apology.',v:['Philippians 4:6','Psalm 46:10']},
   {k:['grief','loss','death','died','mourning','sad','depressed','lonely'],a:'Lament is a legitimate, well-attested form of faith — roughly a third of the Psalms are laments. Grief is not treated as a lapse in trust. Mercies that are new every morning are offered to people in the middle of ruins, not after they have recovered.',v:['Lamentations 3:22','Psalm 23:1','Matthew 11:28']},
   {k:['love','marriage','relationship','friend','family'],a:'Love in the New Testament is described in verbs rather than feelings — patient, kind, not self-seeking, keeping no record of wrongs. That framing makes love something you can practise on a day when the feeling is thin.',v:['Romans 8:28','John 14:27']},
-  {k:['money','giving','tithe','finance','debt','poor'],a:'Generosity in Scripture is consistently tied to trust rather than surplus — the widow’s two coins are praised over larger gifts. Giving is framed as cheerful and deliberate, never coerced, and always paired with care for the poor among you.',v:['Proverbs 3:5','Romans 8:28']},
+  {k:['money','tithe','finance','debt','poor','generous'],a:'Generosity in Scripture is consistently tied to trust rather than surplus — the widow’s two coins are praised over larger gifts. Giving is framed as cheerful and deliberate, never coerced, and always paired with care for the poor among you.',v:['Proverbs 3:5','Romans 8:28']},
   {k:['bible','read','study','scripture','where to start','beginner'],a:'A common starting path is one Gospel (Luke reads well for newcomers), then Acts for what happened next, then a Psalm a day alongside it. Scripture describes itself as a lamp for the next step rather than a floodlight over the whole road — small daily portions suit that image.',v:['Psalm 119:105','Isaiah 40:31']}
 ];
 const PASTORAL=['should i divorce','divorce','should i leave my church','baptism mode','speaking in tongues','predestination','end times','rapture','who is right','denomination is correct','abortion','politics','vote','suicide','harm myself','kill myself','medication','diagnosis','lawsuit','legal advice'];
 function findVerse(ref){return VERSES.find(function(v){return v.r===ref;})||{r:ref,t:'Open this passage in the reader.'};}
+KB.push(
+  {k:['jesus','christ','who is jesus','son of god','messiah','saviour','savior'],a:'The Gospels present Jesus as the Word made flesh — God with us — who taught, healed, died on the cross and rose again. John sums up why he came in a single sentence: God loved the world enough to give his Son, so that whoever believes in him would have life that does not end.',v:['John 3:16','John 1:1']},
+  {k:['grace','saved','salvation','born again','works'],a:'Grace in the New Testament means a gift that cannot be earned. Paul is plain about it: we are saved by grace through faith, and even that faith is God’s gift, not a reward for effort. Good works follow grace; they never purchase it.',v:['Ephesians 2:8','2 Corinthians 12:9']},
+  {k:['creation','genesis','beginning','created','world began'],a:'The Bible opens with God as the source of everything that exists: “In the beginning God created the heaven and the earth.” Genesis is less a science lesson than a declaration of who made the world, that it is good, and that people bear God’s image.',v:['Genesis 1:1','John 1:1']},
+  {k:['lord’s prayer','lords prayer',"lord's prayer",'our father','how did jesus pray'],a:'When the disciples asked Jesus to teach them to pray, he gave them a pattern rather than a formula: honour God’s name, seek his kingdom, ask for daily bread, forgiveness and protection. It begins by calling God “Father”.',v:['Matthew 6:9','Philippians 4:6']},
+  {k:['charity','1 corinthians 13','love is patient','what is love'],a:'Paul’s description of love in 1 Corinthians 13 is a list of actions — patient, kind, not envious, not proud. It was written to a divided church, as a picture of how people who disagree can still belong to one another.',v:['1 Corinthians 13:4','John 14:27']}
+);
+/* Words that mark a question as being about the Bible or Christian faith. */
+const BIBLE_WORDS=['god','jesus','christ','lord','bible','scripture','verse','psalm','gospel','prayer','pray','faith','church','sin','grace','heaven','hell','spirit','holy','apostle','disciple','prophet','paul','peter','moses','david','abraham','noah','mary','john','genesis','exodus','revelation','proverbs','isaiah','romans','matthew','mark','luke','acts','testament','cross','resurrection','easter','christmas','baptism','communion','worship','sermon','pastor','parable','miracle','angel','salvation','saved','forgive','commandment','covenant','israel','jerusalem','blessing','bless','amen','kingdom','righteous','repent','believe','christian','hymn','devotion','fasting','tithe'];
+function isBibleQuery(q){
+  const w=String(q||'').toLowerCase();
+  if(KB.some(function(e){return e.k.some(function(k){return w.indexOf(k)>-1;});}))return true;
+  if(/\b[1-3]?\s?[a-z]+\s\d{1,3}:\d{1,3}\b/.test(w))return true;
+  return BIBLE_WORDS.some(function(b){return new RegExp('\\b'+b+'s?\\b').test(w);});
+}
 function bibleAnswer(qRaw){
-  const q=String(qRaw||'').toLowerCase();
+  const q=String(qRaw||'').toLowerCase().trim();
+  if(!q)return {a:'Ask me anything about the Bible.',v:[]};
   if(PASTORAL.some(function(p){return q.indexOf(p)>-1;}))return {pastoral:true,
     a:'This one deserves a person, not an app. Questions like this land differently depending on your story, your church’s teaching, and things I cannot see from here. I would rather hand you to someone who knows you.',v:[]};
   let best=null,score=0;
   KB.forEach(function(e){const s=e.k.reduce(function(a,k){return a+(q.indexOf(k)>-1?1:0);},0);if(s>score){score=s;best=e;}});
-  if(!best)return {a:'I could not find a clear anchor for that in the passages I hold. Try naming the situation in plain words — “I am anxious about work”, “how do I forgive my brother”, “where should I start reading” — and I will bring the passages that speak to it.',v:['Psalm 119:105']};
+  if(!best&&!isBibleQuery(q))return {offTopic:true,
+    a:'I only answer questions about the Bible and the Christian faith. Try asking about a passage, a person in Scripture, or what the Bible says about something in your life.',v:[]};
+  if(!best)return {a:'I could not find a clear anchor for that in the passages I hold. Try naming a book or verse, or the situation in plain words — “what does Psalm 23 mean”, “how do I forgive my brother”, “where should I start reading” — and I will bring the passages that speak to it.',v:['Psalm 119:105']};
   const mode=state.ui.chatMode;
   let a=best.a;
-  if(mode==='Study')a=best.a+'\n\nCross-references worth sitting with: '+best.v.join(' · ')+'. Note the original-language sense — the New Testament word for peace (eirene) carries the Hebrew shalom behind it: wholeness and right order, not merely the absence of noise.';
+  if(mode==='Study')a=best.a+'\n\nCross-references worth sitting with: '+best.v.join(' · ')+'. Read each in its chapter, not alone — the verses around a verse are its first commentary.';
   if(mode==='Kids')a='Here is a simple way to see it: God is close to you, even when things feel big or scary. You can talk to him about anything — like telling a parent who always listens. He promises to stay with you and help you be brave.';
   if(mode==='Summarise')a='In short: '+best.a.split('.')[0]+'. The passages below carry the weight of it.';
-  if(mode==='Translate')a='[Translated for your language setting — '+esc(state.prefs.lang)+']\n\n'+best.a;
+  if(mode==='Translate')a='[Shown in '+esc(state.prefs.lang)+' where a translation exists]\n\n'+best.a;
   return {a:a,v:best.v};
 }
 function viewBibleGPT(){
-  const modes=['Ask','Study','Summarise','Translate','Kids'];
+  const modes=[['Ask','Plain answers'],['Study','Cross-references'],['Summarise','The short version'],['Translate','In your language'],['Kids','Simple words']];
   const msgs=state.ui.chat;
-  return '<div class="view stack" style="padding-top:14px;min-height:100dvh">'
-    +'<div class="row between gap-12 mt-8">'
-    +'<button class="row gap-6 cap" data-go="community" style="color:var(--text-3)">'+ico('arrowL',16)+'Community</button>'
-    +'<button class="chip" data-act="clear-chat">'+ico('x',14)+'Clear</button></div>'
-    +'<div class="row gap-12 mt-16"><span class="icon-btn" style="color:var(--lavender);border-color:rgba(192,143,208,.4);background:rgba(192,143,208,.12);flex:none">'+ico('sparkle',20)+'</span>'
-    +'<div class="stack gap-3"><h1 class="h1" style="font-size:26px">BibleGPT</h1>'
-    +'<span class="cap">Grounded in Scripture · tuned to '+esc((state.session&&state.session.denom)||'your church')+'</span></div></div>'
-    +'<div class="scroll-x mt-16">'+modes.map(function(m){
-      return '<button class="chip chip-lav'+(state.ui.chatMode===m?' on':'')+'" data-act="chat-mode" data-v="'+m+'">'+m+'</button>';}).join('')+'</div>'
-    +'<div class="stack gap-12 mt-16" style="flex:1">'
+  const starters=['Who is Jesus?','What does Psalm 23 mean?','How do I forgive someone who hurt me?','Where should I start reading the Bible?','What does grace mean?','Teach me the Lord’s Prayer'];
+  return '<div class="gpt-wrap">'
+    +'<header class="gpt-head">'
+      +'<div class="row gap-12"><span class="gpt-mark">'+bibleGptMark(26)+'</span>'
+      +'<div class="stack gap-2"><h1 class="h2" style="font-size:22px">BibleGPT</h1>'
+      +'<span class="cap row gap-6"><i class="gpt-dot"></i>Answers from Scripture only</span></div></div>'
+      +(msgs.length?'<button class="chip" data-act="clear-chat">'+ico('edit',14)+'New chat</button>':'')
+    +'</header>'
+    +'<div class="gpt-modes scroll-x">'+modes.map(function(m){
+      return '<button class="chip chip-lav'+(state.ui.chatMode===m[0]?' on':'')+'" data-act="chat-mode" data-v="'+m[0]+'" title="'+m[1]+'">'+m[0]+'</button>';}).join('')+'</div>'
+    +'<div class="gpt-thread" id="gptThread">'
     +(msgs.length?msgs.map(function(m){
         if(m.role==='user')return '<div class="bubble me">'+esc(m.text)+'</div>';
-        return '<div class="stack gap-10" style="align-self:flex-start;max-width:92%">'
-          +'<div class="bubble ai">'+esc(m.text).replace(/\n/g,'<br>')+'</div>'
+        return '<div class="gpt-msg"><span class="gpt-avatar">'+bibleGptMark(16)+'</span><div class="stack gap-10" style="min-width:0">'
+          +'<div class="bubble ai'+(m.offTopic?' off':'')+'">'+esc(m.text).replace(/\n/g,'<br>')+'</div>'
           +(m.verses&&m.verses.length?'<div class="row gap-8 wrap">'+m.verses.map(function(v){
             return '<button class="verse-chip" data-act="open-verse" data-r="'+esc(v)+'">'+ico('book',13)+esc(v)+'</button>';}).join('')+'</div>':'')
-          +(m.pastoral?'<button class="btn btn-sm btn-outline" data-act="ask-pastor">'+ico('msg',16)+'Ask my pastor</button>':'')
-          +'<span class="cap" style="font-size:11px">'+(m.pastoral?'Pastoral question — routed to a person':'Sources shown above · answers may be corrected by your pastors')+'</span></div>';}).join('')
-      +(state.ui.chatBusy?'<div class="bubble ai typing"><i></i><i></i><i></i></div>':'')
-      :'<div class="glass pad stack gap-16" style="border-color:rgba(192,143,208,.22)">'
-        +'<span class="eyebrow" style="color:var(--lavender)">Try asking</span>'
-        +['I feel anxious about work','How do I forgive someone who hurt me','Where should I start reading the Bible','What does Scripture say about rest']
-          .map(function(s){return '<button class="row between gap-10" data-act="ask" data-v="'+esc(s)+'" style="text-align:left;padding:13px 15px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
-            +'<span class="body" style="color:var(--text-1);font-size:14.5px">'+esc(s)+'</span>'+ico('chevR',16)+'</button>';}).join('')
-        +'<p class="cap">Doctrinal and pastoral questions are handed to your pastor, not answered here. No medical or legal advice.</p></div>')
+          +(m.pastoral?'<button class="btn btn-sm btn-outline" data-act="ask-pastor" style="align-self:flex-start">'+ico('msg',16)+'Ask my pastor</button>':'')
+          +(m.offTopic?'':'<span class="cap" style="font-size:11px">'+(m.pastoral?'Pastoral question — routed to a person':'Sources shown above · pastors can correct answers')+'</span>')
+          +'</div></div>';}).join('')
+      +(state.ui.chatBusy?'<div class="gpt-msg"><span class="gpt-avatar">'+bibleGptMark(16)+'</span><div class="bubble ai typing"><i></i><i></i><i></i></div></div>':'')
+      :'<div class="gpt-welcome"><span class="gpt-mark lg">'+bibleGptMark(40)+'</span>'
+        +'<h2 class="h2">Ask anything about the Bible</h2>'
+        +'<p class="body" style="max-width:44ch;text-align:center">Passages, people, meanings and what Scripture says about your day. Every answer shows its verses.</p>'
+        +'<div class="gpt-starters">'+starters.map(function(s){return '<button class="gpt-starter" data-act="ask" data-v="'+esc(s)+'">'+esc(s)+ico('chevR',14)+'</button>';}).join('')+'</div>'
+        +'<p class="cap" style="text-align:center">Pastoral and doctrinal questions go to your pastor. No medical, legal or off-topic answers.</p></div>')
     +'</div>'
-    +'<div class="glass row gap-10 mt-16" style="padding:8px 8px 8px 18px;border-radius:var(--r-pill);position:sticky;bottom:calc(var(--nav-h) + 14px);z-index:10">'
-    +'<input class="grow" id="chatBox" placeholder="Ask anything…" style="background:none;border:0;outline:none;height:44px;min-width:0">'
-    +'<button class="btn btn-primary" data-act="chat-send" style="height:44px;width:44px;padding:0;border-radius:50%">'+ico('send',18)+'</button></div>'
-    +'<div style="height:26px"></div></div>';
+    +'<div class="gpt-input glass"><input class="grow" id="chatBox" placeholder="Ask about a verse, a story or a question of faith…" aria-label="Ask BibleGPT" autocomplete="off">'
+    +'<button class="btn btn-primary" data-act="chat-send" aria-label="Send" style="height:44px;width:44px;padding:0;border-radius:50%;flex:none">'+ico('send',18)+'</button></div>'
+    +'</div>';
 }
 
 /* ---------- live stream ---------- */
@@ -1857,7 +2483,6 @@ function viewLive(){
 
 /* ---------- designed "coming soon" screens ---------- */
 const SOON={
-  'Christian news':{i:'news',eye:'Community',lead:'A curated feed from verified sources, plus community-reported stories reviewed before they publish.',pts:['Verified sources only, clearly labelled','Community reports moderated before publish','Categories, save and share','An “underreported” section for the stories the wider press skips'],hue:200},
   'Worship music':{i:'music',eye:'Community',lead:'Lyrics, chords and licensed streaming — for worship teams, and for the drive to church.',pts:['Lyrics and chords with one-tap transpose','Set-list builder for worship teams','Church song of the week','Licensed streaming, audio-first for low data'],hue:280},
   'Marketplace':{i:'bag',eye:'Community',lead:'Verified Christian businesses, bookstores, event vendors, guest speakers and AV teams. Inquiries stay in the app.',pts:['Every listing verified before it appears','Reviews from churches that actually hired them','Sponsored listings clearly labelled','Inquiry by in-app message, no phone numbers scraped'],hue:40},
   'Scheduling':{i:'clock',eye:'Church console',lead:'Schedule posts and broadcasts to land at the right hour, with quiet hours respected.',pts:['Pick a date and time per post','Quiet hours 10pm–6am respected automatically','Urgent prayer alerts bypass quiet hours'],hue:45},
@@ -1865,8 +2490,6 @@ const SOON={
   'Volunteer rosters':{i:'cal',eye:'Ministry ops',lead:'Drag-and-drop Sunday rosters for ushers, worship, kids church and media.',pts:['Drag-and-drop schedule by ministry','Swap requests between volunteers','QR attendance check-in at the door'],hue:160},
   'QR attendance':{i:'grid',eye:'Ministry ops',lead:'One QR at the door. Members tap to check in; leaders see who came.',pts:['Works offline in the sanctuary','Family check-in in one tap','Attendance trends per service'],hue:160},
   'Transfer letters':{i:'file',eye:'Ministry ops',lead:'Issue and receive membership transfer letters between verified churches.',pts:['Issued by the sending church, accepted by the receiving one','The member consents before anything moves','Full history kept for both churches'],hue:160},
-  'Transparency report':{i:'file',eye:'Giving',lead:'Where every rupee of a campaign went, with photographs and receipts.',pts:['Spend by category, updated as invoices land','Photos from the site','Auto 80G receipts for every donor'],hue:45},
-  'Recurring giving':{i:'clock',eye:'Giving',lead:'Monthly giving by UPI mandate or card, paused or changed any time.',pts:['UPI autopay and cards','Pause, change or stop in one tap','One annual statement for tax'],hue:45},
   'Reply to member':{i:'msg',eye:'Pastoral care',lead:'Private replies from pastors to prayer and care requests.',pts:['Visible only to the member and pastors','Book a visit or a call from the reply','Nothing leaves the care queue'],hue:340},
   'Prayer request to church':{i:'hands',eye:'Believer',lead:'Send a prayer request straight to a church’s pastoral care queue.',pts:['Private by default','Pastors reply from the care queue','Mark it answered when it is'],hue:340},
   'Visit request':{i:'cal',eye:'Believer',lead:'Ask a church about visiting — service times, language and where to park.',pts:['Answered by a real person at the church','Directions and service time in one card','Someone to meet you at the door if you want'],hue:230}
@@ -1895,7 +2518,7 @@ function viewSoon(){
     +(m.pts.length?'<div class="stack gap-10">'+m.pts.map(function(p){return '<div class="row gap-12" style="align-items:flex-start"><span class="accent" style="flex:none;margin-top:3px">'+ico('check',16)+'</span><span class="body">'+esc(p)+'</span></div>';}).join('')+'</div>':'')
     +'<hr class="divider"><div class="row gap-10 wrap"><button class="btn btn-sm btn-primary" data-act="notify-soon" data-v="'+esc(key)+'">'+ico('bell',16)+'Tell me when it lands</button>'
     +'<button class="btn btn-sm btn-ghost" data-go="'+esc(back)+'">Back</button></div></div>'
-    +'<div class="glass pad stack gap-8 mt-14"><span class="eyebrow accent">Why it waits</span><p class="body">The first release of believersArk is deliberately narrow: churches, feed, communities, journey, prayer and giving — fully working. Everything here is designed against the same system, so it slots in without a redesign.</p></div>'
+    +'<div class="glass pad stack gap-8 mt-14"><span class="eyebrow accent">Why it waits</span><p class="body">The first release of believersArk is deliberately narrow: churches, feed, communities, journey and prayer — fully working. Everything here is designed against the same system, so it slots in without a redesign.</p></div>'
     +'<div style="height:30px"></div></div>';
 }
 
@@ -1906,56 +2529,89 @@ function prefRow(label,key,sub){
     +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:15px">'+esc(label)+'</span>'+(sub?'<span class="cap">'+esc(sub)+'</span>':'')+'</span>'
     +'<span class="switch'+(on?' on':'')+'" role="switch" aria-checked="'+on+'"></span></button>';
 }
+function avatarHTML(s,cls,style){
+  return '<span class="avatar '+(cls||'')+'" style="position:relative;overflow:hidden;background:'+grad(s.avatarSeed||s.id)+';'+(style||'')+'">'+initials(s.name)
+    +(s.photo?'<img src="'+esc(s.photo)+'" alt="" referrerpolicy="no-referrer" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">':'')+'</span>';
+}
+/* Me is your profile: everything others see, plus the private details only you can see. */
 function viewMe(){
-  const s=state.session,follows=myChurchIds();
-  const isChurch=s&&s.role==='church';
-  const guest=!s;
-  return topbar(guest?'You':esc(s.name||'You'),guest?'Guest · browsing':(isChurch?'Church account':'Believer · '+esc(s.city||'')),{
-    actions:'<button class="icon-btn" data-go="settings" aria-label="Settings">'+ico('settings',18)+'</button>'})
+  const s=state.session;
+  if(!s)return topbar('You','Guest · browsing',{})
+    +'<div class="view stack"><div class="glass pad stack gap-14"><span class="eyebrow accent">You\'re browsing as a guest</span>'
+    +'<h3 class="h2">Create your account</h3><p class="body">Join your church with its invite code, keep a journey, pray together and take part in your church\'s communities.</p>'
+    +'<button class="btn btn-primary btn-block" data-go="welcome">Get started</button></div></div>';
+  if(s.role==='church')return topbar(esc(s.name||'You'),'Church account',{})
     +'<div class="view stack">'
-    +(guest?'<div class="glass pad stack gap-14"><span class="eyebrow accent">You\'re browsing as a guest</span>'
-      +'<h3 class="h2">Create your account</h3><p class="body">Follow churches, keep a journey, join the prayer chain and give — all in one place.</p>'
-      +'<button class="btn btn-primary btn-block" data-go="welcome">Get started</button></div>'
-      :'<div class="glass pad row gap-16 between">'
-      +'<div class="row gap-14" style="min-width:0"><div class="avatar avatar-lg" style="position:relative;overflow:hidden;background:'+grad(s.id)+'">'+initials(s.name)
-      +(s.photo?'<img src="'+esc(s.photo)+'" alt="" referrerpolicy="no-referrer" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">':'')+'</div>'
-      +'<div class="stack gap-4" style="min-width:0"><span class="h2">'+esc(s.name)+'</span>'
-      +'<span class="cap">'+esc(s.email||'')+(s.provider&&SOCIAL[s.provider]?' · via '+SOCIAL[s.provider].label:'')+'</span>'
-      +'<span class="row gap-6 wrap mt-4">'+(isChurch?'<span class="badge '+(s.verified?'badge-accent':'badge-ice')+'">'+(s.verified?ico('shield',12)+'Verified church':'Pending')+'</span>'
-        :'<span class="badge badge-ice">'+esc(s.lang||'English')+'</span><span class="badge badge-accent">'+(state.local.streak||0)+' day streak</span>')+'</span></div></div></div>')
-    +(!guest&&!isChurch?'<div class="row gap-12 mt-14">'
-      +'<div class="stat grow"><div class="v accent num">'+follows.length+'</div><div class="cap mt-4">Churches</div></div>'
-      +'<div class="stat grow"><div class="v num" style="color:var(--ice)">'+myCommunityIds().length+'</div><div class="cap mt-4">Communities</div></div>'
-      +'<div class="stat grow"><div class="v num" style="color:var(--mint)">'+(state.local.rsvps||[]).length+'</div><div class="cap mt-4">Events</div></div></div>'
-      +'<div class="row gap-12 mt-12">'
-      +'<div class="stat grow"><div class="v num" style="color:var(--rose)">'+(state.local.prayed||[]).length+'</div><div class="cap mt-4">Prayers prayed</div></div>'
-      +'<div class="stat grow"><div class="v num accent">'+money(totalGiven())+'</div><div class="cap mt-4">Given</div></div></div>'
-      +'<button class="btn btn-ghost btn-block mt-14" data-go="person-profile" data-id="'+esc(s.id)+'">'+ico('me',17)+'View my profile</button>':'')
-    +(isChurch?'<div class="glass pad stack gap-12 mt-14"><span class="eyebrow accent">Church tools</span>'
-      +'<button class="btn btn-primary btn-block" data-go="console">'+ico('grid',17)+'Open church console</button>'
-      +(s.churchId?'<button class="btn btn-ghost btn-block" data-go="church-profile" data-id="'+esc(s.churchId)+'">'+ico('eye',17)+'View public profile</button>':'')
-      +'<button class="btn btn-ghost btn-block" data-go="console-c2c">'+ico('msg',17)+'Church-to-church inbox</button></div>':'')
-    +(isChurch?'':'<div class="sec-title"><span class="eyebrow accent">Churches you follow</span>'
-    +(follows.length?'<button class="cap" data-go="churches">Find more</button>':'')+'</div>'
+    +'<div class="glass pad row gap-16"><div class="row gap-14" style="min-width:0">'+avatarHTML(s,'avatar-lg')
+    +'<div class="stack gap-4" style="min-width:0"><span class="h2">'+esc(s.name)+'</span><span class="cap">'+esc(s.email||'')+'</span>'
+    +'<span class="row gap-6 wrap mt-4"><span class="badge '+(s.verified?'badge-accent':'badge-ice')+'">'+(s.verified?ico('shield',12)+'Verified church':'Pending')+'</span></span></div></div></div>'
+    +'<div class="glass pad stack gap-12 mt-14"><span class="eyebrow accent">Church tools</span>'
+    +'<button class="btn btn-primary btn-block" data-go="console">'+ico('grid',17)+'Open church console</button>'
+    +(s.churchId?'<button class="btn btn-ghost btn-block" data-go="church-profile" data-id="'+esc(s.churchId)+'">'+ico('eye',17)+'View public profile</button>':'')
+    +'<button class="btn btn-ghost btn-block" data-go="console-communities">'+ico('users',17)+'Communities &amp; join requests</button>'
+    +'<button class="btn btn-ghost btn-block" data-go="console-c2c">'+ico('msg',17)+'Church-to-church inbox</button></div>'
+    +'<div class="stack gap-10 mt-24"><button class="glass press pad-sm row between gap-12" data-act="signout" style="text-align:left"><span class="row gap-12">'
+    +'<span class="icon-btn" style="flex:none">'+ico('logout',18)+'</span><span class="h3">Sign out</span></span>'+ico('chevR',16)+'</button></div>'
+    +'<div style="height:30px"></div></div>';
+
+  const follows=myChurchIds(),home=s.homeChurchId?churchById(s.homeChurchId):null;
+  const posts=communityThreads().filter(function(x){return isMe(x.authorId);});
+  const prayers=state.data.prayers.filter(function(x){return isMe(x.authorId);});
+  const joined=myCommunityIds().map(communityById).filter(Boolean);
+  const tab=state.ui.personTab||'Posts';
+  let body='';
+  if(tab==='Posts')body=posts.length?'<div class="stack gap-14 stagger">'+posts.map(function(x){return postCard(x,{follow:false});}).join('')+'</div>'
+    :empty('edit','You haven\'t written in a community yet','Join a community at your church and start a conversation — that is where believers speak on the ark.','<button class="btn btn-sm btn-primary" data-go="community">Browse communities</button>');
+  else if(tab==='Prayers')body=prayers.length?'<div class="stack gap-12">'+prayers.map(prayerCard).join('')+'</div>'
+    :empty('hands','No prayer requests yet','Requests you share on the prayer chain appear here.','<button class="btn btn-sm btn-primary" data-act="new-prayer">Share a request</button>');
+  else body='<div class="stack gap-14">'
+    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">About</span><p class="body">'+esc(s.bio||'Add a line about your walk from Edit profile.')+'</p>'
+    +(home?'<button class="row gap-10" data-go="church-profile" data-id="'+home.id+'" style="text-align:left">'+ico('church',16,'dim')+'<span class="body" style="color:var(--text-1)">Home church · '+esc(home.name)+'</span></button>':'')
+    +'<div class="row gap-10">'+ico('pin',16,'dim')+'<span class="body" style="color:var(--text-1)">'+esc([s.city,s.country].filter(Boolean).join(', '))+'</span></div>'
+    +'<div class="row gap-10">'+ico('globe',16,'dim')+'<span class="body" style="color:var(--text-1)">'+esc(s.lang||'English')+'</span></div>'
+    +(s.gender?'<div class="row gap-10">'+ico('me',16,'dim')+'<span class="body" style="color:var(--text-1)">'+esc(s.gender)+'</span></div>':'')
+    +(s.createdAt?'<div class="row gap-10">'+ico('cal',16,'dim')+'<span class="body" style="color:var(--text-1)">On the ark since '+fmtDate(s.createdAt)+'</span></div>':'')+'</div>'
+    +((s.goals||[]).length?'<div class="glass pad stack gap-12"><span class="eyebrow accent">My goals</span><div class="row gap-8 wrap">'
+      +GOALS.filter(function(g){return s.goals.indexOf(g.k)>-1;}).map(function(g){return '<span class="chip static">'+ico(g.icon,13)+esc(g.t)+'</span>';}).join('')+'</div></div>':'')
+    +'</div>';
+  return '<div class="view" style="padding-top:18px">'
+    +'<div class="cover" style="height:126px">'+(home&&photoFor(home.id)?'<img src="'+esc(photoFor(home.id))+'" alt="" style="width:100%;height:100%;object-fit:cover;display:block">':coverArt(s.id))+'</div>'
+    +'<div class="glass pad stack gap-16" style="margin-top:-38px;position:relative">'
+    +'<div class="row between gap-12" style="margin-top:-50px;align-items:flex-end">'
+    +'<button class="me-avatar" data-act="pick-avatar" data-target="profile" aria-label="Change profile photo">'+avatarHTML(s,'avatar-lg','border:3px solid var(--bg-0);border-radius:26px')+'<span class="ob-avatar-edit">'+ico('edit',13)+'</span></button>'
+    +'<span class="row gap-6 wrap"><span class="badge badge-ice">'+esc(s.lang||'English')+'</span><span class="badge badge-accent">'+(state.local.streak||0)+' day streak</span></span></div>'
+    +'<div class="stack gap-4"><h1 class="h1">'+esc(s.name)+'</h1>'
+    +(s.handle?'<span class="cap" style="font-size:14px">@'+esc(s.handle)+'</span>':'')
+    +'<p class="body mt-4">'+esc(s.bio||'A believer on the journey.')+'</p>'
+    +'<div class="row gap-14 wrap cap mt-4"><span class="row gap-6">'+ico('pin',14)+esc([s.city,s.country].filter(Boolean).join(', '))+'</span>'
+    +(home?'<button class="row gap-6 ice" data-go="church-profile" data-id="'+home.id+'">'+ico('church',14)+esc(home.name)+'</button>':'')+'</div></div>'
+    +'<div class="me-stats">'
+    +'<span><b class="num">'+follows.length+'</b>Churches</span><span><b class="num">'+joined.length+'</b>Communities</span>'
+    +'<span><b class="num">'+(state.local.rsvps||[]).length+'</b>Events</span><span><b class="num">'+(state.local.prayed||[]).length+'</b>Prayed for</span></div>'
+    +'<div class="row gap-10 wrap"><button class="btn btn-sm btn-ghost grow" data-act="edit-profile">'+ico('edit',16)+'Edit profile</button>'
+    +'<button class="btn btn-sm btn-primary grow" data-act="join-church">'+ico('plus',16)+'Join another church</button></div>'
+    +'<div class="private-box"><span class="row gap-6 eyebrow">'+ico('lock',12)+'Only you and your church admins see this</span>'
+    +'<div class="row gap-14 wrap cap"><span class="row gap-6">'+ico('mail',14)+esc(s.email||'—')+(s.provider&&SOCIAL[s.provider]?' · via '+SOCIAL[s.provider].label:'')+'</span>'
+    +'<span class="row gap-6">'+ico('phone',14)+esc(s.phone||'Add a number in Edit profile')+'</span></div></div>'
+    +'</div>'
+    +'<div class="tabs mt-16">'+['Posts','Prayers','About'].map(function(t){
+      return '<button class="tab'+(tab===t?' on':'')+'" data-act="person-tab" data-v="'+t+'">'+t+'</button>';}).join('')+'</div>'
+    +'<div class="mt-16">'+body+'</div>'
+    +'<div class="sec-title"><span class="eyebrow accent">My churches</span><button class="cap" data-go="churches">Find more</button></div>'
     +(follows.length?'<div class="stack gap-10">'+follows.map(function(id){const c=churchById(id);if(!c)return '';
-      const home=s&&s.homeChurchId===id;
+      const isHome=s.homeChurchId===id,mem=isMemberOf(id);
       return '<button class="glass press pad-sm row between gap-12" data-go="church-profile" data-id="'+id+'" style="text-align:left">'
-        +'<span class="row gap-12" style="min-width:0"><span class="avatar avatar-sm" style="background:'+grad(id)+'">'+initials(c.name)+'</span>'
-        +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">'+esc(c.city||'')+'</span></span></span>'
-        +(home?'<span class="badge badge-accent">'+ico('star',12)+'Home</span>':ico('chevR',16))+'</button>';}).join('')+'</div>'
-      :empty('church','No churches yet','Follow a church to fill your feed with its life.','<button class="btn btn-sm btn-primary" data-go="churches">Browse the directory</button>'))
-    +(myCommunityIds().length?'<div class="sec-title"><span class="eyebrow accent">Your communities</span>'
-      +'<button class="cap" data-go="community">See all</button></div>'
-      +'<div class="row gap-8 wrap">'+myCommunityIds().map(function(id){const c=communityById(id);if(!c)return '';
-        return '<button class="chip" data-go="community-page" data-id="'+id+'">'+ico(c.icon||'users',13)+esc(c.name)+'</button>';}).join('')+'</div>'
-      :''))
+        +'<span class="row gap-12" style="min-width:0"><span class="avatar avatar-sm" style="background:'+(photoFor(id)?'#282828 url('+photoFor(id)+') center/cover':grad(id))+'">'+(photoFor(id)?'':initials(c.name))+'</span>'
+        +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">'+esc(c.city||'')+' · '+(mem?'Member':'Following')+'</span></span></span>'
+        +(isHome?'<span class="badge badge-accent">'+ico('star',12)+'Home</span>':mem?'<span class="badge badge-mint">'+ico('check',11)+'Member</span>':ico('chevR',16))+'</button>';}).join('')+'</div>'
+      :empty('church','No churches yet','Join your church with its invite code.','<button class="btn btn-sm btn-primary" data-act="join-church">Enter an invite code</button>'))
+    +(joined.length?'<div class="sec-title"><span class="eyebrow accent">My communities</span><button class="cap" data-go="community">See all</button></div>'
+      +'<div class="row gap-8 wrap">'+joined.map(function(c){return '<button class="chip" data-go="community-page" data-id="'+c.id+'">'+ico(c.icon||'users',13)+esc(c.name)+'</button>';}).join('')+'</div>':'')
     +'<div class="stack gap-10 mt-24">'
-    +(isChurch?'':meRow('star','Saved posts',(state.local.saved||[]).length+' saved','saved'))
-    +meRow('settings','Settings & privacy','Theme, language, notifications','settings')
-    +(isChurch?'':meRow('gift','Giving history','Receipts, 80G statements','giving-history'))
-    +(isChurch?'':meRow('users','Family','Child and youth profiles','family'))
-    +(guest?'':'<button class="glass press pad-sm row between gap-12" data-act="signout" style="text-align:left"><span class="row gap-12">'
-      +'<span class="icon-btn" style="flex:none">'+ico('logout',18)+'</span><span class="h3">Sign out</span></span>'+ico('chevR',16)+'</button>')
+    +meRow('star','Saved posts',(state.local.saved||[]).length+' saved','saved')
+    +meRow('users','Family','Child and youth profiles','family')
+    +'<button class="glass press pad-sm row between gap-12" data-act="signout" style="text-align:left"><span class="row gap-12">'
+    +'<span class="icon-btn" style="flex:none">'+ico('logout',18)+'</span><span class="h3">Sign out</span></span>'+ico('chevR',16)+'</button>'
     +'</div><div style="height:30px"></div></div>';
 }
 function meRow(icon,title,sub,route){
@@ -1966,7 +2622,7 @@ function meRow(icon,title,sub,route){
 }
 function viewSettings(){
   const dark=state.theme==='dark';
-  if(isChurchSession())return topbar('Settings','Church account',{back:'me'})
+  if(isChurchSession())return topbar('Settings &amp; privacy','Church account',{})
     +'<div class="view stack gap-14">'
     +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Appearance</span>'
     +'<div class="row gap-10">'
@@ -1985,9 +2641,9 @@ function viewSettings(){
     +'<button class="btn btn-ghost btn-block" data-act="export">'+ico('file',17)+'Export church data</button></div>'
     +'<div class="glass pad stack gap-8"><span class="eyebrow accent">About</span>'
     +'<div class="row gap-10">'+arkGlyph(30)+wordmark(17)+'</div>'
-    +'<p class="cap">Prototype build · Sacred Futurism design system · Data '+(state.ui.dbState==='live'?'syncing live':'local to this device')+'</p></div>'
+    +'<p class="cap">Prototype build · Data '+(state.ui.dbState==='live'?'syncing live':'local to this device')+'</p></div>'
     +'<div style="height:30px"></div></div>';
-  return topbar('Settings','Yours to shape',{back:'me'})
+  return topbar('Settings &amp; privacy','Yours to shape',{})
     +'<div class="view stack gap-14">'
     +'<div class="glass pad stack gap-16"><span class="eyebrow accent">Appearance</span>'
     +'<div class="row gap-10">'
@@ -2011,28 +2667,13 @@ function viewSettings(){
     +'<select class="select" id="setVis" data-act="visibility">'
     +['Only me','My church','Everyone'].map(function(v){const k=v==='Only me'?'me':v==='My church'?'church':'all';
       return '<option value="'+k+'"'+(state.prefs.visibility===k?' selected':'')+'>'+v+'</option>';}).join('')+'</select></div>'
-    +prefRow('Show my giving on my profile','showGiving','Off by default — giving stays private')
     +'<p class="cap">'+ico('lock',13)+' No ads. Member data is never sold or shared with third parties.</p></div>'
     +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Your data</span>'
     +'<button class="btn btn-ghost btn-block" data-act="export">'+ico('file',17)+'Export my data</button>'
     +'<button class="btn btn-ghost btn-block" data-act="delete-account" style="color:var(--live)">'+ico('x',17)+'Delete my account</button></div>'
     +'<div class="glass pad stack gap-8"><span class="eyebrow accent">About</span>'
     +'<div class="row gap-10">'+arkGlyph(30)+wordmark(17)+'</div>'
-    +'<p class="cap">Prototype build · Sacred Futurism design system · Data '+(state.ui.dbState==='live'?'syncing live':'local to this device')+'</p></div>'
-    +'<div style="height:30px"></div></div>';
-}
-function viewGivingHistory(){
-  const list=(state.local.giving||[]).slice().reverse();
-  return topbar('Giving history',money(totalGiven())+' given in total',{back:'me'})
-    +'<div class="view stack gap-12">'
-    +(list.length?list.map(function(g){
-      return '<article class="glass pad stack gap-12"><div class="row between gap-12">'
-        +'<div class="stack gap-3"><span class="h3">'+esc(g.campaign)+'</span><span class="cap">'+esc(g.church||'')+' · '+fmtDate(g.date)+'</span></div>'
-        +'<span class="h2 accent num">'+money(g.amount)+'</span></div>'
-        +'<div class="row between gap-12"><span class="badge badge-mint">'+ico('check',12)+'Receipt '+esc(g.receipt)+'</span>'
-        +'<button class="chip" data-act="view-receipt" data-id="'+esc(g.receipt)+'">'+ico('file',14)+'View receipt</button></div></article>';}).join('')
-      :empty('gift','No giving yet','When you give to a campaign, receipts appear here — 80G ready.',
-        '<button class="btn btn-sm btn-primary" data-go="community">See campaigns</button>'))
+    +'<p class="cap">Prototype build · Data '+(state.ui.dbState==='live'?'syncing live':'local to this device')+'</p></div>'
     +'<div style="height:30px"></div></div>';
 }
 function viewSaved(){
@@ -2051,12 +2692,12 @@ function viewFamily(){
 function myChurch(){const s=state.session;return s&&s.churchId?churchById(s.churchId):null;}
 function myPosts(){const s=state.session;return state.data.posts.filter(function(p){return s&&p.churchId===s.churchId;}).sort(function(a,b){return dt(b.createdAt)-dt(a.createdAt);});}
 function myEvents(){const s=state.session;return state.data.events.filter(function(e){return s&&e.churchId===s.churchId;}).sort(function(a,b){return dt(a.datetime)-dt(b.datetime);});}
-function myCampaigns(){const s=state.session;return state.data.campaigns.filter(function(g){return s&&g.churchId===s.churchId;});}
 function viewConsole(){
-  const c=myChurch(),posts=myPosts(),evs=myEvents(),camps=myCampaigns();
+  const c=myChurch(),posts=myPosts(),evs=myEvents();
   const reach=posts.reduce(function(a,p){return a+Object.keys(p.reactions||{}).reduce(function(x,k){return x+(p.reactions[k]||0);},0);},0);
-  const raised=camps.reduce(function(a,g){return a+(g.raised||0);},0);
   const prayers=state.data.prayers.filter(function(p){return p.churchId===(state.session&&state.session.churchId);});
+  const cid=state.session&&state.session.churchId,cmPend=cid?pendingCommunityRequests(cid).length:0;
+  const myComms=state.data.communities.filter(function(x){return x.churchId===cid;});
   return topbar(esc((c&&c.name)||(state.session&&state.session.church&&state.session.church.name)||'Your church'),'Church console',{
     actions:'<div class="row gap-8">'+(state.session&&state.session.verified?verifiedTag():'')+'</div>',
     extra:'<div class="row gap-10 mt-16 wrap">'
@@ -2064,8 +2705,12 @@ function viewConsole(){
       +'<button class="btn btn-sm btn-ghost" data-act="compose" data-v="broadcast">'+ico('radio',16)+'Broadcast</button>'
       +(c?'<button class="btn btn-sm btn-ghost" data-go="church-profile" data-id="'+c.id+'">'+ico('eye',16)+'Public view</button>':'')+'</div>'})
     +'<div class="view-wide stack">'
+    +(c&&c.inviteCode?'<div class="invite-card"><div class="stack gap-4" style="min-width:0"><span class="eyebrow accent">Member invite code</span>'
+      +'<span class="invite-code">'+esc(c.inviteCode)+'</span><span class="cap">Share it with your members. New believers need it to join '+esc(c.name)+'.</span></div>'
+      +'<span class="row gap-8" style="flex:none"><button class="btn btn-sm btn-ghost" data-act="copy-invite" data-v="'+esc(c.inviteCode)+'">'+ico('file',15)+'Copy</button>'
+      +'<button class="btn btn-sm btn-primary" data-act="share-invite" data-v="'+esc(c.inviteCode)+'">'+ico('share',15)+'Share</button></span></div>':'')
     +'<div class="row gap-12 wrap">'
-    +[['Followers',Number((c&&c.followers)||0).toLocaleString('en-IN'),'accent'],['Reach this week',Number(reach).toLocaleString('en-IN'),'ice'],['Upcoming events',evs.filter(function(e){return dt(e.datetime)>=new Date();}).length,'mint'],['Given this month',money(raised),'accent']]
+    +[['Followers',Number((c&&c.followers)||0).toLocaleString('en-IN'),'accent'],['Reach this week',Number(reach).toLocaleString('en-IN'),'ice'],['Upcoming events',evs.filter(function(e){return dt(e.datetime)>=new Date();}).length,'mint'],['Communities',myComms.length,'accent']]
       .map(function(s){return '<div class="stat" style="flex:1;min-width:150px"><div class="v '+s[2]+' num">'+s[1]+'</div><div class="cap mt-4">'+s[0]+'</div></div>';}).join('')+'</div>'
     +'<div class="sec-title"><span class="eyebrow accent">Needs you</span></div>'
     +'<div class="stack gap-10">'
@@ -2073,7 +2718,8 @@ function viewConsole(){
     +consoleRow('msg','Church-to-church',(function(){const id=state.session&&state.session.churchId;const u=id?unreadThreads(id):0,p=id?pendingFor(id).length:0;
         return (u?u+' unread message'+(u>1?'s':''):'Inbox is clear')+' · '+(p?p+' connection request'+(p>1?'s':''):'no new requests');})(),'console-c2c','badge-ice',
         (state.session&&state.session.churchId)?unreadThreads(state.session.churchId)+pendingFor(state.session.churchId).length:0)
-    +consoleRow('users','Join requests','4 members waiting for approval','console-members','badge-accent',4)
+    +consoleRow('users','Community requests',cmPend?cmPend+' believer'+(cmPend>1?'s':'')+' asking to join your communities':'No one waiting · create and manage communities','console-communities','badge-accent',cmPend)
+    +consoleRow('users','Membership requests','4 members waiting for approval','console-members','badge-accent',4)
     +'</div>'
     +'<div class="sec-title"><span class="eyebrow accent">Recent posts</span><button class="cap" data-go="console-compose">New post</button></div>'
     +(posts.length?'<div class="stack gap-12">'+posts.slice(0,4).map(function(p){
@@ -2086,8 +2732,8 @@ function viewConsole(){
     +'<div class="sec-title"><span class="eyebrow accent">Ministry operations</span></div>'
     +'<div class="stack gap-10">'
     +consoleRow('users','Members & groups','Roles, small groups, transfer letters','console-members','',0)
+    +consoleRow('users','Communities',myComms.length+' communit'+(myComms.length===1?'y':'ies')+' · you approve who joins','console-communities','',0)
     +consoleRow('cal','Volunteer rosters','Sunday teams, QR attendance check-in','console-members','',0)
-    +consoleRow('gift','Giving & campaigns',(camps.length?camps.length+' open campaign'+(camps.length===1?'':'s'):'No campaign open')+' · auto 80G receipts','console-giving','',0)
     +'</div><div style="height:30px"></div></div>';
 }
 function consoleRow(icon,title,sub,route,badge,count){
@@ -2206,29 +2852,6 @@ function viewConsoleEvents(){
         '<button class="btn btn-sm btn-primary" data-act="compose" data-v="event">Create an event</button>'))
     +'<div style="height:30px"></div></div>';
 }
-function viewConsoleGiving(){
-  const camps=myCampaigns();
-  return topbar('Giving','Campaigns and receipts',{back:'console',
-    actions:'<button class="icon-btn active" data-act="new-campaign" aria-label="New campaign">'+ico('plus',18)+'</button>'})
-    +'<div class="view stack gap-14">'
-    +(camps.length?camps.map(function(g){const pct=Math.min(100,Math.round(g.raised/g.goal*100));
-      return '<article class="glass pad stack gap-14"><div class="row between gap-12">'
-        +'<div class="stack gap-3"><span class="eyebrow accent">'+esc(g.category||'Campaign')+'</span><span class="h2">'+esc(g.title)+'</span></div>'
-        +'<span class="badge badge-mint num">'+pct+'%</span></div>'
-        +'<div class="progress"><i style="width:'+pct+'%"></i></div>'
-        +'<div class="row between"><span class="h3 accent num">'+money(g.raised)+'</span><span class="cap num">goal '+money(g.goal)+'</span></div>'
-        +'<div class="row gap-8 wrap"><button class="chip" data-go="campaign" data-id="'+g.id+'">'+ico('eye',14)+'Public page</button>'
-        +'<button class="chip" data-act="soon" data-v="Transparency report">'+ico('file',14)+'Report</button>'
-        +'<button class="chip" data-act="soon" data-v="Recurring giving">'+ico('clock',14)+'Recurring</button></div></article>';}).join('')
-      :empty('gift','No campaigns yet','Open a campaign for a building fund, missions or benevolence.',
-        '<button class="btn btn-sm btn-primary" data-act="new-campaign">Start a campaign</button>'))
-    +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Payments</span>'
-    +'<div class="row between gap-12"><span class="body">UPI · Razorpay</span><span class="badge badge-mint">'+ico('check',12)+'Ready</span></div>'
-    +'<div class="row between gap-12"><span class="body">Cards · international</span><span class="badge badge-ice">Stripe</span></div>'
-    +'<div class="row between gap-12"><span class="body">Auto receipts (80G)</span><span class="badge badge-mint">'+ico('check',12)+'On</span></div>'
-    +'<p class="cap">Prototype build — no payment gateway is connected and no money moves.</p></div>'
-    +'<div style="height:30px"></div></div>';
-}
 function viewConsoleMembers(){
   const rows=[['Anitha Raj','Worship team','Leader'],['Joseph Kumar','Ushers','Member'],['Priya S.','Sunday school','Leader'],['David M.','Youth','Member'],['Sarah T.','Prayer team','Member']];
   return topbar('Members','People and ministries',{back:'console'})
@@ -2280,7 +2903,7 @@ function viewConsoleC2C(){
       +'<div class="glass pad stack gap-12 mt-14"><span class="eyebrow accent">Connected · '+conns.length+'</span>'
       +(conns.length?conns.map(function(c){return '<div class="row between gap-12"><button class="row gap-10" data-go="church-profile" data-id="'+c.id+'" style="text-align:left;min-width:0">'
         +'<span class="avatar avatar-sm" style="background:'+grad(c.id)+'">'+initials(c.name)+'</span>'
-        +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">'+esc(c.city||'')+' · '+esc(c.denomination||'')+'</span></span></button>'
+        +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14.5px">'+esc(c.name)+'</span><span class="cap">'+esc(c.city||'')+' · '+esc((c.languages||[]).join(', '))+'</span></span></button>'
         +'<button class="chip" data-act="c2c-message" data-id="'+c.id+'" style="flex:none">'+ico('msg',14)+'Message</button></div>';}).join('')
         :'<p class="cap">No connections yet. Find churches in the Discover tab.</p>')+'</div>'
       +(outgoing.length?'<div class="glass pad stack gap-12 mt-14"><span class="eyebrow accent">Sent · waiting</span>'
@@ -2376,12 +2999,65 @@ function renderSheet(){
       +'<div class="row gap-10 mt-16"><button class="btn btn-primary grow" data-act="submit-post" data-id="'+esc(cm.id||'')+'">'+ico('send',18)+'Post to '+esc(cm.name)+'</button></div>'
       +'<p class="cap mt-12">Visible to members of this community. Moderators can remove unkind replies.</p>';
   }else if(s.kind==='profile'){
-    const u=state.session||{};
-    inner='<span class="eyebrow accent">Edit profile</span><h2 class="h1 mt-8">How others see you</h2>'
-      +'<div class="field mt-16"><label class="label" for="epName">Name</label><input class="input" id="epName" value="'+esc(u.name||'')+'"></div>'
-      +'<div class="field mt-12"><label class="label" for="epCity">City</label><input class="input" id="epCity" value="'+esc(u.city||'')+'"></div>'
-      +'<div class="field mt-12"><label class="label" for="epBio">Bio</label><textarea class="textarea" id="epBio" placeholder="A line about your walk" style="min-height:90px">'+esc(u.bio||'')+'</textarea></div>'
+    const u=state.session||{},e=state.ui.profileErrors||{};
+    const ph=String(u.phone||''),dial=(ph.match(/^\+\d{1,3}/)||['+91'])[0],num=ph.replace(/^\+\d{1,3}\s*/,'');
+    inner='<span class="eyebrow accent">Edit profile</span><h2 class="h1 mt-8">Your details</h2>'
+      +'<div class="row gap-14 mt-16"><button class="me-avatar" data-act="pick-avatar" data-target="profile" aria-label="Change photo">'+avatarHTML(u,'avatar-lg')+'<span class="ob-avatar-edit">'+ico('edit',13)+'</span></button>'
+      +'<div class="stack gap-6"><span class="h3">Profile photo</span><div class="row gap-8"><button class="chip" data-act="pick-avatar" data-target="profile">'+ico('upload',14)+'Change</button>'
+      +(u.photo?'<button class="chip" data-act="remove-photo">'+ico('x',13)+'Remove</button>':'')+'</div></div></div>'
+      +'<div class="stack gap-14 mt-16">'
+      +obField('epName','Display name','<input class="input" id="epName" value="'+esc(u.name||'')+'">',e.name)
+      +obField('epUser','Username','<div class="input-group"><span class="ig-pre">@</span><input class="input" id="epUser" autocapitalize="none" spellcheck="false" maxlength="24" value="'+esc(u.handle||'')+'"></div>',e.user)
+      +obField('epPhone','Contact number','<div class="input-group"><select class="select ig-select" id="epDial" aria-label="Country code">'
+        +DIAL_CODES.map(function(d){return '<option'+(dial===d?' selected':'')+'>'+d+'</option>';}).join('')+'</select><input class="input" id="epPhone" type="tel" inputmode="tel" value="'+esc(num)+'"></div>',e.phone)
+      +'<div class="grid-2">'+obField('epCity','City','<input class="input" id="epCity" value="'+esc(u.city||'')+'">',e.city)
+      +obField('epCountry','Country','<select class="select" id="epCountry">'+COUNTRIES.map(function(c){return '<option'+((u.country||'India')===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>')+'</div>'
+      +obField('epLang','Language','<select class="select" id="epLang">'+LANGS.map(function(l){return '<option'+((u.lang||'English')===l?' selected':'')+'>'+l+'</option>';}).join('')+'</select>')
+      +obField('epGender','Gender','<select class="select" id="epGender"><option value="">Not shown</option>'+GENDERS.map(function(g){return '<option'+(u.gender===g?' selected':'')+'>'+g+'</option>';}).join('')+'</select>','','',true)
+      +obField('epBio','Bio','<textarea class="textarea" id="epBio" placeholder="A line about your walk" style="min-height:84px">'+esc(u.bio||'')+'</textarea>','','',true)
+      +'</div>'
       +'<button class="btn btn-primary btn-block mt-16" data-act="save-profile">Save profile</button>';
+  }else if(s.kind==='crop'){
+    inner='<span class="eyebrow accent">Profile photo</span><h2 class="h1 mt-8">Crop to a square</h2>'
+      +'<p class="cap mt-8">Drag to position. Use the slider, or scroll, to zoom.</p>'
+      +'<div class="crop-box mt-16" id="cropBox"><img id="cropImg" src="'+esc(CROP.img?CROP.img.src:'')+'" alt="Photo being cropped" draggable="false"><div class="crop-ring" aria-hidden="true"></div></div>'
+      +'<div class="row gap-12 mt-16 crop-zoom">'+ico('search',16,'dim')+'<input type="range" id="cropZoom" min="1" max="4" step="0.01" value="'+CROP.zoom+'" aria-label="Zoom" class="grow"></div>'
+      +'<div class="row gap-10 mt-16"><button class="btn btn-ghost" data-act="close-sheet">Cancel</button><button class="btn btn-primary grow" data-act="crop-use">'+ico('check',17)+'Use this photo</button></div>';
+  }else if(s.kind==='terms'){
+    const sec=function(h,t){return '<h3 class="h3 mt-16">'+h+'</h3><p class="body mt-4" style="font-size:14.5px">'+t+'</p>';};
+    inner='<span class="eyebrow accent">believersArk</span><h2 class="h1 mt-8">Terms &amp; Conditions</h2><p class="cap mt-8">Prototype terms, for review before launch.</p>'
+      +'<div class="terms-scroll">'
+      +sec('1. Who can join','believersArk is for believers and verified churches. You join a church with the invite code that church gives its members. You must be 13 or older, or use a family account set up by a parent.')
+      +sec('2. Your account','Keep your sign-in secure and your details accurate. Your username is public; your email and contact number are seen only by you and the admins of churches you belong to.')
+      +sec('3. How we treat each other','Speak kindly. No harassment, hate, spam, or content that endangers anyone. Church admins and community moderators may remove posts and members who break these rules.')
+      +sec('4. Your content','You own what you post. You allow believersArk to show it to the audience you chose. You can delete it at any time.')
+      +sec('5. Privacy','We never sell your data and never show ads. You can export or delete your data from Settings &amp; privacy. Private prayer requests are visible only to your pastors.')
+      +sec('6. Children','Child and youth profiles are managed by a parent, see only kids content, and cannot send direct messages.')
+      +sec('7. Changes','If these terms change, we will tell you in the app before the change takes effect.')
+      +'</div>'
+      +'<div class="row gap-10 mt-16"><button class="btn btn-ghost" data-act="close-sheet">Close</button>'
+      +(state.route==='onboard'?'<button class="btn btn-primary grow" data-act="accept-terms">'+ico('check',17)+'I agree</button>':'')+'</div>';
+  }else if(s.kind==='join-church'){
+    const e=state.ui.joinError,c=state.ui.joinChurch?churchById(state.ui.joinChurch):null;
+    inner='<span class="eyebrow accent">Join another church</span><h2 class="h1 mt-8">Enter its invite code</h2>'
+      +'<p class="cap mt-8">Each church shares its own code with members. You can belong to as many churches as you like.</p>'
+      +'<div class="row gap-10 mt-16"><input class="input code-input grow" id="joinCode" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" placeholder="e.g. BETHEL-3304" value="'+esc(state.ui.joinCodeVal||'')+'">'
+      +'<button class="btn btn-primary" data-act="join-church-code" style="height:52px">Join</button></div>'
+      +(e?'<span class="field-error mt-8" role="alert">'+ico('x',12)+esc(e)+'</span>':'')
+      +(c?'<div class="note-box mt-16">'+ico('check',18)+'<span>You\'re now a member of <b>'+esc(c.name)+'</b>. Its updates are in your feed and its communities are open to you.</span></div>':'')
+      +'<p class="cap mt-16">Prototype codes: GRACE-7291 · BETHEL-3304 · MARTHOMA-1876 · NEWLIFE-6112 · HOPE-2210 · EMMANUEL-1994</p>';
+  }else if(s.kind==='dir-filters'){
+    inner=filterSheet();
+  }else if(s.kind==='new-community'){
+    const icons=[['users','People'],['music','Music'],['hands','Prayer'],['book','Bible'],['globe','Outreach'],['sparkle','Youth'],['star','Serving'],['cal','Events']];
+    inner='<span class="eyebrow accent">New community</span><h2 class="h1 mt-8">Start a community</h2>'
+      +'<p class="cap mt-8">Only people who follow your church can see it and ask to join. You approve every member.</p>'
+      +'<div class="stack gap-14 mt-16">'
+      +obField('ncName','Name','<input class="input" id="ncName" maxlength="40" placeholder="Youth fellowship" value="'+esc(state.ui.ncName||'')+'">')
+      +obField('ncAbout','What is it for?','<textarea class="textarea" id="ncAbout" maxlength="240" placeholder="Who it is for and what happens here" style="min-height:84px">'+esc(state.ui.ncAbout||'')+'</textarea>','','',true)
+      +'<div class="field"><span class="label">Icon</span><div class="row gap-8 wrap">'+icons.map(function(x){
+        return '<button class="chip'+((state.ui.ncIcon||'users')===x[0]?' on':'')+'" data-act="nc-icon" data-v="'+x[0]+'">'+ico(x[0],14)+x[1]+'</button>';}).join('')+'</div></div></div>'
+      +'<button class="btn btn-primary btn-block mt-16" data-act="submit-community">'+ico('plus',17)+'Create community</button>';
   }else if(s.kind==='milestone'){
     inner='<span class="eyebrow accent">Add a milestone</span><h2 class="h1 mt-8">Mark the moment</h2>'
       +'<div class="row gap-8 wrap mt-16">'+['Baptism','Confirmation','Marriage','Dedication','First communion','Ordination'].map(function(m){
@@ -2405,32 +3081,11 @@ function renderSheet(){
       +'<div class="row gap-10 mt-16"><button class="btn btn-ghost btn-sm grow" data-act="note-verse">'+ico('edit',15)+'Note</button>'
       +'<button class="btn btn-ghost btn-sm grow" data-act="share-verse">'+ico('share',15)+'Share</button></div>';
   }else if(s.kind==='notifications'){
-    const items=[['Grace Cathedral is live now','2m','live'],['Your reading plan is waiting','1h','accent'],['3 people are praying for your request','3h','rose'],['Building fund reached 62%','1d','mint']];
+    const items=[['Grace Cathedral is live now','2m','live'],['Your reading plan is waiting','1h','accent'],['3 people are praying for your request','3h','rose']];
     inner='<span class="eyebrow accent">Notifications</span><h2 class="h1 mt-8">Recent</h2><div class="stack gap-10 mt-16">'
       +items.map(function(i){return '<div class="row between gap-12" style="padding:13px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)">'
         +'<span class="body" style="font-size:14.5px;color:var(--text-1)">'+esc(i[0])+'</span><span class="cap">'+i[1]+'</span></div>';}).join('')+'</div>'
       +'<button class="btn btn-ghost btn-block mt-16" data-go="settings">Notification settings</button>';
-  }else if(s.kind==='receipt'){
-    const g=(state.local.giving||[]).filter(function(x){return x.receipt===s.params.id;})[0]||{};
-    inner='<div class="stack center gap-10"><div class="icon-btn active" style="width:54px;height:54px">'+ico('check',26)+'</div>'
-      +'<span class="eyebrow accent">Receipt '+esc(g.receipt||'')+'</span>'
-      +'<span class="display" style="font-size:34px">'+money(g.amount||0)+'</span></div>'
-      +'<div class="stack gap-10 mt-24">'
-      +[['Campaign',g.campaign||''],['Church',g.church||''],['Date',g.date?fmtDate(g.date):''],['Method','UPI (prototype)'],['80G eligible','Yes']]
-        .map(function(r){return '<div class="row between gap-12"><span class="cap">'+r[0]+'</span><span class="h3" style="font-size:14.5px">'+esc(r[1])+'</span></div>';}).join('')+'</div>'
-      +'<p class="cap mt-16">Prototype receipt — no payment was processed.</p>';
-  }else if(s.kind==='campaign'){
-    inner='<span class="eyebrow accent">New campaign</span><h2 class="h1 mt-8">What are you raising for?</h2>'
-      +'<div class="field mt-16"><label class="label" for="gcTitle">Title</label><input class="input" id="gcTitle" placeholder="Building fund"></div>'
-      +'<div class="field mt-12"><label class="label" for="gcGoal">Goal (₹)</label><input class="input" id="gcGoal" type="number" inputmode="numeric" placeholder="500000"></div>'
-      +'<div class="row gap-8 wrap mt-16">'+['Building','Missions','Benevolence','Youth','Relief'].map(function(c){
-        return '<button class="chip'+((state.ui.gcCat||'Building')===c?' on':'')+'" data-act="gc-cat" data-v="'+c+'">'+c+'</button>';}).join('')+'</div>'
-      +'<div class="field mt-16"><label class="label" for="gcDesc">Description</label><textarea class="textarea" id="gcDesc" placeholder="What will this build?"></textarea></div>'
-      +'<button class="btn btn-primary btn-block mt-16" data-act="submit-campaign">Open campaign</button>';
-  }else if(s.kind==='amount'){
-    inner='<span class="eyebrow accent">Custom amount</span><h2 class="h1 mt-8">How much would you like to give?</h2>'
-      +'<div class="field mt-16"><label class="label" for="amtIn">Amount (₹)</label><input class="input" id="amtIn" type="number" inputmode="numeric" placeholder="1500"></div>'
-      +'<button class="btn btn-primary btn-block mt-16" data-act="set-amount">Set amount</button>';
   }else if(s.kind==='summary'){
     const p=state.data.posts.find(function(x){return x.id===s.params.id;})||{};
     inner='<div class="row gap-10"><span class="icon-btn" style="color:var(--lavender);border-color:rgba(192,143,208,.4)">'+ico('sparkle',18)+'</span>'
@@ -2454,7 +3109,7 @@ function renderSheet(){
       +'<div class="icon-btn" style="width:56px;height:56px;color:var(--lavender);border-color:rgba(192,143,208,.35);background:rgba(192,143,208,.1)">'+ico('sparkle',26)+'</div>'
       +'<span class="badge badge-lav">In design</span>'
       +'<h2 class="h1">'+esc(s.params.v||'Coming soon')+'</h2>'
-      +'<p class="body">This module is specified and designed, and lands in the next build phase of believersArk. The MVP focuses on churches, feed, journey, prayer and giving.</p></div>';
+      +'<p class="body">This module is specified and designed, and lands in the next build phase of believersArk. The first release focuses on churches, feed, communities, journey and prayer.</p></div>';
   }
   if(s.kind==='image'){
     const p=state.data.posts.find(function(x){return x.id===s.params.id;})
@@ -2476,6 +3131,7 @@ function renderSheet(){
 /* ---------- root render ---------- */
 function render(){
   document.documentElement.setAttribute('data-app-theme',state.theme);
+  if(state.route==='onboard'&&document.getElementById('obForm'))captureOnboard();
   const r=state.route;
   let html='';
   if(r==='splash')html=viewSplash();
@@ -2485,7 +3141,6 @@ function render(){
   else if(r==='onboard')html=viewOnboardBeliever();
   else if(r==='onboard-church')html=viewOnboardChurch();
   else if(r==='pending')html=viewPending();
-  else if(r==='moment')html=viewMoment();
   else{
     let body='';
     if(r==='home')body=viewHome();
@@ -2502,23 +3157,24 @@ function render(){
     else if(r==='live')body=viewLive();
     else if(r==='soon')body=viewSoon();
     else if(r==='console-thread')body=viewConsoleThread();
-    else if(r==='campaign')body=viewCampaign();
     else if(r==='biblegpt')body=viewBibleGPT();
     else if(r==='me')body=viewMe();
     else if(r==='settings')body=viewSettings();
-    else if(r==='giving-history')body=viewGivingHistory();
     else if(r==='family')body=viewFamily();
     else if(r==='console')body=viewConsole();
     else if(r==='console-compose')body=viewConsoleCompose();
     else if(r==='console-events')body=viewConsoleEvents();
-    else if(r==='console-giving')body=viewConsoleGiving();
+    else if(r==='console-communities')body=viewConsoleCommunities();
     else if(r==='console-members')body=viewConsoleMembers();
     else if(r==='console-c2c')body=viewConsoleC2C();
     else if(r==='console-care')body=viewConsoleCare();
     else body=viewHome();
     html='<div class="shell">'+renderNav()+'<main class="main" id="main">'+body+'</main></div>';
   }
-  document.getElementById('root').innerHTML=html+renderSheet()+(state.ui.toast?'<div class="toast">'+esc(state.ui.toast)+'</div>':'');
+  document.getElementById('root').innerHTML=html+renderSheet();
+  if(state.ui.sheet&&state.ui.sheet.kind==='crop')applyCrop();
+  if(state.route==='churches')restoreDirSearch();
+  syncOverlay();
 }
 
 /* ---------- actions ---------- */
@@ -2550,7 +3206,12 @@ const ACTIONS={
       return;
     }
     if(state.ui.authRole==='church'){state.ui.onboard={};go('onboard-church');}
-    else{state.ui.onboard={follows:(state.local.follows||[]).slice(),lang:'English'};state.ui.step=0;go('onboard');}
+    else{
+      const id=String(state.ui.authId||''),isMail=id.indexOf('@')>-1;
+      state.ui.onboard={user:isMail?suggestHandle(id.split('@')[0]):'',email:isMail?id:'',emailLocked:false,
+        phone:isMail?'':id.replace(/^\+\d{1,3}\s*/,'').replace(/\D/g,''),lang:'English',country:'India',dial:'+91'};
+      state.ui.obErrors={};state.ui.step=0;go('onboard');
+    }
   },
   'social-signin':async function(el){
     const p=el.dataset.p,label=(SOCIAL[p]||{}).label||'That provider';
@@ -2571,43 +3232,77 @@ const ACTIONS={
       if(msg)toast(msg);
     }
   },
-  'ob-follow':function(el){
-    const o=state.ui.onboard;o.follows=o.follows||[];
-    const i=o.follows.indexOf(el.dataset.id);
-    if(i>-1)o.follows.splice(i,1);else o.follows.push(el.dataset.id);
+  'ob-gender':function(el){const o=state.ui.onboard;o.gender=o.gender===el.dataset.v?'':el.dataset.v;render();},
+  'ob-clear-photo':function(){state.ui.onboard.photo=null;render();},
+  'open-terms':function(){openSheet('terms');},
+  'accept-terms':function(){state.ui.onboard.terms=true;if(state.ui.obErrors)delete state.ui.obErrors.terms;closeSheet();},
+  'ob-fill-code':function(el){state.ui.onboard.code=el.dataset.v;render();ACTIONS['ob-verify-code']();},
+  'ob-verify-code':function(){
+    captureOnboard();
+    const o=state.ui.onboard,c=churchByInvite(o.code);
+    state.ui.obErrors={};
+    if(!normCode(o.code))state.ui.obErrors.code='Enter the invite code from your church';
+    else if(!c){o.churchId=null;state.ui.obErrors.code='That code doesn\'t match a church on believersArk. Check it with your church office.';}
+    else{o.churchId=c.id;o.code=c.inviteCode;const inp=document.getElementById('obCode');if(inp)inp.value=c.inviteCode;toast('Welcome to '+c.name);}
     render();
   },
-  'ob-plan':function(el){state.ui.onboard.planId=el.dataset.id;render();},
-  'ob-back':function(){state.ui.step=Math.max(0,state.ui.step-1);render();},
+  'ob-goal':function(el){
+    const o=state.ui.onboard,k=el.dataset.k;o.goals=o.goals||[];
+    const i=o.goals.indexOf(k);if(i>-1)o.goals.splice(i,1);else o.goals.push(k);
+    render();
+  },
+  'ob-back':function(){captureOnboard();state.ui.obErrors={};state.ui.step=Math.max(0,state.ui.step-1);render();},
   'ob-next':function(){
-    const o=state.ui.onboard;
+    captureOnboard();
+    const o=state.ui.onboard,err={};
     if(state.ui.step===0){
-      const n=val('obName');
-      if(!n){toast('Tell us your name');return;}
-      o.name=n;o.city=val('obCity');o.lang=val('obLang')||'English';o.denom=val('obDenom');
-      state.ui.step=1;render();return;
+      const user=String(o.user||'').trim().toLowerCase().replace(/^@/,'');
+      if(!user)err.user='Choose a username';
+      else if(!/^[a-z0-9._]{3,24}$/.test(user))err.user='Use 3 to 24 letters, numbers, dots or underscores';
+      else if(takenHandles()[user])err.user='@'+user+' is taken. Try another.';
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(o.email||'').trim()))err.email='Enter a valid email address';
+      const digits=String(o.phone||'').replace(/[\s\-().]/g,'');
+      if(!digits)err.phone='Enter a contact number';else if(!/^\d{6,14}$/.test(digits))err.phone='Use 6 to 14 digits, without the country code';
+      if(!String(o.city||'').trim())err.city='Enter your city';
+      if(!o.country)err.country='Choose your country';
+      if(!o.lang)err.lang='Choose a language';
+      if(!o.terms)err.terms='Please accept the terms to continue';
+      state.ui.obErrors=err;
+      if(Object.keys(err).length){render();const f=document.querySelector('.has-error input,.has-error select');if(f)f.focus();toast('Please check the highlighted fields');return;}
+      o.user=user;o.email=String(o.email).trim();o.phone=digits;o.city=String(o.city).trim();
+      state.ui.step=1;render();window.scrollTo({top:0});return;
     }
-    if(state.ui.step===1){state.ui.step=2;render();return;}
-    const key=accountKey(state.ui.authId);
-    const meta=state.ui.authMeta||{};
-    const session={id:'u_'+key,key:key,role:'believer',name:o.name,city:o.city,lang:o.lang,denom:o.denom,bio:'',
-      avatarSeed:'u_'+key,followers:0,email:state.ui.authId,planId:o.planId||(state.data.plans[0]||{}).id,
-      homeChurchId:(o.follows||[])[0]||null,createdAt:new Date().toISOString(),
-      provider:meta.provider||'email',photo:meta.photo||null};
+    if(state.ui.step===1){
+      if(!o.churchId||!churchByInvite(o.code)){ACTIONS['ob-verify-code']();if(!state.ui.onboard.churchId)return;}
+      state.ui.obErrors={};state.ui.step=2;render();window.scrollTo({top:0});return;
+    }
+    ACTIONS['ob-finish']();
+  },
+  'ob-skip':function(){state.ui.onboard.goals=[];ACTIONS['ob-finish']();},
+  'ob-finish':function(){
+    const o=state.ui.onboard,meta=state.ui.authMeta||{};
+    const key=accountKey(state.ui.authId||o.email);
+    const goals=(o.goals||[]).slice();
+    const planGoal=GOALS.filter(function(g){return g.plan&&goals.indexOf(g.k)>-1;})[0];
+    const c=churchById(o.churchId);
+    const session={id:'u_'+key,key:key,role:'believer',name:(o.name||'').trim()||o.user,handle:o.user,
+      email:o.email,phone:(o.dial||'+91')+' '+o.phone,city:o.city,country:o.country,lang:o.lang,gender:o.gender||'',bio:'',
+      avatarSeed:'u_'+key,followers:0,planId:planGoal?planGoal.plan:null,goals:goals,
+      homeChurchId:o.churchId,memberOf:[o.churchId],createdAt:new Date().toISOString(),
+      provider:meta.provider||'email',photo:o.photo||meta.photo||null};
     state.session=session;saveSession();
     state.prefs.lang=o.lang||'English';savePrefs();
-    state.local.follows=(o.follows||[]).slice();
+    if(state.local.follows.indexOf(o.churchId)<0){state.local.follows.push(o.churchId);dbBump('churches',o.churchId,'followers',1);}
     state.local.planDay=0;state.local.streak=0;saveLocal();
-    (o.follows||[]).forEach(function(id){dbBump('churches',id,'followers',1);});
-    saveProfile();
-    go('home');toast('Welcome to the ark, '+String(o.name).split(' ')[0]);
+    saveProfile();state.ui.obErrors={};
+    go('home');toast('Welcome to '+((c&&c.name)||'the ark')+', '+String(session.name).split(' ')[0]);
   },
   'mock-upload':function(){state.ui.onboard.docs=true;toast('Documents attached');render();},
   'mock-upload-audio':function(){state.ui.audioUp=true;toast('Audio uploaded · transcript generated');render();},
   'church-submit':async function(){
     const name=val('cName');
     if(!name){toast('Your church needs a name');return;}
-    const church={name:name,denomination:val('cDenom')||'Non-denominational',city:val('cCity'),address:val('cAddr'),
+    const church={name:name,city:val('cCity'),address:val('cAddr'),inviteCode:makeInviteCode(name),
       serviceTimes:val('cTimes')?val('cTimes').split('·').map(function(s){return s.trim();}):['Sun 9:30am'],
       languages:val('cLangs')?val('cLangs').split(',').map(function(s){return s.trim();}):['English'],
       pastorName:val('cPastor'),tagline:val('cTag')||'A church family on believersArk',
@@ -2619,11 +3314,11 @@ const ACTIONS={
   },
   'approve-church':async function(){
     const s=state.session;if(!s||!s.church)return;
-    const c=Object.assign({},s.church,{verified:true});
+    const c=Object.assign({},s.church,{verified:true,inviteCode:s.church.inviteCode||makeInviteCode(s.church.name)});
     const id=await dbAdd('churches',c);
     s.verified=true;s.churchId=id||('local_'+uid());
-    if(!id){state.data.churches.push(Object.assign({id:s.churchId},c));}
-    saveSession();go('console');toast('Verified — your church is live in the directory');
+    if(!localDoc('churches',s.churchId))state.data.churches.push(hydrate(Object.assign({id:s.churchId},c)));
+    saveSession();go('console');toast('Verified — share invite code '+c.inviteCode+' with your members');
   },
   'demo-church':function(el){
     const c=churchById(el.dataset.id);if(!c)return;
@@ -2644,14 +3339,45 @@ const ACTIONS={
   'share-church':function(el){const c=churchById(el.dataset.id)||{};shareText(c.name+' · '+(c.tagline||''),'church/'+el.dataset.id);},
   'share-event':function(el){const e=state.data.events.find(function(x){return x.id===el.dataset.id;})||{};shareText(e.title+' · '+fmtDate(e.datetime)+' '+fmtTime(e.datetime)+' · '+(e.churchName||''),'event/'+el.dataset.id);},
   /* communities */
-  'join-community':function(el){
+  'join-community':async function(el){
     if(isChurchSession()){toast('Communities are for believers — churches speak through posts and broadcasts');return;}
     if(!requireAuth())return;
-    const id=el.dataset.id,c=communityById(id),list=state.local.communities=(state.local.communities||[]);
-    const i=list.indexOf(id);
-    if(i>-1){list.splice(i,1);dbBump('communities',id,'members',-1);toast('Left '+((c&&c.name)||'the community'));}
-    else{list.push(id);dbBump('communities',id,'members',1);toast('Welcome to '+((c&&c.name)||'the community')+' — say hello when you are ready');}
-    saveLocal();render();
+    const c=communityById(el.dataset.id);if(!c)return;
+    if(myChurchIds().indexOf(c.churchId)<0){toast('Follow '+((churchById(c.churchId)||{}).name||'the church')+' first');return;}
+    if(memberStatus(c.id)==='pending'||memberStatus(c.id)==='approved')return;
+    const s=state.session;
+    await dbAdd('communityRequests',{communityId:c.id,churchId:c.churchId,userKey:myKey(),userName:s.name,userCity:s.city||'',status:'pending',createdAt:new Date().toISOString()});
+    render();toast('Request sent — an admin at '+((churchById(c.churchId)||{}).name||'the church')+' will review it');
+  },
+  'cancel-community':function(el){
+    const r=myRequest(el.dataset.id);if(!r||r.status!=='pending')return;
+    dbUpdate('communityRequests',r.id,{status:'withdrawn'});render();toast('Request withdrawn');
+  },
+  'leave-community':function(el){
+    const r=myRequest(el.dataset.id),c=communityById(el.dataset.id);if(!r)return;
+    if(!state.ui.confirmLeave||state.ui.confirmLeave!==el.dataset.id){state.ui.confirmLeave=el.dataset.id;toast('Tap Joined again to leave '+((c&&c.name)||'the community'));return;}
+    state.ui.confirmLeave=null;dbUpdate('communityRequests',r.id,{status:'left'});render();toast('You left '+((c&&c.name)||'the community'));
+  },
+  'cm-approve':function(el){
+    const r=state.data.cmRequests.find(function(x){return x.id===el.dataset.id;});if(!r)return;
+    dbUpdate('communityRequests',r.id,{status:'approved',decidedAt:new Date().toISOString()});
+    render();toast(r.userName+' can now join '+((communityById(r.communityId)||{}).name||'the community'));
+  },
+  'cm-decline':function(el){
+    const r=state.data.cmRequests.find(function(x){return x.id===el.dataset.id;});if(!r)return;
+    dbUpdate('communityRequests',r.id,{status:'declined',decidedAt:new Date().toISOString()});render();toast('Request declined');
+  },
+  'new-community':function(){state.ui.ncIcon=state.ui.ncIcon||'users';openSheet('new-community');},
+  'nc-icon':function(el){state.ui.ncIcon=el.dataset.v;state.ui.ncName=val('ncName');state.ui.ncAbout=val('ncAbout');render();},
+  'submit-community':async function(){
+    const s=state.session;if(!s||!s.churchId){toast('Church admins only');return;}
+    const name=val('ncName'),about=val('ncAbout');
+    if(name.length<3){toast('Give the community a name');return;}
+    const hues={users:340,music:40,hands:20,book:200,globe:160,sparkle:280,star:45,cal:230};
+    const icon=state.ui.ncIcon||'users';
+    await dbAdd('communities',{churchId:s.churchId,name:name,tagline:about.slice(0,80)||'A community of '+((myChurch()||{}).name||'our church'),about:about,
+      members:0,hue:hues[icon]||200,icon:icon,mods:[s.name],createdAt:new Date().toISOString()});
+    state.ui.ncName='';state.ui.ncAbout='';closeSheet();go('console-communities');toast('Community created — followers can now ask to join');
   },
   'thread-sort':function(el){state.ui.threadSort=el.dataset.v;render();},
   'new-thread':function(el){
@@ -2668,7 +3394,7 @@ const ACTIONS={
     toast(r[k]?'Reminder on':'Reminder off');
   },
   /* live stream */
-  'join-live':function(el){go('live',{id:el.dataset.id,from:state.route==='moment'?'home':state.route});clearTimeout(ACTIONS._mt);},
+  'join-live':function(el){go('live',{id:el.dataset.id,from:state.route});},
   'live-react':function(el){
     const box=document.querySelector('.live-float');if(!box)return;
     const s=document.createElement('span');s.textContent=el.dataset.e;s.style.setProperty('--dx',Math.round(Math.random()*44-22)+'px');box.appendChild(s);
@@ -2774,41 +3500,86 @@ const ACTIONS={
     state.ui.threadSort='Latest';go('community-page',{id:cid});toast('Posted — the community can see it');
   },
   'open-moment':function(el){
-    state.ui.momentIndex=Number(el.dataset.i)||0;state.ui.momentPost=0;
-    const m=momentSources()[state.ui.momentIndex];
-    if(m){const k=m.author.type+':'+m.author.id;
-      if((state.local.seenMoments||[]).indexOf(k)<0){state.local.seenMoments.push(k);saveLocal();}}
-    go('moment');
-    clearTimeout(ACTIONS._mt);ACTIONS._mt=setTimeout(function(){ACTIONS['moment-next']();},7000);
+    const i=Number(el.dataset.i)||0,m=momentSources()[i];if(!m)return;
+    markSeen(m);
+    state.ui.news=null;state.ui.story={i:i,p:0};state.ui.fx='story';
+    STORY.paused=false;startStory();syncOverlay();render();
   },
-  'moment-next':function(){
-    if(state.route!=='moment')return;
-    const src=momentSources(),m=src[state.ui.momentIndex||0];
-    if(!m)return go('home');
-    if((state.ui.momentPost||0)+1<m.posts.length){state.ui.momentPost=(state.ui.momentPost||0)+1;}
-    else if((state.ui.momentIndex||0)+1<src.length){
-      state.ui.momentIndex=(state.ui.momentIndex||0)+1;state.ui.momentPost=0;
-      const k=src[state.ui.momentIndex].author.type+':'+src[state.ui.momentIndex].author.id;
-      if((state.local.seenMoments||[]).indexOf(k)<0){state.local.seenMoments.push(k);saveLocal();}
-    }else{clearTimeout(ACTIONS._mt);return go('home');}
-    render();
-    clearTimeout(ACTIONS._mt);ACTIONS._mt=setTimeout(function(){ACTIONS['moment-next']();},7000);
+  'story-next':function(){storyStep(1);},
+  'story-prev':function(){storyStep(-1);},
+  'story-pause':function(){STORY.paused=!STORY.paused;syncOverlay();},
+  'close-story':function(){closeStory();},
+  'share-story':function(el){
+    const p=state.data.posts.find(function(x){return x.id===el.dataset.id;})||{};
+    STORY.paused=true;syncOverlay();
+    shareText((p.churchName||'A church')+' on believersArk: '+(p.content||'').slice(0,140),'church/'+(p.churchId||''));
   },
-  'moment-prev':function(){
-    if((state.ui.momentPost||0)>0)state.ui.momentPost--;
-    else if((state.ui.momentIndex||0)>0){state.ui.momentIndex--;state.ui.momentPost=0;}
-    render();
-    clearTimeout(ACTIONS._mt);ACTIONS._mt=setTimeout(function(){ACTIONS['moment-next']();},7000);
+  'open-news':function(el){
+    stopStory();state.ui.story=null;state.ui.news=el.dataset.id;state.ui.fx='news';syncOverlay();
+    try{history.replaceState(null,'','#news/'+el.dataset.id);}catch(e){}
   },
-  'close-moment':function(){clearTimeout(ACTIONS._mt);go('home');},
+  'close-news':function(){
+    const root=document.getElementById('overlay-root');
+    (root?root.querySelectorAll('audio,video'):[]).forEach(function(m){try{m.pause();}catch(e){}});
+    state.ui.news=null;state.ui.fx=null;syncOverlay();
+    try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+  },
+  'share-news':function(el){const n=newsById(el.dataset.id)||{};shareText(n.title+' — '+(n.dek||''),'news/'+el.dataset.id);},
+  'rail-more':function(){state.ui.railAll=!state.ui.railAll;render();},
+  'rail-day':function(el){state.ui.railDay=state.ui.railDay===el.dataset.v?null:el.dataset.v;render();},
+  'rail-cal':function(el){const b=state.ui.railMonth?new Date(state.ui.railMonth):new Date();b.setDate(1);b.setMonth(b.getMonth()+Number(el.dataset.v));state.ui.railMonth=b.toISOString();state.ui.railDay=null;render();},
   'person-tab':function(el){state.ui.personTab=el.dataset.v;render();},
   'mark-read-notifs':function(){state.local.notifSeen=new Date().toISOString();saveLocal();render();toast('All caught up');},
   'edit-profile':function(){if(!requireAuth())return;openSheet('profile');},
   'save-profile':function(){
-    const n=val('epName');if(!n){toast('Add your name');return;}
-    state.session.name=n;state.session.city=val('epCity');state.session.bio=val('epBio');
-    saveSession();saveProfile();closeSheet();render();toast('Profile updated');
+    const s=state.session,e={};
+    const name=val('epName'),user=val('epUser').toLowerCase().replace(/^@/,''),digits=val('epPhone').replace(/[\s\-().]/g,''),city=val('epCity');
+    if(!name)e.name='Add the name people will see';
+    if(!/^[a-z0-9._]{3,24}$/.test(user))e.user='Use 3 to 24 letters, numbers, dots or underscores';
+    else if(user!==s.handle&&takenHandles()[user])e.user='@'+user+' is taken';
+    if(!/^\d{6,14}$/.test(digits))e.phone='Use 6 to 14 digits';
+    if(!city)e.city='Enter your city';
+    state.ui.profileErrors=e;
+    if(Object.keys(e).length){render();toast('Please check the highlighted fields');return;}
+    Object.assign(s,{name:name,handle:user,phone:val('epDial')+' '+digits,city:city,country:val('epCountry'),lang:val('epLang'),gender:val('epGender'),bio:val('epBio')});
+    state.prefs.lang=s.lang;savePrefs();
+    saveSession();saveProfile();state.ui.profileErrors={};closeSheet();toast('Profile updated');
   },
+  'pick-avatar':function(el){
+    const target=el.dataset.target||'onboard',inp=document.createElement('input');
+    inp.type='file';inp.accept='image/*';
+    inp.onchange=function(){if(inp.files&&inp.files[0])openCrop(inp.files[0],target);};
+    inp.click();
+  },
+  'crop-use':function(){
+    const data=finishCrop();if(!data){toast('Could not crop that photo');return;}
+    if(CROP.target==='profile'&&state.session){
+      state.session.photo=data;saveSession();saveProfile();
+      const reopen=state.ui.sheetBeforeCrop==='profile';
+      closeSheet();if(reopen)openSheet('profile');toast('Profile photo updated');
+    }else{state.ui.onboard.photo=data;closeSheet();toast('Photo added');}
+    CROP.img=null;
+  },
+  'remove-photo':function(){if(!state.session)return;state.session.photo=null;saveSession();saveProfile();render();toast('Photo removed');},
+  'join-church':function(){if(!requireAuth())return;state.ui.joinError='';state.ui.joinChurch=null;state.ui.joinCodeVal='';openSheet('join-church');},
+  'join-church-code':function(){
+    const s=state.session;if(!s)return;
+    const code=val('joinCode'),c=churchByInvite(code);
+    state.ui.joinCodeVal=code;state.ui.joinChurch=null;
+    if(!normCode(code)){state.ui.joinError='Enter the invite code from the church';render();return;}
+    if(!c){state.ui.joinError='That code doesn\'t match a church. Check it with the church office.';render();return;}
+    state.ui.joinError='';
+    s.memberOf=s.memberOf||[];
+    if(s.memberOf.indexOf(c.id)>-1){state.ui.joinError='You\'re already a member of '+c.name;render();return;}
+    s.memberOf.push(c.id);if(!s.homeChurchId)s.homeChurchId=c.id;
+    if(state.local.follows.indexOf(c.id)<0){state.local.follows.push(c.id);dbBump('churches',c.id,'followers',1);saveLocal();}
+    saveSession();saveProfile();state.ui.joinChurch=c.id;render();toast('Welcome to '+c.name);
+  },
+  'copy-invite':function(el){
+    const v=el.dataset.v,done=function(){toast('Invite code '+v+' copied');};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(done,function(){toast('Your code is '+v);});else toast('Your code is '+v);
+  },
+  'share-invite':function(el){const c=myChurch()||{};shareText('Join '+(c.name||'our church')+' on believersArk with invite code '+el.dataset.v,'');},
   'amen-comment':function(el){
     const c=state.data.comments.find(function(x){return x.id===el.dataset.id;});
     if(!c)return;
@@ -2828,11 +3599,23 @@ const ACTIONS={
   'church-tab':function(el){state.ui.churchTab=el.dataset.v;render();},
   'dir-view':function(){state.ui.dir=state.ui.dir==='map'?'list':'map';render();},
   'dir-search':function(){state.ui.dirFilters.q=val('dirQ');render();},
-  'dir-clear':function(){state.ui.dirFilters.q='';render();},
-  'dir-live':function(){state.ui.dirFilters.live=!state.ui.dirFilters.live;render();},
-  'dir-lang':function(el){state.ui.dirFilters.lang=state.ui.dirFilters.lang===el.dataset.v?'':el.dataset.v;render();},
-  'dir-denom':function(el){state.ui.dirFilters.denom=state.ui.dirFilters.denom===el.dataset.v?'':el.dataset.v;render();},
-  'dir-reset':function(){state.ui.dirFilters={q:'',denom:'',lang:'',live:false};render();},
+  'dir-clear':function(){state.ui.dirFilters.q='';state.ui.dirRefocus=true;render();},
+  'dir-reset':function(){state.ui.dirFilters=freshFilters();render();},
+  /* filter sheet: edits a draft so the result count previews live, applied on "Show" */
+  'open-filters':function(){state.ui.draftFilters=JSON.parse(JSON.stringify(state.ui.dirFilters));openSheet('dir-filters');},
+  'df-toggle':function(el){const f=state.ui.draftFilters,g=el.dataset.g,v=el.dataset.v,i=f[g].indexOf(v);if(i>-1)f[g].splice(i,1);else f[g].push(v);render();},
+  'df-sort':function(el){state.ui.draftFilters.sort=el.dataset.v;render();},
+  'df-live':function(){state.ui.draftFilters.live=!state.ui.draftFilters.live;render();},
+  'df-following':function(el){state.ui.draftFilters.following=el.dataset.v;render();},
+  'df-draft-reset':function(){const q=state.ui.draftFilters.q;state.ui.draftFilters=freshFilters();state.ui.draftFilters.q=q;render();},
+  'df-apply':function(){state.ui.dirFilters=state.ui.draftFilters;state.ui.draftFilters=null;closeSheet();},
+  'df-remove':function(el){
+    const f=state.ui.dirFilters,g=el.dataset.g,v=el.dataset.v;
+    if(g==='live')f.live=false;else if(g==='following')f.following='any';
+    else{const i=f[g].indexOf(v);if(i>-1)f[g].splice(i,1);}
+    render();
+  },
+  'df-reset':function(){const q=state.ui.dirFilters.q;state.ui.dirFilters=freshFilters();state.ui.dirFilters.q=q;render();},
   rsvp:function(el){
     if(!requireAuth())return;
     const id=el.dataset.id,i=state.local.rsvps.indexOf(id);
@@ -2923,22 +3706,6 @@ const ACTIONS={
     state.local.care=(state.local.care||[]).concat([{q:last?last.text:'A question',date:new Date().toISOString()}]);
     saveLocal();toast('Sent to your pastor\'s care queue');
   },
-  'give-amt':function(el){state.ui.giveAmt=Number(el.dataset.v);render();},
-  'give-custom':function(){openSheet('amount');},
-  'set-amount':function(){const a=Number(val('amtIn'));if(!a||a<1){toast('Enter an amount');return;}state.ui.giveAmt=a;closeSheet();render();},
-  give:async function(el){
-    if(!requireAuth())return;
-    const g=state.data.campaigns.find(function(x){return x.id===el.dataset.id;});if(!g)return;
-    const amt=state.ui.giveAmt||1000;
-    const receipt='BA'+String(Date.now()).slice(-8);
-    state.local.giving.push({campaignId:g.id,campaign:g.title,church:g.churchName,amount:amt,date:new Date().toISOString(),receipt:receipt});
-    saveLocal();
-    dbBump('givingCampaigns',g.id,'raised',amt);
-    g.raised=(g.raised||0)+amt;
-    openSheet('receipt',{id:receipt});
-    toast('Thank you — '+money(amt)+' recorded (prototype)');
-  },
-  'view-receipt':function(el){openSheet('receipt',{id:el.dataset.id});},
   theme:function(el){state.theme=el.dataset.v;lsSet('theme',state.theme);render();},
   pref:function(el){const k=el.dataset.k;state.prefs[k]=!state.prefs[k];savePrefs();render();},
   export:function(){
@@ -2948,7 +3715,7 @@ const ACTIONS={
   'delete-account':function(){
     if(!state.ui.confirmDelete){state.ui.confirmDelete=true;toast('Tap again to permanently delete your account');return;}
     state.session=null;saveSession();
-    state.local={follows:[],saved:[],rsvps:[],prayed:[],reacted:{},journal:[],planDay:0,streak:0,lastRead:null,giving:[],milestones:[],care:[],seenMoments:[],notifSeen:null,communities:[],reminders:{},family:[]};
+    state.local={follows:[],saved:[],rsvps:[],prayed:[],reacted:{},journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]};
     saveLocal();state.ui.confirmDelete=false;go('welcome');toast('Account and local data deleted');
   },
   compose:function(el){state.ui.composeType=el.dataset.v;state.ui.composePhoto=null;state.ui.composePhotoName='';go('console-compose');},
@@ -3004,18 +3771,6 @@ const ACTIONS={
     const e=state.data.events.find(function(x){return x.id===el.dataset.id;});if(!e)return;
     e.isLive=!e.isLive;dbUpdate('events',e.id,{isLive:e.isLive});render();toast(e.isLive?'You are live':'Live ended · replay saved to sermons');
   },
-  'new-campaign':function(){openSheet('campaign');},
-  'gc-cat':function(el){state.ui.gcCat=el.dataset.v;render();},
-  'submit-campaign':async function(){
-    const t=val('gcTitle'),g=Number(val('gcGoal'));
-    if(!t||!g){toast('Add a title and a goal');return;}
-    const s=state.session,c=myChurch();
-    const doc={churchId:s.churchId,churchName:(c&&c.name)||'Our church',title:t,goal:g,raised:0,
-      category:state.ui.gcCat||'Building',description:val('gcDesc')||'',createdAt:new Date().toISOString()};
-    closeSheet();
-    await dbAdd('givingCampaigns',doc);
-    render();toast('Campaign is live');
-  },
   'approve-member':function(el){toast(el.dataset.v+' approved and added to members');},
   'open-image':function(el){openSheet('image',{id:el.dataset.id});},
   'pick-photo':function(){const i=document.getElementById('photoInput');if(i)i.click();},
@@ -3045,8 +3800,10 @@ async function completeSocialSignIn(user){
   }
   if(role==='church'){state.ui.onboard={};go('onboard-church');}
   else{
-    state.ui.onboard={name:user.name||'',follows:(state.local.follows||[]).slice(),lang:'English'};
-    state.ui.step=0;go('onboard');
+    state.ui.onboard={name:user.name||'',user:suggestHandle(user.name||String(user.email||'').split('@')[0]),
+      email:user.email||'',emailLocked:!!(user.email&&user.emailVerified),photo:user.photoURL||null,
+      lang:'English',country:'India',dial:'+91'};
+    state.ui.obErrors={};state.ui.step=0;go('onboard');
   }
   toast('Signed in with '+label+' — a few details and you\'re in');
 }
@@ -3066,27 +3823,33 @@ window.addEventListener('arkauth:signedin',function(ev){if(ev.detail)completeSoc
 window.addEventListener('arkauth:error',function(ev){const m=authErrorText(ev.detail,'That provider');if(m)toast(m);});
 
 function shareText(text,path){
-  const url='https://believersark.app/'+(path||'');
+  const origin=/^https?:/.test(location.origin)&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1'?location.origin:'https://believersark.com';
+  const url=origin+'/'+(path?'#'+path:'');
   const done=function(){toast('Link copied — share it anywhere');};
   if(navigator.share){navigator.share({title:'believersArk',text:text,url:url}).then(function(){toast('Shared');}).catch(function(){});return;}
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text+'\n'+url).then(done,done);return;}
   done();
 }
+function gptScroll(){const t=document.getElementById('gptThread');if(t)t.scrollTop=t.scrollHeight;window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});}
 function sendChat(text){
+  if(state.ui.chatBusy)return;
   state.ui.chat.push({role:'user',text:text});
-  state.ui.chatBusy=true;render();
-  const box=document.getElementById('chatBox');if(box)box.value='';
+  state.ui.chatBusy=true;render();gptScroll();
+  const box=document.getElementById('chatBox');if(box){box.value='';box.focus();}
   setTimeout(function(){
     const a=bibleAnswer(text);
     state.ui.chatBusy=false;
-    state.ui.chat.push({role:'ai',text:a.a,verses:a.v,pastoral:!!a.pastoral});
-    render();
-    const m=document.getElementById('main');if(m)window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+    state.ui.chat.push({role:'ai',text:a.a,verses:a.v,pastoral:!!a.pastoral,offTopic:!!a.offTopic});
+    render();gptScroll();
+    const b=document.getElementById('chatBox');if(b)b.focus();
   },700+Math.random()*500);
 }
 
 /* ---------- events ---------- */
 document.addEventListener('click',function(e){
+  const sg=e.target.closest('[data-sg]');
+  if(sg){e.preventDefault();pickSuggest(Number(sg.dataset.sg));return;}
+  if(!e.target.closest('#dirSearch'))hideSuggest();
   const sheetStop=e.target.closest('[data-stop]');
   const closeEl=e.target.closest('[data-act="close-sheet"]');
   if(closeEl&&!sheetStop){closeSheet();return;}
@@ -3102,33 +3865,72 @@ document.addEventListener('click',function(e){
     const r=goEl.dataset.go;
     if(r==='auth'){state.ui.authRole=goEl.dataset.role||'believer';state.ui.authId='';go('auth');return;}
     if(r==='church-profile'){state.ui.churchTab='Posts';go('church-profile',{id:goEl.dataset.id,from:state.route});return;}
-    if(r==='person-profile'){state.ui.personTab='Posts';go('person-profile',{id:goEl.dataset.id,from:state.route});return;}
+    if(r==='person-profile'){if(isMe(goEl.dataset.id)){go('me');return;}state.ui.personTab='Posts';go('person-profile',{id:goEl.dataset.id,from:state.route});return;}
     if(r==='notifications'){go('notifications');setTimeout(function(){state.local.notifSeen=new Date().toISOString();saveLocal();},1500);return;}
     if(r==='console-thread'){state.local.threadSeen=state.local.threadSeen||{};state.local.threadSeen[goEl.dataset.id]=new Date().toISOString();saveLocal();go(r,{id:goEl.dataset.id});return;}
     if(r==='community-page'){state.ui.threadSort='Latest';go(r,{id:goEl.dataset.id,from:state.route});return;}
-    if(r==='event'||r==='post'||r==='campaign'||r==='live'){go(r,{id:goEl.dataset.id,from:state.route});return;}
+    if(r==='event'||r==='post'||r==='live'){go(r,{id:goEl.dataset.id,from:state.route});return;}
     go(r);
   }
 });
 document.addEventListener('keydown',function(e){
+  const a=document.activeElement,id=a&&a.id;
+  /* overlays own the keyboard while open */
+  if(state.ui.story){
+    if(e.key==='Escape'){e.preventDefault();closeStory();return;}
+    if(e.key==='ArrowRight'){e.preventDefault();storyStep(1);return;}
+    if(e.key==='ArrowLeft'){e.preventDefault();storyStep(-1);return;}
+    if(e.key===' '&&(!a||a.tagName!=='BUTTON')){e.preventDefault();ACTIONS['story-pause']();return;}
+  }
+  if(state.ui.news&&e.key==='Escape'){e.preventDefault();ACTIONS['close-news']();return;}
+  if(id==='dirQ'){
+    const box=document.getElementById('dirSuggest'),open=box&&!box.hidden;
+    if(e.key==='ArrowDown'){e.preventDefault();if(!open)buildSuggest();moveSuggest(1);return;}
+    if(e.key==='ArrowUp'){e.preventDefault();moveSuggest(-1);return;}
+    if(e.key==='Escape'){hideSuggest();return;}
+    if(e.key==='Enter'){e.preventDefault();if(open&&state.ui.sgIndex>=0)pickSuggest(state.ui.sgIndex);else{state.ui.dirFilters.q=a.value.trim();hideSuggest();render();}return;}
+  }
   if(e.key==='Enter'){
-    if(document.activeElement&&document.activeElement.id==='chatBox'){const t=document.activeElement.value.trim();if(t)sendChat(t);}
-    if(document.activeElement&&document.activeElement.id==='cmtBox'){
-      const btn=document.querySelector('[data-act="comment"]');if(btn)ACTIONS.comment(btn);}
-    if(document.activeElement&&document.activeElement.id==='dirQ'){state.ui.dirFilters.q=document.activeElement.value;render();}
-    if(document.activeElement&&document.activeElement.id==='otpInput')ACTIONS['verify-otp']();
-    if(document.activeElement&&document.activeElement.id==='authId')ACTIONS['send-otp']();
-    if(document.activeElement&&document.activeElement.id==='liveBox')ACTIONS['live-send']();
-    if(document.activeElement&&document.activeElement.id==='threadBox'&&!e.shiftKey){e.preventDefault();const b=document.querySelector('[data-act="c2c-send"]');if(b)ACTIONS['c2c-send'](b);}
+    if(id==='chatBox'){const t=a.value.trim();if(t)sendChat(t);}
+    if(id==='cmtBox'){const btn=document.querySelector('[data-act="comment"]');if(btn)ACTIONS.comment(btn);}
+    if(id==='otpInput')ACTIONS['verify-otp']();
+    if(id==='authId')ACTIONS['send-otp']();
+    if(id==='obCode'){e.preventDefault();ACTIONS['ob-verify-code']();}
+    if(id==='joinCode'){e.preventDefault();ACTIONS['join-church-code']();}
+    if(id==='liveBox')ACTIONS['live-send']();
+    if(id==='threadBox'&&!e.shiftKey){e.preventDefault();const b=document.querySelector('[data-act="c2c-send"]');if(b)ACTIONS['c2c-send'](b);}
   }
   if(e.key==='Escape'&&state.ui.sheet)closeSheet();
 });
+document.addEventListener('input',function(e){
+  const t=e.target;
+  if(t.id==='dirQ')buildSuggest();
+  if(t.id==='cropZoom'){CROP.zoom=Number(t.value)||1;applyCrop();}
+  if(t.id==='obCode'||t.id==='joinCode'){const p=t.selectionStart;t.value=t.value.toUpperCase();try{t.setSelectionRange(p,p);}catch(x){}}
+});
+document.addEventListener('focusin',function(e){if(e.target.id==='dirQ')buildSuggest();});
 document.addEventListener('change',function(e){
   const t=e.target;
   if(t.id==='setLang'){state.prefs.lang=t.value;savePrefs();toast('Language set to '+t.value);}
   if(t.id==='setVis'){state.prefs.visibility=t.value;savePrefs();}
   if(t.id==='photoInput'&&t.files&&t.files[0]){readPhoto(t.files[0]);t.value='';}
 });
+/* drag to position a photo in the square cropper; a press-and-hold pauses a story */
+document.addEventListener('pointerdown',function(e){
+  const box=e.target.closest('#cropBox');
+  if(box){e.preventDefault();box.setPointerCapture(e.pointerId);CROP.drag={x:e.clientX,y:e.clientY,ox:CROP.x,oy:CROP.y};return;}
+  if(state.ui.story&&e.target.closest('#storyCard')&&!e.target.closest('button'))STORY.held=true;
+});
+document.addEventListener('pointermove',function(e){
+  if(!CROP.drag)return;
+  CROP.x=CROP.drag.ox+(e.clientX-CROP.drag.x);CROP.y=CROP.drag.oy+(e.clientY-CROP.drag.y);applyCrop();
+});
+['pointerup','pointercancel'].forEach(function(t){document.addEventListener(t,function(){CROP.drag=null;STORY.held=false;});});
+document.addEventListener('wheel',function(e){
+  if(!e.target.closest('#cropBox'))return;
+  e.preventDefault();CROP.zoom=Math.max(1,Math.min(4,CROP.zoom*(e.deltaY<0?1.08:1/1.08)));applyCrop();
+},{passive:false});
+window.addEventListener('resize',function(){if(state.ui.sheet&&state.ui.sheet.kind==='crop')applyCrop();});
 
 /* ---------- boot ---------- */
 render();
@@ -3136,7 +3938,10 @@ initDB();
 setTimeout(function(){
   if(state.route!=='splash')return;
   const s=state.session;
+  const link=(location.hash.match(/^#news\/([\w-]+)/)||[])[1];
   if(s&&s.role==='church')go(s.verified?'console':'pending');
-  else if(s)go('home');
+  else if(s||link)go('home');
   else go('welcome');
+  /* a shared newsroom link opens that story straight away, signed in or not */
+  if(link&&newsById(link)){state.ui.news=link;state.ui.fx='news';syncOverlay();}
 },1750);

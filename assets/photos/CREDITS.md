@@ -8,11 +8,11 @@ All photographs are from [Unsplash](https://unsplash.com), used under the [Unspl
 | b2.jpg | https://images.unsplash.com/photo-1504052434569-70ad5836ab65 | "The God Who Stays" sermon |
 | b3.jpg | https://images.unsplash.com/photo-1517837016564-bfc3ffd67455 | Emmanuel Baptist cover, fasting prayer story |
 | c1.jpg | https://images.unsplash.com/photo-1666843527155-14ec5f016802 | Living Hope Church cover |
+| ci1.jpg | https://images.unsplash.com/photo-1519491050282-cf00c82424b4 | Emmanuel Baptist Sunday service post |
 | c3.jpg | https://images.unsplash.com/photo-1621666973302-bb1aa2918ef0 | Sabbath in the city sermon |
 | k1.jpg | https://images.unsplash.com/photo-1602216056096-3b40cc0c9944 | St. Thomas Marthoma cover, Harvest Festival |
 | k2.jpg | https://images.unsplash.com/photo-1593693411515-c20261bcad6e | Malayalam homily |
 | k3.jpg | https://images.unsplash.com/photo-1590050752117-238cb0fb12b1 | Backwaters baptism |
-| m1.jpg | https://images.unsplash.com/photo-1587271636175-90d58cdad458 | Wedding occasion |
 | t1.jpg | https://images.unsplash.com/photo-1562050344-f7ad946cee35 | Marriage enrichment evening |
 | t2.jpg | https://images.unsplash.com/photo-1463183547458-6a2c760d0912 | Marriage evening story |
 | v1.jpg | https://images.unsplash.com/photo-1634874706682-3468a6e421ba | New Life Fellowship cover, Warangal roof campaign |
@@ -27,3 +27,10 @@ All photographs are from [Unsplash](https://unsplash.com), used under the [Unspl
 | w9.jpg | https://images.unsplash.com/photo-1543702404-38c2035462ad | Anniversary occasion, choir story |
 | w10.jpg | https://images.unsplash.com/photo-1528828085966-aff4e01c5f2b | "Anchored" sermon |
 | w12.jpg | https://images.unsplash.com/photo-1550633600-4cfc6929e592 | Intercession and prayer events |
+
+# Media credits (`assets/media/`)
+
+| File | Source | Licence | Used for |
+|---|---|---|---|
+| amazing-grace.mp3 | "Amazing Grace", U.S. Air Force Reserve Band (Southern Aire), via [Wikimedia Commons](https://commons.wikimedia.org) | Public domain (U.S. government work) | Newsroom article audio |
+| church-bells.webm, church-bells.mov | Church bells at the Church of the Gesù, Miami, by Fallaner, via [Wikimedia Commons](https://commons.wikimedia.org) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | Newsroom article video, re-encoded to 480p/360p |

@@ -13,10 +13,41 @@ The two account types have deliberately different powers.
 | Profile | Verified church profile and portfolio | Personal profile |
 | Publishing | Posts, stories, sermons, events, occasions, broadcasts | Conversations inside communities only |
 | Messaging | Connects with and messages other verified churches | No direct messages |
-| Following | Connects with churches | Follows churches, joins communities |
+| Following | Connects with churches | Follows churches, joins communities (with admin approval) |
+| Communities | Creates them and approves every join request | Sees only communities of churches they follow |
 | Reacting | — | Amen, Bless, Peace, Love, Spirit, plus comment, save, share |
 
 Think of it as LinkedIn for churches and Instagram for believers.
+
+## Joining
+
+1. Sign in with Google, Facebook, Microsoft or Apple (or email).
+2. Fill in your details: username, email, contact number, city, country and language are required. Gender and a square-cropped profile photo are optional. You must accept the Terms & Conditions.
+3. Enter your church's invite code. This step is required. You can join more churches later from **Me → Join another church**.
+4. Pick personal goals, such as Bible in a year, Psalms in 30 days or journaling. You can skip this step.
+
+Prototype invite codes:
+
+| Church | Code |
+|---|---|
+| Grace Cathedral | GRACE-7291 |
+| Bethel Assembly | BETHEL-3304 |
+| St. Thomas Marthoma | MARTHOMA-1876 |
+| New Life Fellowship | NEWLIFE-6112 |
+| Living Hope Church | HOPE-2210 |
+| Emmanuel Baptist | EMMANUEL-1994 |
+
+Church admins see their own code in the church console and can copy or share it.
+
+## What is where
+
+- **Home:** stories open in a blurred overlay, with reactions and share but no comments. The feed shows posts from churches you follow, then "Suggested for you" based on what you interact with. On desktop, a right-hand column holds the newsroom (admin articles that open full screen with text, images, audio and video) and a calendar of your events.
+- **Churches:** search with suggestions, a filter panel (day, time, language, city, ministries, live now, following) and cards that show service times and connections on hover.
+- **Community:** communities belong to a church. Only admins create them, only followers see them, and admins approve every join request.
+- **BibleGPT and Settings & privacy:** at the bottom of the left menu. BibleGPT answers only questions about the Bible.
+- **Me:** your profile, all on one page. Edit it, change your photo, join another church, and see your churches, communities, saved posts and family.
+
+The platform has no giving or donations and no denominations.
 
 ## Run it locally
 
@@ -38,6 +69,7 @@ js/auth-config.js   Firebase web config and which sign-in buttons to show
 js/auth.js          social sign-in through Firebase Authentication
 docs/               setup guides
 assets/photos/      feed, church and event photographs
+assets/media/       newsroom audio and video
 ```
 
 ## Design system
@@ -59,8 +91,9 @@ assets/photos/      feed, church and event photographs
 - No real payments, SMS or OTP delivery. The email code is shown on screen.
 - Sign-in with Google, Facebook, Microsoft and Apple is real once Firebase keys are added. See [docs/SIGN_IN_SETUP.md](docs/SIGN_IN_SETUP.md).
 - Live streams, BibleGPT answers and sermon summaries are illustrative.
-- Christian news, worship music and the marketplace are designed "coming soon" screens.
+- Newsroom articles are seeded; there is no admin authoring screen yet.
+- Worship music and the marketplace are designed "coming soon" screens.
 
-## Photo credits
+## Photo and media credits
 
-Photographs are from [Unsplash](https://unsplash.com) and used under the [Unsplash License](https://unsplash.com/license). See `assets/photos/CREDITS.md`.
+Photographs are from [Unsplash](https://unsplash.com) and used under the [Unsplash License](https://unsplash.com/license). The newsroom audio is public domain and the video is CC BY-SA 4.0. See `assets/photos/CREDITS.md`.
