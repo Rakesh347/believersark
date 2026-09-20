@@ -369,13 +369,23 @@ function lsSet(k,v){try{STORE.setItem(LS+k,JSON.stringify(v));}catch(e){}}
 function lsDel(k){try{STORE.removeItem(LS+k);}catch(e){}}
 function accountKey(id){return String(id||'').toLowerCase().replace(/[^a-z0-9@.+_-]/g,'').slice(0,80)||'guest';}
 
+function freshLocal(){return {follows:[],saved:[],rsvps:[],reacted:{},amened:[],journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]};}
+function localOwner(s){return s?accountKey(s.key||s.id||s.email):'guest';}
+function loadLocal(s){
+  const scoped=lsGet('local.'+localOwner(s),null);
+  /* The old unscoped store belongs to the guest. Keep it as a one-time migration so
+     existing follows and saved posts are not lost when account isolation is introduced. */
+  const saved=scoped||(s?null:lsGet('local',null))||{};
+  return Object.assign(freshLocal(),saved);
+}
+const BOOT_SESSION=lsGet('session',null);
+
 const state={
   theme:lsGet('theme','light'),
   route:'splash',
   params:{},
-  session:lsGet('session',null),
-  local:Object.assign({follows:[],saved:[],rsvps:[],reacted:{},amened:[],journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]},
-    lsGet('local',{})),
+  session:BOOT_SESSION,
+  local:loadLocal(BOOT_SESSION),
   prefs:lsGet('prefs',{broadcast:true,digest:false,quiet:true,events:true,gpt:true,lang:'English',visibility:'church'}),
   data:{churches:[],posts:[],events:[],plans:[],people:[],comments:[],communities:[],threads:[],connections:[],cmRequests:[],storyReacts:[]},
   ui:{tab:'All',dir:'list',dirFilters:freshFilters(),journeyTab:'Timeline',churchTab:'Posts',consoleTab:'Dashboard',
@@ -385,9 +395,15 @@ const state={
 function freshFilters(){return {q:'',cities:[],langs:[],days:[],times:[],ministries:[],live:false,following:'any',sort:'popular'};}
 /* legacy local fields from the giving era are dropped on load */
 delete state.local.giving;delete state.local.communities;delete state.prefs.showGiving;
-function saveLocal(){lsSet('local',state.local);}
+function saveLocal(){lsSet('local.'+localOwner(state.session),state.local);}
 function savePrefs(){lsSet('prefs',state.prefs);}
 function saveSession(){state.session?lsSet('session',state.session):lsDel('session');}
+function switchSession(next){
+  saveLocal();
+  state.session=next;
+  state.local=loadLocal(next);
+  saveSession();
+}
 
 /* ---------- seed data ----------
    Embedded so the ark is alive on first open, online or offline. Dates are relative
@@ -676,11 +692,12 @@ async function loadProfile(key){
 }
 function applyProfile(key,p){
   const meta=state.ui.authMeta||{};
-  state.session={id:p.avatarSeed||('u_'+key),key:key,role:p.role||'believer',name:p.name,city:p.city,country:p.country||'',lang:p.lang,
+  const session={id:p.avatarSeed||('u_'+key),key:key,role:p.role||'believer',name:p.name,city:p.city,country:p.country||'',lang:p.lang,
     gender:p.gender||'',phone:p.phone||'',memberOf:(p.memberOf||[]).slice(),goals:(p.goals||[]).slice(),
     bio:p.bio||'',handle:p.handle||'',avatarSeed:p.avatarSeed||('u_'+key),email:p.email||state.ui.authId,planId:p.planId,
     homeChurchId:p.homeChurchId||null,churchId:p.churchId||null,verified:!!p.verified,followers:p.followers||0,
     provider:meta.provider||p.provider||'email',photo:meta.photo||p.photo||null};
+  switchSession(session);
   state.local.follows=(p.follows||[]).slice();
   state.local.planDay=p.planDay||0;state.local.streak=p.streak||0;state.local.lastRead=p.lastRead||null;
   saveSession();saveLocal();
@@ -1559,7 +1576,7 @@ function calendarButton(){
 function mobileHeaderMenu(unread){
   const soon=calendarEvents().filter(function(x){const d=dt(x.e.datetime);return x.going&&d>=new Date(Date.now()-3*3600e3)&&d<new Date(Date.now()+7*864e5);}).length;
   return '<details class="mobile-head-menu">'
-    +'<summary class="icon-btn mobile-menu-trigger" aria-label="Open quick menu">'+ico('menu',20)
+    +'<summary class="icon-btn mobile-menu-trigger" role="button" aria-label="Open quick menu">'+ico('menu',20)
     +(unread?'<span class="pill-count num">'+(unread>9?'9+':unread)+'</span>':'')+'</summary>'
     +'<div class="mobile-head-panel">'
     +'<button class="mobile-menu-item cal-btn" data-act="cal-toggle">'+ico('cal',18)+'<span>Calendar</span>'+(soon?'<b class="mobile-menu-count num">'+soon+'</b>':'')+'</button>'
@@ -1908,7 +1925,7 @@ function filterSheet(){
 }
 function mapPanel(list){
   return '<div class="glass" style="height:210px;overflow:hidden;position:relative;margin-bottom:14px">'
-    +'<div class="cover-art" style="background:radial-gradient(70% 90% at 30% 20%,rgba(232,200,142,.22),transparent 62%),linear-gradient(160deg,#111A3E,#0A0F2A)"></div>'
+    +'<div class="cover-art" style="background:radial-gradient(70% 90% at 30% 20%,rgba(232,200,142,.22),transparent 62%),linear-gradient(160deg,#39271A,#1D130B)"></div>'
     +'<svg viewBox="0 0 400 210" style="position:absolute;inset:0;width:100%;height:100%" aria-hidden="true">'
     +'<g stroke="rgba(232,200,142,.16)" stroke-width="1">'
     +[40,80,120,160].map(function(y){return '<path d="M0 '+y+'h400"/>';}).join('')
@@ -2081,7 +2098,7 @@ function viewEvent(){
     +'<button class="row gap-6 cap mt-8" data-go="'+(state.params.from||'home')+'" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+'Back</button>'
     +'<div class="cover" style="height:'+(e.isLive?'220px':'160px')+'">'+(hasMedia(e)?mediaInner(e):coverArt(e.id))
     +(e.isLive?'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">'
-      +'<button class="icon-btn active" data-act="join-live" data-id="'+e.id+'" style="width:66px;height:66px;background:rgba(34,22,12,.7);box-shadow:0 0 30px rgba(201,151,74,.35)">'+ico('play',26)+'</button>'
+      +'<button class="icon-btn active" data-act="join-live" data-id="'+e.id+'" aria-label="Join live stream" style="width:66px;height:66px;background:rgba(34,22,12,.7);box-shadow:0 0 30px rgba(201,151,74,.35)">'+ico('play',26)+'</button>'
       +'<span class="badge badge-live"><i class="dot-live"></i>Live now · <span class="num">'+(e.rsvpCount||0)+'</span> here</span></div>':'')
     +'</div>'
     +'<div class="glass pad stack gap-16 mt-16">'
@@ -2100,7 +2117,7 @@ function viewEvent(){
     +'<div class="row gap-10">'+ico('bell',17,'dim')+'<span class="body" style="color:var(--text-1)">Reminders 1 day and 1 hour before</span></div></div>'
     +'<div class="row gap-10">'
     +'<button class="btn '+(going?'btn-ghost':'btn-primary')+' grow" data-act="rsvp" data-id="'+e.id+'">'+(going?ico('check',18)+'You\'re going':'RSVP to attend')+'</button>'
-    +(e.isLive?'<button class="btn btn-outline" data-act="join-live" data-id="'+e.id+'">'+ico('play',17)+'Join</button>':'<button class="icon-btn" data-act="share-event" data-id="'+e.id+'">'+ico('share',17)+'</button>')+'</div>'
+    +(e.isLive?'<button class="btn btn-outline" data-act="join-live" data-id="'+e.id+'">'+ico('play',17)+'Join</button>':'<button class="icon-btn" data-act="share-event" data-id="'+e.id+'" aria-label="Share event">'+ico('share',17)+'</button>')+'</div>'
     +'</div><div style="height:36px"></div></div>';
 }
 function viewPost(){
@@ -2504,7 +2521,7 @@ function journeyFamily(){
       return '<div class="glass pad-sm row between gap-12"><span class="row gap-12">'
         +'<span class="avatar" style="background:'+grad(f.name+i)+'">'+initials(f.name)+'</span>'
         +'<span class="stack gap-2"><span class="h3">'+esc(f.name)+'</span><span class="cap">'+esc(f.type)+' · parental controls on</span></span></span>'
-        +'<button class="icon-btn" data-act="family-settings" data-i="'+i+'">'+ico('settings',17)+'</button></div>';}).join('')+'</div>'
+        +'<button class="icon-btn" data-act="family-settings" data-i="'+i+'" aria-label="Parental controls for '+esc(f.name)+'">'+ico('settings',17)+'</button></div>';}).join('')+'</div>'
       :'')
     +'<div class="glass pad stack gap-12"><span class="eyebrow accent">Kids space preview</span>'
     +'<div class="row gap-10" style="overflow-x:auto">'+[['Memory verses','book'],['Bible stories','music'],['Quiet games','star']].map(function(k,i){
@@ -2723,7 +2740,7 @@ function viewLive(){
     +'<span class="badge badge-live"><i class="dot-live"></i>Live · <span class="num">'+(e.rsvpCount||0)+'</span> watching</span>'
     +'<span class="badge badge-accent">'+ico('globe',12)+esc(state.prefs.lang)+' captions</span></div>'
     +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span class="icon-btn active" style="width:70px;height:70px;background:rgba(34,22,12,.6);box-shadow:0 0 34px rgba(201,151,74,.4)">'+ico('play',28)+'</span></div>'
-    +'<div style="position:absolute;left:16px;right:90px;bottom:16px" class="stack gap-4"><span class="h2" style="font-size:20px;color:#F2F4FF">'+esc(e.title)+'</span><span class="cap" style="color:#B6BEE0">'+esc(e.churchName||'')+' · '+esc(e.location||'Online')+'</span></div>'
+    +'<div style="position:absolute;left:16px;right:90px;bottom:16px" class="stack gap-4"><span class="h2" style="font-size:20px;color:#FDF7EA">'+esc(e.title)+'</span><span class="cap" style="color:#E3D6C0">'+esc(e.churchName||'')+' · '+esc(e.location||'Online')+'</span></div>'
     +'<div class="live-float" aria-hidden="true"></div></div>'
     +'<div class="row gap-8 mt-12 wrap">'+REACTIONS.map(function(r){return '<button class="react" data-act="live-react" data-e="'+r.e+'" aria-label="'+r.l+'"><span class="em">'+r.e+'</span>'+r.l+'</button>';}).join('')+'</div>'
     +'<div class="row gap-10 mt-12">'
@@ -2751,7 +2768,7 @@ const SOON={
 };
 function stainedGlass(h){
   const h2=(h+50)%360,h3=(h+190)%360,id='sg'+h;
-  return '<svg viewBox="0 0 400 230" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#171F4A"/><stop offset="1" stop-color="#0B1026"/></linearGradient></defs>'
+  return '<svg viewBox="0 0 400 230" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A2617"/><stop offset="1" stop-color="#1D130B"/></linearGradient></defs>'
     +'<rect width="400" height="230" fill="url(#'+id+')"/>'
     +'<g stroke="rgba(255,255,255,.14)" stroke-width="1">'
     +'<path d="M0 230 L70 50 L150 230Z" fill="hsla('+h+',75%,66%,.28)"/>'
@@ -2768,7 +2785,7 @@ function viewSoon(){
     +'<button class="row gap-6 cap mt-8" data-go="'+esc(back)+'" style="color:var(--text-3);margin-bottom:12px">'+ico('arrowL',16)+'Back</button>'
     +'<div class="soon-hero">'+stainedGlass(m.hue)
     +'<div class="stack gap-8" style="position:relative;z-index:2"><span class="row gap-8"><span class="badge badge-lav">Next phase</span><span class="eyebrow" style="color:var(--brand)">'+esc(m.eye)+'</span></span>'
-    +'<h1 class="display" style="font-size:34px;color:#F2F4FF">'+esc(key||'Coming soon')+'</h1></div></div>'
+    +'<h1 class="display" style="font-size:34px;color:#FDF7EA">'+esc(key||'Coming soon')+'</h1></div></div>'
     +'<div class="glass pad stack gap-16 mt-16"><p class="body" style="font-size:16.5px;color:var(--text-1)">'+esc(m.lead)+'</p>'
     +(m.pts.length?'<div class="stack gap-10">'+m.pts.map(function(p){return '<div class="row gap-12" style="align-items:flex-start"><span class="accent" style="flex:none;margin-top:3px">'+ico('check',16)+'</span><span class="body">'+esc(p)+'</span></div>';}).join('')+'</div>':'')
     +'<hr class="divider"><div class="row gap-10 wrap"><button class="btn btn-sm btn-primary" data-act="notify-soon" data-v="'+esc(key)+'">'+ico('bell',16)+'Tell me when it lands</button>'
@@ -3694,7 +3711,7 @@ function renderSheet(){
     return '<div class="lightbox" data-act="close-sheet">'
       +'<div class="row between gap-12" style="padding:14px 16px">'
       +'<span class="row gap-10" style="min-width:0">'+(p.churchId?churchLogo({id:p.churchId,name:p.churchName},34):'<span class="avatar avatar-sm" style="background:'+grad(p.authorId||p.id)+'">'+initials(p.authorName||'?')+'</span>')
-      +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14px;color:#F2F4FF">'+esc(p.churchName||p.authorName||'believersArk')+'</span>'
+      +'<span class="stack gap-2" style="min-width:0"><span class="h3" style="font-size:14px;color:#FDF7EA">'+esc(p.churchName||p.authorName||'believersArk')+'</span>'
       +'<span class="cap">'+(n?(n>1?'Picture '+(i+1)+' of '+n:'Photograph'):'Scene artwork')+'</span></span></span>'
       +'<button class="icon-btn" data-act="close-sheet" aria-label="Close">'+ico('x',18)+'</button></div>'
       +'<div class="lightbox-stage" data-stop="1" style="position:relative">'
@@ -3786,7 +3803,7 @@ function requireAuth(){
   return false;
 }
 const ACTIONS={
-  guest:function(){state.session=null;saveSession();go('home');},
+  guest:function(){switchSession(null);go('home');},
   'send-otp':function(){
     const id=val('authId')||state.ui.authId;
     if(!id){toast('Enter your email or phone');return;}
@@ -3890,7 +3907,7 @@ const ACTIONS={
       avatarSeed:'u_'+key,followers:0,planId:planGoal?planGoal.plan:null,goals:goals,
       homeChurchId:o.churchId,memberOf:[o.churchId],createdAt:new Date().toISOString(),
       provider:meta.provider||'email',photo:o.photo||meta.photo||null};
-    state.session=session;saveSession();
+    switchSession(session);
     state.prefs.lang=o.lang||'English';savePrefs();
     if(state.local.follows.indexOf(o.churchId)<0){state.local.follows.push(o.churchId);bumpCount('churches',o.churchId,'followers',1);}
     state.local.planDay=0;state.local.streak=0;saveLocal();
@@ -3914,9 +3931,9 @@ const ACTIONS={
       pastorName:val('cPastor'),tagline:val('cTag')||'A church family on believersArk',
       about:val('cTag')||'',ministries:['Worship','Prayer','Youth'],followers:0,verified:false,createdAt:new Date().toISOString()};
     const meta=state.ui.authMeta||{};
-    state.session={id:uid('c_'),key:accountKey(state.ui.authId),role:'church',name:val('cPastor')||name,email:state.ui.authId,
-      church:church,verified:false,churchId:null,provider:meta.provider||'email',photo:meta.photo||null};
-    saveSession();go('pending');
+    switchSession({id:uid('c_'),key:accountKey(state.ui.authId),role:'church',name:val('cPastor')||name,email:state.ui.authId,
+      church:church,verified:false,churchId:null,provider:meta.provider||'email',photo:meta.photo||null});
+    go('pending');
   },
   'approve-church':async function(){
     const s=state.session;if(!s||!s.church)return;
@@ -3929,13 +3946,13 @@ const ACTIONS={
   },
   'demo-church':function(el){
     const c=churchById(el.dataset.id);if(!c)return;
-    state.session={id:'c_'+c.id,role:'church',name:c.pastorName||c.name,email:'demo@'+c.id+'.believersark.app',churchId:c.id,verified:true,demo:true,createdAt:new Date().toISOString()};
-    saveSession();state.ui.c2cTab='Inbox';go('console');toast('Signed in as '+c.name);
+    switchSession({id:'c_'+c.id,role:'church',name:c.pastorName||c.name,email:'demo@'+c.id+'.believersark.app',churchId:c.id,verified:true,demo:true,createdAt:new Date().toISOString()});
+    state.ui.c2cTab='Inbox';go('console');toast('Signed in as '+c.name);
   },
   signout:function(){
     const A=window.ArkAuth;
     if(A&&A.ready&&state.session&&state.session.provider&&state.session.provider!=='email')A.signOut().catch(function(){});
-    state.session=null;saveSession();state.ui.chat=[];state.ui.liveChat=null;state.ui.authMeta=null;go('welcome');toast('Signed out');
+    switchSession(null);state.ui.chat=[];state.ui.liveChat=null;state.ui.authMeta=null;go('welcome');toast('Signed out');
   },
   tab:function(el){state.ui.tab=el.dataset.v;render();},
   'toggle-digest':function(){state.prefs.digest=!state.prefs.digest;savePrefs();render();},
@@ -4419,9 +4436,10 @@ const ACTIONS={
   },
   'delete-account':function(){
     if(!state.ui.confirmDelete){state.ui.confirmDelete=true;toast('Tap again to permanently delete your account');return;}
-    state.session=null;saveSession();
-    state.local={follows:[],saved:[],rsvps:[],reacted:{},amened:[],journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]};
-    saveLocal();state.ui.confirmDelete=false;go('welcome');toast('Account and local data deleted');
+    const key=state.session&&state.session.key,owner=localOwner(state.session);
+    if(key){lsDel('profile.'+key);if(DB)DB.doc('profiles/'+key).delete().catch(function(){});}
+    lsDel('local.'+owner);state.session=null;state.local=loadLocal(null);saveSession();
+    state.ui.confirmDelete=false;go('welcome');toast('Account and local data deleted');
   },
   compose:function(el){
     if(state.ui.composeType!==el.dataset.v){clearCompose();state.ui.composeKind='none';
