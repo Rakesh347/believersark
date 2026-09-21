@@ -367,6 +367,42 @@ const STORE=store();
 function lsGet(k,fb){try{const v=STORE.getItem(LS+k);return v==null?fb:JSON.parse(v);}catch(e){return fb;}}
 function lsSet(k,v){try{STORE.setItem(LS+k,JSON.stringify(v));}catch(e){}}
 function lsDel(k){try{STORE.removeItem(LS+k);}catch(e){}}
+
+/* Uploaded videos are Blobs, not strings. A blob: URL only survives for the current page,
+   so keep the actual file in IndexedDB and mint a fresh URL whenever the app starts. */
+let MEDIA_DB_PROMISE=null;
+const MEDIA_URLS={};
+function openMediaDB(){
+  if(MEDIA_DB_PROMISE)return MEDIA_DB_PROMISE;
+  MEDIA_DB_PROMISE=new Promise(function(resolve,reject){
+    if(!window.indexedDB){reject(new Error('IndexedDB unavailable'));return;}
+    const req=indexedDB.open('believersark-media',1);
+    req.onupgradeneeded=function(){if(!req.result.objectStoreNames.contains('videos'))req.result.createObjectStore('videos');};
+    req.onsuccess=function(){resolve(req.result);};
+    req.onerror=function(){reject(req.error||new Error('Could not open media storage'));};
+  });
+  return MEDIA_DB_PROMISE;
+}
+async function mediaPut(file){
+  const db=await openMediaDB(),key=uid('video_');
+  return new Promise(function(resolve,reject){
+    const tx=db.transaction('videos','readwrite');
+    tx.objectStore('videos').put(file,key);
+    tx.oncomplete=function(){resolve(key);};tx.onerror=function(){reject(tx.error);};tx.onabort=function(){reject(tx.error);};
+  });
+}
+async function mediaGet(key){
+  const db=await openMediaDB();
+  return new Promise(function(resolve,reject){
+    const req=db.transaction('videos','readonly').objectStore('videos').get(key);
+    req.onsuccess=function(){resolve(req.result||null);};req.onerror=function(){reject(req.error);};
+  });
+}
+async function mediaDelete(key){
+  if(!key)return;
+  try{const db=await openMediaDB();db.transaction('videos','readwrite').objectStore('videos').delete(key);}catch(e){}
+  if(MEDIA_URLS[key]){try{URL.revokeObjectURL(MEDIA_URLS[key]);}catch(e){}delete MEDIA_URLS[key];}
+}
 function accountKey(id){return String(id||'').toLowerCase().replace(/[^a-z0-9@.+_-]/g,'').slice(0,80)||'guest';}
 
 function freshLocal(){return {follows:[],saved:[],rsvps:[],reacted:{},amened:[],journal:[],planDay:0,streak:0,lastRead:null,milestones:[],care:[],seenMoments:[],notifSeen:null,reminders:{},family:[]};}
@@ -522,6 +558,10 @@ function mediaInner(p,i){
    is visible, letterboxed the way Instagram shows a portrait clip. */
 function videoBlock(p){
   const v=p.video;
+  if(v.missing)return '<div class="post-video media-missing"><span class="stack gap-6 center">'+ico('play',24,'dim')
+    +'<span class="h3">Video needs to be attached again</span><span class="cap">This post used the old temporary upload format. New uploads stay playable after a reload.</span>'
+    +(isChurchAdmin()&&state.session.churchId===p.churchId?'<button class="btn btn-sm btn-primary" data-act="repair-video" data-id="'+esc(p.id)+'">'+ico('upload',15)+'Attach video again</button>':'')
+    +'</span></div>';
   return '<div class="post-video'+(v.portrait?' portrait':'')+'">'
     +'<video src="'+esc(v.src)+'" controls playsinline preload="metadata"'+(v.poster?' poster="'+esc(v.poster)+'"':'')+'></video>'
     +(v.session?'<span class="badge media-tag">'+ico('clock',11)+'This session</span>':'')+'</div>';
@@ -580,8 +620,27 @@ function loadSeed(){
   COLS.forEach(function(c){state.data[MAP[c]]=seedFor(c).map(hydrate);applyLocal(c);});
   state.data.storyReacts=lsGet('storyReacts',[]);
 }
+async function restoreLocalVideos(initial){
+  let changed=false;
+  const videos=state.data.posts.map(function(p){return p.video;}).filter(Boolean);
+  for(const v of videos){
+    if(v.blobKey){
+      try{
+        let url=MEDIA_URLS[v.blobKey];
+        if(!url){const blob=await mediaGet(v.blobKey);if(blob){url=URL.createObjectURL(blob);MEDIA_URLS[v.blobKey]=url;}}
+        if(url&&v.src!==url){v.src=url;v.session=false;v.missing=false;changed=true;}
+        else if(!url&&!v.missing){v.missing=true;changed=true;}
+      }catch(e){if(!v.missing){v.missing=true;changed=true;}}
+    }else if(initial&&v.session&&/^blob:/.test(v.src||'')){
+      /* A blob URL restored from the old local store can never be valid in a new page. */
+      v.missing=true;changed=true;
+    }
+  }
+  if(changed&&state.ui.ready)render();
+}
 async function initDB(){
   loadSeed();state.ui.ready=true;render();
+  restoreLocalVideos(true);
   try{DB=window.claude&&window.claude.use?await window.claude.use('db'):null;}catch(e){DB=null;}
   if(!DB){state.ui.dbState='offline';render();return;}
   state.ui.dbState='live';
@@ -592,7 +651,7 @@ async function initDB(){
         if(!snap.docs.length)return;
         state.data[MAP[c]]=snap.docs.map(function(d){const o=d.data()||{};o.id=d.id;return hydrate(o);});
         if(c==='posts')SEED_EXTRA.stories.forEach(function(s){if(!state.data.posts.some(function(x){return x.id===s.id;}))state.data.posts.push(hydrate(s));});
-        render();
+        render();if(c==='posts')restoreLocalVideos(false);
       },function(){});
     }catch(e){}
   });
@@ -3216,8 +3275,8 @@ function readImage(file,max,quality,cb){
   fr.readAsDataURL(file);
 }
 const MAX_PHOTOS=5;
-/* Video is kept whole — no re-encoding in the browser — so only a small clip can be stored
-   for good. Anything larger plays from a blob for this session and says so on the card. */
+/* Video is kept whole — no re-encoding in the browser. IndexedDB stores the Blob itself;
+   the blob: URL shown by the player is recreated from that file on every app start. */
 const VIDEO_KEEP=2.2*1024*1024;
 function readVideo(file,cb){
   if(!file||!/^video\//.test(file.type||'')){toast('That file is not a video');return;}
@@ -3226,13 +3285,18 @@ function readVideo(file,cb){
   probe.preload='metadata';
   probe.onloadedmetadata=function(){
     const w=probe.videoWidth||0,h=probe.videoHeight||0,portrait=h>w;
-    const finish=function(src,session){cb({src:src,w:w,h:h,portrait:portrait,name:file.name,session:!!session});};
-    if(file.size<=VIDEO_KEEP){
+    mediaPut(file).then(function(blobKey){
+      MEDIA_URLS[blobKey]=url;
+      cb({src:url,blobKey:blobKey,w:w,h:h,portrait:portrait,name:file.name,type:file.type||'',session:false});
+    }).catch(function(){
+      const finish=function(src,session){cb({src:src,w:w,h:h,portrait:portrait,name:file.name,type:file.type||'',session:!!session});};
+      if(file.size<=VIDEO_KEEP){
       const fr=new FileReader();
       fr.onerror=function(){finish(url,true);};
       fr.onload=function(){finish(String(fr.result),false);};
       fr.readAsDataURL(file);
-    }else finish(url,true);
+      }else finish(url,true);
+    });
   };
   probe.onerror=function(){toast('Could not read that video');};
   probe.src=url;
@@ -4442,7 +4506,7 @@ const ACTIONS={
     state.ui.confirmDelete=false;go('welcome');toast('Account and local data deleted');
   },
   compose:function(el){
-    if(state.ui.composeType!==el.dataset.v){clearCompose();state.ui.composeKind='none';
+    if(state.ui.composeType!==el.dataset.v){if(state.ui.composeVideo&&state.ui.composeVideo.blobKey)mediaDelete(state.ui.composeVideo.blobKey);clearCompose();state.ui.composeKind='none';
       state.ui.composePhotos=[];state.ui.composeVideo=null;state.ui.composeAudio=null;}state.ui.composeType=el.dataset.v;state.ui.composePhoto=null;state.ui.composePhotoName='';go('console-compose');},
   'b-priority':function(el){state.ui.bPriority=el.dataset.v;render();},
   'b-audience':function(el){state.ui.bAudience=el.dataset.v;render();},
@@ -4513,7 +4577,7 @@ const ACTIONS={
     const k=el.dataset.v;
     state.ui.composeKind=k;
     if(k!=='photos')state.ui.composePhotos=[];
-    if(k!=='video')state.ui.composeVideo=null;
+    if(k!=='video'){if(state.ui.composeVideo&&state.ui.composeVideo.blobKey)mediaDelete(state.ui.composeVideo.blobKey);state.ui.composeVideo=null;}
     if(k!=='audio')state.ui.composeAudio=null;
     render();
   },
@@ -4543,11 +4607,19 @@ const ACTIONS={
   },
   'pick-video':function(){
     pickFile('video/*',function(f){
-      readVideo(f,function(v){state.ui.composeVideo=v;render();
+      const old=state.ui.composeVideo;
+      readVideo(f,function(v){if(old&&old.blobKey)mediaDelete(old.blobKey);state.ui.composeVideo=v;render();
         toast(v.session?'Video ready for this session — too large to keep after a reload':'Video attached');});
     });
   },
-  'clear-video':function(){state.ui.composeVideo=null;render();},
+  'repair-video':function(el){
+    const post=state.data.posts.find(function(p){return p.id===el.dataset.id;});if(!post)return;
+    if(!isChurchAdmin()||state.session.churchId!==post.churchId){toast('Only this church can replace the video');return;}
+    pickFile('video/*',function(f){
+      readVideo(f,function(v){post.video=v;dbUpdate('posts',post.id,{video:v});render();toast('Video restored — it will stay playable after reload');});
+    });
+  },
+  'clear-video':function(){const v=state.ui.composeVideo;if(v&&v.blobKey)mediaDelete(v.blobKey);state.ui.composeVideo=null;render();},
   'pick-audio':function(){
     pickFile('audio/*',function(f){
       if(f.size>4.2*1024*1024){toast('That audio is over 4 MB — choose a shorter clip');return;}

@@ -152,6 +152,7 @@ button.cap.on{color:var(--brand);font-weight:700}
   max-height:min(1080px,70vh);display:flex;align-items:center;justify-content:center}
 .post-video video{width:100%;max-height:min(1080px,70vh);display:block;object-fit:contain;background:#0C1020}
 .post-video.portrait video{max-width:min(100%,420px);margin:0 auto}
+.post-video.media-missing{min-height:180px;display:grid;place-items:center;padding:28px;text-align:center;background:var(--surface-2);color:var(--text-2)}
 .post-audio{display:flex;gap:12px;align-items:center;padding:13px 14px;border-radius:var(--r-md);
   background:var(--surface);border:1px solid var(--border)}
 .post-audio audio{height:34px}
